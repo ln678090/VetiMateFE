@@ -1,0 +1,110 @@
+============================== 
+src 
+============================== 
+Folder PATH listing for volume New Volume
+Volume serial number is 0E95-BFC0
+D:\DATN\PROJECT\GRADUATION_PROJECT_FE\SRC
+|   middleware.ts
+|   
++---app
+|   |   favicon.ico
+|   |   globals.css
+|   |   layout.tsx
+|   |   providers.tsx
+|   |   
+|   +---(auth)
+|   |   |   layout.tsx
+|   |   |   
+|   |   +---login
+|   |   |       page.tsx
+|   |   |       
+|   |   \---register
+|   |           page.tsx
+|   |           
+|   +---(protected)
+|   |   |   layout.tsx
+|   |   |   
+|   |   \---dashboard
+|   |           page.tsx
+|   |           
+|   +---(public)
+|   |       page.tsx
+|   |       
+|   \---api
++---components
+|   +---animations
+|   |       FadeIn.tsx
+|   |       Stagger.tsx
+|   |       
+|   +---icons
+|   +---shared
+|   |       AppSidebar.tsx
+|   |       AppTopbar.tsx
+|   |       AuthGuard.tsx
+|   |       AuthHydrator.tsx
+|   |       FullScreenLoader.tsx
+|   |       MobileNav.tsx
+|   |       UserMenu.tsx
+|   |       
+|   \---ui
+|           avatar.tsx
+|           badge.tsx
+|           button.tsx
+|           card.tsx
+|           dialog.tsx
+|           dropdown-menu.tsx
+|           form.tsx
+|           input.tsx
+|           label.tsx
+|           password-input.tsx
+|           required-label.tsx
+|           separator.tsx
+|           sheet.tsx
+|           skeleton.tsx
+|           sonner.tsx
+|           
++---features
+|   +---auth
+|   |   +---api
+|   |   |       auth.api.ts
+|   |   |       
+|   |   +---components
+|   |   |       AuthSubmitButton.tsx
+|   |   |       LoginForm.tsx
+|   |   |       RegisterForm.tsx
+|   |   |       
+|   |   \---hooks
+|   +---booking
+|   +---cart
+|   +---profile
+|   +---shop
+|   \---vet
++---hooks
+|       use-auth.ts
+|       use-mounted.ts
+|       use-redirect-if-authed.ts
+|       use-require-auth.ts
+|       
++---lib
+|       axios.ts
+|       constants.ts
+|       env.ts
+|       nav.ts
+|       query-client.ts
+|       utils.ts
+|       
++---schemas
+|       auth.schema.ts
+|       index.ts
+|       
++---services
+|       auth.service.ts
+|       
++---stores
+|       auth.store.ts
+|       
+\---types
+        api.ts
+        auth.ts
+        index.ts
+        
