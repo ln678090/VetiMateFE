@@ -10,7 +10,7 @@ import { NextResponse, type NextRequest } from 'next/server';
  * Việc bảo vệ route được handle ở client bằng <RequireAuth> (use-require-auth.ts).
  * AuthHydrator sẽ gọi /refresh khi mount để verify session thật.
  */
-export function middleware(_req: NextRequest) {
+export function proxy(_req: NextRequest) {
   return NextResponse.next();
 }
 
