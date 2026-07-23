@@ -31,7 +31,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { data: product, isLoading, isError } = useProduct(slug);
   const { data: related, isLoading: isLoadingRelated } = useRelatedProducts(
     slug,
-    product?.category
+    product?.categoryId
   );
 
   if (isLoading) {
@@ -65,7 +65,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
         </Link>
         <ChevronRight className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-600" strokeWidth={2} />
         <span className="font-medium text-zinc-700 dark:text-zinc-300">
-          {CATEGORY_LABELS[product.category] ?? product.category}
+          {CATEGORY_LABELS[product.categoryId] ?? product.categoryId}
         </span>
         <ChevronRight className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-600" strokeWidth={2} />
         <span className="truncate font-medium text-zinc-900 dark:text-white">{product.name}</span>
@@ -75,7 +75,7 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12">
         {/* Gallery - mock 5 ảnh (BE chỉ trả 1 thì duplicate để demo) */}
         <ProductGallery
-          images={[product.image, product.image, product.image, product.image, product.image]}
+          images={[product.imageUrl, product.imageUrl, product.imageUrl, product.imageUrl, product.imageUrl]}
           alt={product.name}
         />
 

@@ -37,7 +37,7 @@ export function ProductTabs({ product }: ProductTabsProps) {
           <p>{product.description}</p>
           <p className="mt-3">
             Sản phẩm <strong>{product.name}</strong> của thương hiệu{' '}
-            <strong>{product.brand}</strong> được chọn lọc kỹ lưỡng, đảm bảo chất lượng cao cấp dành
+            <strong>{product.brandName}</strong> được chọn lọc kỹ lưỡng, đảm bảo chất lượng cao cấp dành
             cho thú cưng của bạn. Phù hợp với
             {product.petType === 'dog'
               ? ' các giống chó'
@@ -60,8 +60,8 @@ export function ProductTabs({ product }: ProductTabsProps) {
           <table className="w-full text-sm">
             <tbody>
               {[
-                { k: 'Thương hiệu', v: product.brand },
-                { k: 'Danh mục', v: product.category },
+                { k: 'Thương hiệu', v: product.brandName },
+                { k: 'Danh mục', v: product.categoryName },
                 {
                   k: 'Dành cho',
                   v:

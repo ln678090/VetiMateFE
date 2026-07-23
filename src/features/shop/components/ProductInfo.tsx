@@ -43,7 +43,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       try {
         await navigator.share({
           title: product.name,
-          text: product.description,
+          text: product.description ?? undefined,
           url: window.location.href,
         });
       } catch {
@@ -65,7 +65,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
       {/* Brand + name */}
       <div>
         <p className="text-xs font-semibold tracking-wider text-rose-600 uppercase dark:text-rose-400">
-          {product.brand}
+          {product.brandName}
         </p>
         <h1 className="mt-1 text-2xl font-bold tracking-tight text-zinc-900 md:text-3xl dark:text-white">
           {product.name}
