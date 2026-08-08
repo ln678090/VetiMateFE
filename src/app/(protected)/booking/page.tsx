@@ -2,16 +2,20 @@
 
 import { useAuthStore } from '@/stores/auth.store';
 import { BookingForm } from '@/features/booking/components/BookingForm';
-import { useMyAppointments } from '@/features/booking/hooks/use-clinic';
+import { useMyAppointments, useMyCustomer } from '@/features/booking/hooks/use-clinic';
 import { formatVND, formatDateTime } from '@/lib/utils';
 
 export default function BookingPage() {
   // customerId lấy từ user đã đăng nhập (map user -> clinic customer ở BE)
   const user = useAuthStore((s) => s.user);
-  const customerId = user?.id ?? '';
+  const { data: customer, isLoading: loadingCustomer, isError } =
+    useMyCustomer();
+  const customerId = customer?.id ?? '';
 
   const { data: appointments } = useMyAppointments(customerId);
-
+if(!customerId){
+  console.log('customerId null');
+}
   return (
     <div className="mx-auto max-w-3xl space-y-8 py-8">
       <div>
