@@ -19,10 +19,18 @@ export const API_ROUTES = {
     logout: '/api/auth/logout',
     test: '/api/auth/test',
   },
+  inventory: {
+    suppliers: '/api/inventory/suppliers',
+    medicines: '/api/inventory/medicines',
+    vouchers: '/api/inventory/vouchers',
+    batches: '/api/inventory/batches',
+    dashboard: '/api/inventory/dashboard',
+    alerts: '/api/inventory/alerts',
+  },
 } as const;
 
 /** Routes cần đăng nhập */
-export const PROTECTED_ROUTES = ['/dashboard', '/booking', '/cart', '/profile'] as const;
+export const PROTECTED_ROUTES = ['/dashboard', '/booking', '/cart', '/profile', '/inventory'] as const;
 
 /** Routes auth (không cho user đã login truy cập) */
 export const AUTH_ROUTES = ['/login', '/register'] as const;

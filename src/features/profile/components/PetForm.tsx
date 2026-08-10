@@ -44,9 +44,9 @@ export function PetForm({ mode, pet, customerId, onSubmitPet }: PetFormProps) {
 
     form.reset({
       name: pet.name,
-      species: pet.species,
+      species: pet.species as 'DOG' | 'CAT',
       breed: pet.breed ?? null,
-      gender: pet.gender ?? 'UNKNOWN',
+      gender: (pet.gender as 'MALE' | 'FEMALE' | 'UNKNOWN') ?? 'UNKNOWN',
       birthDate: pet.birthDate ?? null,
       weightKg: pet.weightKg ?? null,
       note: pet.note ?? null,

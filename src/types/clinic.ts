@@ -15,6 +15,9 @@ export interface PetDto {
   species: string;
   breed: string | null;
   gender: string | null;
+  birthDate: string | null;
+  weightKg: number | null;
+  note: string | null;
 }
 
 export type AppointmentStatus = 'PENDING' | 'CONFIRMED' | 'SHIPPING' | 'DONE' | 'CANCELLED';
