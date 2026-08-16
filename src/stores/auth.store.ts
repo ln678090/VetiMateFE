@@ -20,13 +20,47 @@ export const useAuthStore = create<AuthStore>((set) => ({
   isAuthenticated: false,
   isHydrating: true,
 
-  setAuth: ({ user, accessToken }) =>
-    set({
-      user,
+  setAuth: ({ user, accessToken }) => {
+    let decodedUser = user;
+    if (!decodedUser && accessToken) {
+      try {
+        const base64Url = accessToken.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(
+          atob(base64)
+            .split('')
+            .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+            .join('')
+        );
+        const payload = JSON.parse(jsonPayload);
+        let parsedRoles: string[] = [];
+        if (Array.isArray(payload.roles)) {
+          parsedRoles = payload.roles;
+        } else if (typeof payload.roles === 'string') {
+          parsedRoles = [payload.roles];
+        } else if (payload.role) {
+          parsedRoles = Array.isArray(payload.role) ? payload.role : [payload.role];
+        }
+
+        decodedUser = {
+          id: payload.sub || '',
+          email: payload.email || '',
+          username: payload.username || '',
+          fullName: payload.fullName || '',
+          enabled: true,
+          roles: parsedRoles,
+        };
+      } catch (e) {
+        // ignore
+      }
+    }
+    return set({
+      user: decodedUser,
       accessToken,
       isAuthenticated: !!accessToken,
       isHydrating: false,
-    }),
+    });
+  },
 
   setAccessToken: (token) =>
     set((s) => ({

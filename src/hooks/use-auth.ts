@@ -6,6 +6,7 @@ import { useCallback } from 'react';
 import { toast } from 'sonner';
 
 import { getApiErrorMessage } from '@/lib/axios';
+import { decodeJwtUser } from '@/lib/jwt';
 import type { LoginInput, RegisterInput } from '@/schemas/auth.schema';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/stores/auth.store';
@@ -19,20 +20,30 @@ export function useAuth() {
   const user = useAuthStore((s) => s.user);
 
   /** Lấy redirect target từ ?from=, mặc định /dashboard. Sanitize để chống open-redirect. */
-  const getRedirectTarget = useCallback(() => {
-    const raw = searchParams?.get('from');
-    if (!raw) return '/dashboard';
-    // Chỉ cho phép path nội bộ (bắt đầu / và không bắt đầu //)
-    if (raw.startsWith('/') && !raw.startsWith('//')) return raw;
-    return '/dashboard';
-  }, [searchParams]);
+  const getRedirectTarget = useCallback(
+    (roles?: string[]) => {
+      // Nếu là staff/admin, luôn redirect về staff dashboard
+      const isStaff = roles?.some(
+        (r) => r.includes('STAFF') || r.includes('ADMIN') || r.includes('MANAGER'),
+      );
+      if (isStaff) return '/staff/dashboard';
+
+      const raw = searchParams?.get('from');
+      if (!raw) return '/dashboard';
+      // Chỉ cho phép path nội bộ (bắt đầu / và không bắt đầu //)
+      if (raw.startsWith('/') && !raw.startsWith('//')) return raw;
+      return '/dashboard';
+    },
+    [searchParams],
+  );
 
   const loginMutation = useMutation({
     mutationFn: (input: LoginInput) => authService.login(input),
     onSuccess: (data) => {
-      setAuth({ user: null, accessToken: data.accessToken });
+      const jwtUser = decodeJwtUser(data.accessToken);
+      setAuth({ user: jwtUser, accessToken: data.accessToken });
       toast.success('Đăng nhập thành công');
-      router.push(getRedirectTarget());
+      router.push(getRedirectTarget(jwtUser?.roles));
       router.refresh();
     },
     onError: (err) => {
@@ -43,9 +54,10 @@ export function useAuth() {
   const registerMutation = useMutation({
     mutationFn: (input: RegisterInput) => authService.register(input),
     onSuccess: (data) => {
-      setAuth({ user: null, accessToken: data.accessToken });
+      const jwtUser = decodeJwtUser(data.accessToken);
+      setAuth({ user: jwtUser, accessToken: data.accessToken });
       toast.success('Đăng ký thành công');
-      router.push(getRedirectTarget());
+      router.push(getRedirectTarget(jwtUser?.roles));
       router.refresh();
     },
     onError: (err) => {

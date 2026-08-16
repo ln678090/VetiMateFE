@@ -1,0 +1,139 @@
+import { api } from '@/lib/axios';
+import { API_ROUTES } from '@/lib/constants';
+import { ApiResp } from '@/types/api';
+import { ProductResp, ProductListResp } from '@/types/shop';
+import { ShopOrderListResp, ShopOrderResp, UpdateOrderStatusRequest } from '@/types/staff';
+import { CategoryResp, BrandResp } from '@/types/catalog';
+
+export const staffService = {
+  // --- Products ---
+  getProducts: async (page = 0, size = 20, search?: string) => {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (search) params.append('search', search);
+    const { data } = await api.get<ApiResp<ProductListResp>>(
+      `${API_ROUTES.staff.products}?${params.toString()}`
+    );
+    return data;
+  },
+
+  getProductById: async (id: string) => {
+    const { data } = await api.get<ApiResp<ProductResp>>(
+      `${API_ROUTES.staff.products}/${id}`
+    );
+    return data;
+  },
+
+  createProduct: async (payload: any) => {
+    const { data } = await api.post<ApiResp<ProductResp>>(
+      API_ROUTES.staff.products,
+      payload
+    );
+    return data;
+  },
+
+  updateProduct: async (id: string, payload: any) => {
+    const { data } = await api.put<ApiResp<ProductResp>>(
+      `${API_ROUTES.staff.products}/${id}`,
+      payload
+    );
+    return data;
+  },
+
+  deleteProduct: async (id: string) => {
+    const { data } = await api.delete<ApiResp<void>>(
+      `${API_ROUTES.staff.products}/${id}`
+    );
+    return data;
+  },
+
+  // --- Catalog (Categories & Brands) ---
+  createCategory: async (payload: any) => {
+    const { data } = await api.post<ApiResp<CategoryResp>>(
+      `${API_ROUTES.staff.catalog}/categories`,
+      payload
+    );
+    return data;
+  },
+
+  updateCategory: async (id: string, payload: any) => {
+    const { data } = await api.put<ApiResp<CategoryResp>>(
+      `${API_ROUTES.staff.catalog}/categories/${id}`,
+      payload
+    );
+    return data;
+  },
+
+  deleteCategory: async (id: string) => {
+    const { data } = await api.delete<ApiResp<void>>(
+      `${API_ROUTES.staff.catalog}/categories/${id}`
+    );
+    return data;
+  },
+
+  createBrand: async (payload: any) => {
+    const { data } = await api.post<ApiResp<BrandResp>>(
+      `${API_ROUTES.staff.catalog}/brands`,
+      payload
+    );
+    return data;
+  },
+
+  updateBrand: async (id: string, payload: any) => {
+    const { data } = await api.put<ApiResp<BrandResp>>(
+      `${API_ROUTES.staff.catalog}/brands/${id}`,
+      payload
+    );
+    return data;
+  },
+
+  deleteBrand: async (id: string) => {
+    const { data } = await api.delete<ApiResp<void>>(
+      `${API_ROUTES.staff.catalog}/brands/${id}`
+    );
+    return data;
+  },
+
+  // --- Orders ---
+  getOrders: async (page = 0, size = 20, status?: string) => {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (status) params.append('status', status);
+    const { data } = await api.get<ApiResp<ShopOrderListResp>>(
+      `${API_ROUTES.staff.orders}?${params.toString()}`
+    );
+    return data;
+  },
+
+  getOrderById: async (id: string) => {
+    const { data } = await api.get<ApiResp<ShopOrderResp>>(
+      `${API_ROUTES.staff.orders}/${id}`
+    );
+    return data;
+  },
+
+  updateOrderStatus: async (id: string, payload: UpdateOrderStatusRequest) => {
+    const { data } = await api.put<ApiResp<ShopOrderResp>>(
+      `${API_ROUTES.staff.orders}/${id}/status`,
+      payload
+    );
+    return data;
+  },
+
+  // --- Inventory ---
+  getInventory: async (page = 0, size = 20, search?: string) => {
+    const params = new URLSearchParams({ page: String(page), size: String(size) });
+    if (search) params.append('search', search);
+    const { data } = await api.get<ApiResp<ProductListResp>>(
+      `${API_ROUTES.staff.inventory}?${params.toString()}`
+    );
+    return data;
+  },
+
+  updateStock: async (productId: string, payload: { stockQuantity: number }) => {
+    const { data } = await api.put<ApiResp<ProductResp>>(
+      `${API_ROUTES.staff.inventory}/${productId}`,
+      payload
+    );
+    return data;
+  },
+};
+

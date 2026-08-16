@@ -2,7 +2,7 @@
 
 import { RequiredLabel } from '@/components/ui/required-label';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowRight, AtSign, Lock, Mail, User } from 'lucide-react';
+import { ArrowRight, AtSign, Lock, Mail, User, Phone } from 'lucide-react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 
@@ -25,6 +25,7 @@ export function RegisterForm() {
       fullName: '',
       username: '',
       email: '',
+      phone: '',
       password: '',
     },
     mode: 'onBlur',
@@ -113,6 +114,34 @@ export function RegisterForm() {
                         type="email"
                         autoComplete="email"
                         placeholder="you@example.com"
+                        className="h-11 pl-10"
+                        disabled={isRegistering}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </StaggerItem>
+
+          <StaggerItem>
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <RequiredLabel required>Số điện thoại</RequiredLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Phone
+                        className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400"
+                        strokeWidth={2}
+                      />
+                      <Input
+                        {...field}
+                        autoComplete="tel"
+                        placeholder="0987654321"
                         className="h-11 pl-10"
                         disabled={isRegistering}
                       />

@@ -1,0 +1,118 @@
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
+import { Plus, Tag } from 'lucide-react';
+import { useState } from 'react';
+
+import { AuthGuard } from '@/components/shared/AuthGuard';
+import { catalogService } from '@/services/catalog.service';
+
+export default function StaffCatalogPage() {
+  const [activeTab, setActiveTab] = useState<'categories' | 'brands'>('categories');
+
+  const { data: categories, isLoading: isLoadingCats } = useQuery({
+    queryKey: ['staff', 'catalog', 'categories'],
+    queryFn: () => catalogService.getCategoryTree(),
+    enabled: activeTab === 'categories',
+  });
+
+  const { data: brands, isLoading: isLoadingBrands } = useQuery({
+    queryKey: ['staff', 'catalog', 'brands'],
+    queryFn: () => catalogService.getAllBrands(),
+    enabled: activeTab === 'brands',
+  });
+
+  return (
+    <AuthGuard requireRoles={['ROLE_SHOP_STAFF', 'ROLE_MANAGER']}>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Quản lý Danh mục & Thương hiệu</h1>
+            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+              Phân loại sản phẩm và quản lý các thương hiệu.
+            </p>
+          </div>
+          <button className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-500 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
+            <Plus className="h-4 w-4" />
+            <span>{activeTab === 'categories' ? 'Thêm danh mục' : 'Thêm thương hiệu'}</span>
+          </button>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex items-center gap-4 border-b border-zinc-200 dark:border-zinc-800">
+          <button
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
+              activeTab === 'categories'
+                ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
+            }`}
+            onClick={() => setActiveTab('categories')}
+          >
+            <Tag className="h-4 w-4" />
+            Danh mục
+          </button>
+          <button
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
+              activeTab === 'brands'
+                ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'
+            }`}
+            onClick={() => setActiveTab('brands')}
+          >
+            <Tag className="h-4 w-4" />
+            Thương hiệu
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="overflow-hidden rounded-2xl border border-zinc-200/70 bg-white shadow-sm dark:border-zinc-800/60 dark:bg-zinc-950">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-zinc-50/50 text-zinc-500 dark:bg-zinc-900/50 dark:text-zinc-400">
+                <tr>
+                  <th className="px-6 py-4 font-medium">Tên</th>
+                  <th className="px-6 py-4 font-medium">Đường dẫn (Slug)</th>
+                  {activeTab === 'categories' && <th className="px-6 py-4 font-medium">Danh mục con</th>}
+                  <th className="px-6 py-4 font-medium">Mô tả</th>
+                  <th className="px-6 py-4 font-medium text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-200/70 dark:divide-zinc-800/60">
+                {activeTab === 'categories' ? (
+                  isLoadingCats ? (
+                    <tr><td colSpan={5} className="px-6 py-12 text-center text-zinc-500">Đang tải...</td></tr>
+                  ) : categories?.data?.map((cat) => (
+                    <tr key={cat.id} className="transition-colors hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50">
+                      <td className="px-6 py-4 font-medium text-zinc-900 dark:text-white">{cat.name}</td>
+                      <td className="px-6 py-4 text-zinc-500">{cat.slug}</td>
+                      <td className="px-6 py-4 text-zinc-500">{cat.children?.length || 0} mục</td>
+                      <td className="px-6 py-4 text-zinc-500 truncate max-w-[200px]">{cat.description || '-'}</td>
+                      <td className="px-6 py-4 text-right">
+                        <button className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium">Sửa</button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  isLoadingBrands ? (
+                    <tr><td colSpan={4} className="px-6 py-12 text-center text-zinc-500">Đang tải...</td></tr>
+                  ) : brands?.data?.map((brand) => (
+                    <tr key={brand.id} className="transition-colors hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50">
+                      <td className="px-6 py-4 font-medium text-zinc-900 dark:text-white">{brand.name}</td>
+                      <td className="px-6 py-4 text-zinc-500">{brand.slug}</td>
+                      <td className="px-6 py-4 text-zinc-500 truncate max-w-[200px]">{brand.description || '-'}</td>
+                      <td className="px-6 py-4 text-right">
+                        <button className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium">Sửa</button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </AuthGuard>
+  );
+}
+

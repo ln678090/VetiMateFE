@@ -1,5 +1,6 @@
 'use client';
 
+import { decodeJwtUser } from '@/lib/jwt';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEffect, useRef } from 'react';
@@ -15,7 +16,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
 /**
  * Khi app mount lần đầu:
  *   - Gọi /refresh (refresh_token gửi tự động qua cookie, path=/api/auth)
- *   - Thành công → setAuth (accessToken vào Zustand memory)
+ *   - Thành công → setAuth (accessToken + user info từ JWT vào Zustand memory)
  *   - Fail / timeout → clear state
  *   - LUÔN LUÔN gọi setHydrating(false) ở finally
  *
@@ -34,7 +35,8 @@ export function AuthHydrator() {
     (async () => {
       try {
         const data = await withTimeout(authService.refresh(), 6000);
-        setAuth({ user: null, accessToken: data.accessToken });
+        const jwtUser = decodeJwtUser(data.accessToken);
+        setAuth({ user: jwtUser, accessToken: data.accessToken });
       } catch {
         clear();
       } finally {
@@ -45,3 +47,4 @@ export function AuthHydrator() {
 
   return null;
 }
+

@@ -1,0 +1,72 @@
+'use client';
+
+import { motion } from 'framer-motion';
+import { Package, ShoppingCart, Store, Users } from 'lucide-react';
+import { AuthGuard } from '@/components/shared/AuthGuard';
+
+export default function StaffDashboardPage() {
+  const stats = [
+    { label: 'Sản phẩm', value: '1,234', icon: Package, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { label: 'Đơn hàng mới', value: '42', icon: ShoppingCart, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+    { label: 'Khách hàng', value: '892', icon: Users, color: 'text-violet-500', bg: 'bg-violet-500/10' },
+    { label: 'Doanh thu hôm nay', value: '12.4M', icon: Store, color: 'text-rose-500', bg: 'bg-rose-500/10' },
+  ];
+
+  return (
+    <AuthGuard requireRoles={['ROLE_SHOP_STAFF', 'ROLE_MANAGER']}>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Dashboard Cửa Hàng</h1>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {stats.map((stat, idx) => {
+            const Icon = stat.icon;
+            return (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="rounded-2xl border border-zinc-200/70 bg-white p-6 shadow-sm dark:border-zinc-800/60 dark:bg-zinc-950"
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${stat.bg}`}>
+                    <Icon className={`h-6 w-6 ${stat.color}`} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                      {stat.label}
+                    </p>
+                    <p className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
+                      {stat.value}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Recent Orders placeholder */}
+          <div className="rounded-2xl border border-zinc-200/70 bg-white p-6 shadow-sm dark:border-zinc-800/60 dark:bg-zinc-950">
+            <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-white">Đơn hàng gần đây</h2>
+            <div className="flex h-48 items-center justify-center rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800">
+              <p className="text-sm text-zinc-500">Chưa có dữ liệu (Placeholder)</p>
+            </div>
+          </div>
+          
+          {/* Low Stock placeholder */}
+          <div className="rounded-2xl border border-zinc-200/70 bg-white p-6 shadow-sm dark:border-zinc-800/60 dark:bg-zinc-950">
+            <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-white">Sản phẩm sắp hết hàng</h2>
+            <div className="flex h-48 items-center justify-center rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800">
+              <p className="text-sm text-zinc-500">Chưa có dữ liệu (Placeholder)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </AuthGuard>
+  );
+}
+

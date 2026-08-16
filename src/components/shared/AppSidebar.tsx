@@ -13,7 +13,7 @@ export function AppSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden h-screen w-64 shrink-0 border-r border-zinc-200/70 bg-white/70 backdrop-blur-xl lg:flex lg:flex-col dark:border-zinc-800/60 dark:bg-zinc-950/60">
+    <aside className="hidden h-screen w-64 shrink-0 sticky top-0 border-r border-zinc-200/70 bg-white/70 backdrop-blur-xl lg:flex lg:flex-col dark:border-zinc-800/60 dark:bg-zinc-950/60">
       {/* Brand */}
       <div className="flex h-16 items-center gap-2 border-b border-zinc-200/70 px-5 dark:border-zinc-800/60">
         <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-rose-500 to-amber-400 text-white shadow-md shadow-rose-200/50 dark:shadow-rose-500/20">

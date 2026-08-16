@@ -16,6 +16,10 @@ export const registerSchema = z.object({
     .max(50, 'Username tối đa 50 ký tự')
     .regex(/^[a-zA-Z0-9_]+$/, 'Username chỉ chứa chữ, số và dấu gạch dưới'),
   email: z.string().min(1, 'Email không được để trống').email('Email không hợp lệ'),
+  phone: z
+    .string()
+    .min(1, 'Số điện thoại không được để trống')
+    .regex(/^(0|\+84)(3|5|7|8|9)[0-9]{8}$/, 'Số điện thoại không hợp lệ (VD: 0987654321)'),
   password: z
     .string()
     .min(6, 'Mật khẩu phải từ 6 ký tự trở lên')

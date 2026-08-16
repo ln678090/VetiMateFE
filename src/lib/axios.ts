@@ -8,6 +8,7 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios';
 import { API_BASE_URL, API_ROUTES } from './constants';
+import { decodeJwtUser } from './jwt';
 
 /** Custom config flag để tránh loop refresh */
 interface RetryConfig extends InternalAxiosRequestConfig {
@@ -64,7 +65,8 @@ async function performRefresh(): Promise<string | null> {
       {} // refresh_token đã nằm trong HttpOnly cookie
     );
     const newToken = data?.data?.accessToken ?? null;
-    useAuthStore.getState().setAccessToken(newToken);
+    const jwtUser = newToken ? decodeJwtUser(newToken) : null;
+    useAuthStore.getState().setAuth({ user: jwtUser, accessToken: newToken });
     return newToken;
   } catch {
     useAuthStore.getState().clear();

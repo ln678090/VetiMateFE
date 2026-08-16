@@ -14,11 +14,22 @@ export function useRedirectIfAuthed(fallback: string = '/dashboard') {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isHydrating = useAuthStore((s) => s.isHydrating);
 
+  const user = useAuthStore((s) => s.user);
+
   useEffect(() => {
     if (!isHydrating && isAuthenticated) {
-      router.replace(fallback);
+      // Dynamic fallback based on roles
+      const userRoles = user?.roles || [];
+      const isStaffOrAdmin = userRoles.some(role => role.includes('STAFF') || role.includes('ADMIN'));
+      
+      let finalTarget = fallback;
+      if (isStaffOrAdmin) {
+        finalTarget = '/staff/dashboard';
+      }
+      
+      router.replace(finalTarget);
     }
-  }, [isHydrating, isAuthenticated, router, fallback]);
+  }, [isHydrating, isAuthenticated, router, fallback, user]);
 
   // isChecking = true khi: đang hydrate HOẶC đã auth (chờ redirect)
   return {

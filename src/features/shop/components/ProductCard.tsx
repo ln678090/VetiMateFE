@@ -9,6 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn, formatVND } from '@/lib/utils';
 import type { Product } from '@/types/shop';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { useCartStore } from '@/stores/cart.store';
 
 interface ProductCardProps {
   product: Product;
@@ -20,6 +23,32 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const discountPct = hasDiscount
     ? Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100)
     : 0;
+
+  const [isAdding, setIsAdding] = useState(false);
+  const addItem = useCartStore((s) => s.addItem);
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigating to detail page
+    e.stopPropagation();
+    setIsAdding(true);
+    
+    addItem({
+      id: product.id,
+      slug: product.slug,
+      name: product.name,
+      price: product.price,
+      originalPrice: product.originalPrice,
+      image: product.imageUrl,
+      stockQuantity: product.stockQuantity,
+    });
+    
+    toast.success(`Đã thêm ${product.name} vào giỏ hàng`);
+
+    // Feedback visual
+    setTimeout(() => {
+      setIsAdding(false);
+    }, 500);
+  };
 
   return (
     <motion.article
@@ -47,28 +76,30 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         )}
       </div>
 
-      {/* Out of stock overlay */}
-      {!product.inStock && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/70 backdrop-blur-sm dark:bg-zinc-950/70">
-          <span className="rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-semibold text-white dark:bg-white dark:text-zinc-900">
-            Hết hàng
-          </span>
-        </div>
-      )}
-
       {/* Image */}
       <Link
         href={`/shop/${product.slug}`}
-        className="relative aspect-square overflow-hidden bg-zinc-100 dark:bg-zinc-800"
+        className="relative aspect-square overflow-hidden bg-zinc-100 dark:bg-zinc-800 block"
       >
         <Image
           src={product.imageUrl}
           alt={product.name}
           fill
           sizes="(max-width: 768px) 50vw, (max-width: 1280px) 25vw, 280px"
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          className={cn(
+            "object-cover transition-transform duration-500 group-hover:scale-105",
+            !product.inStock && "opacity-50 blur-sm"
+          )}
           unoptimized
         />
+        {/* Out of stock overlay */}
+        {!product.inStock && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center">
+            <span className="rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-semibold text-white shadow-md dark:bg-white dark:text-zinc-900">
+              Hết hàng
+            </span>
+          </div>
+        )}
       </Link>
 
       {/* Body */}
@@ -107,13 +138,14 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         {/* Add to cart */}
         <Button
           size="sm"
-          disabled={!product.inStock}
+          onClick={handleAddToCart}
+          disabled={!product.inStock || isAdding}
           className={cn(
             'mt-3 h-9 w-full bg-gradient-to-br from-rose-500 to-amber-500 text-white shadow-md shadow-rose-500/20 transition hover:shadow-lg hover:shadow-rose-500/30'
           )}
         >
           <ShoppingCart className="h-3.5 w-3.5" strokeWidth={2.4} />
-          Thêm vào giỏ
+          {isAdding ? 'Đang thêm...' : 'Thêm vào giỏ'}
         </Button>
       </div>
     </motion.article>

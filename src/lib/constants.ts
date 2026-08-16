@@ -19,6 +19,16 @@ export const API_ROUTES = {
     logout: '/api/auth/logout',
     test: '/api/auth/test',
   },
+  staff: {
+    products: '/api/staff/products',
+    catalog: '/api/staff/catalog',
+    orders: '/api/staff/orders',
+    inventory: '/api/staff/inventory',
+  },
+  catalog: {
+    categories: '/api/catalog/categories',
+    brands: '/api/catalog/brands',
+  }
 } as const;
 
 /** Routes cần đăng nhập */
@@ -26,6 +36,23 @@ export const PROTECTED_ROUTES = ['/dashboard', '/booking', '/cart', '/profile'] 
 
 /** Routes auth (không cho user đã login truy cập) */
 export const AUTH_ROUTES = ['/login', '/register'] as const;
+
+export const GUEST_NAV = [
+  { title: 'Trang chủ', href: '/' },
+  { title: 'Giới thiệu', href: '/about' },
+  { title: 'Dịch vụ & Bảng giá', href: '/services' },
+  { title: 'Đội ngũ bác sĩ', href: '/doctors' },
+  { title: 'Cửa hàng', href: '/shop' },
+] as const;
+
+export const STAFF_NAV = [
+  { title: 'Dashboard', href: '/staff/dashboard', icon: 'LayoutDashboard' },
+  { title: 'Sản phẩm', href: '/staff/products', icon: 'Package' },
+  { title: 'Danh mục & Thương hiệu', href: '/staff/catalog', icon: 'Tags' },
+  { title: 'Quản lý Tồn kho', href: '/staff/inventory', icon: 'Archive' },
+  { title: 'Đơn hàng', href: '/staff/orders', icon: 'ShoppingCart' },
+  { title: 'Bán hàng (POS)', href: '/staff/pos', icon: 'MonitorSmartphone' },
+] as const;
 
 export const QUERY_KEYS = {
   auth: {

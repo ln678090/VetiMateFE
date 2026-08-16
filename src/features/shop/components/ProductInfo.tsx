@@ -1,41 +1,90 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Heart, RotateCcw, Share2, ShieldCheck, ShoppingCart, Star, Truck } from 'lucide-react';
+import {
+  Heart,
+  Minus,
+  Plus,
+  RotateCcw,
+  Share2,
+  ShieldCheck,
+  ShoppingCart,
+  Star,
+  Truck,
+  Zap,
+} from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { cn, formatVND } from '@/lib/utils';
+import { useCartStore } from '@/stores/cart.store';
 import type { Product } from '@/types/shop';
-import { QuantityStepper } from './QuantityStepper';
 
 interface ProductInfoProps {
   product: Product;
 }
 
-const TRUST_BADGES = [
-  { icon: Truck, label: 'Miễn phí ship đơn từ 500K' },
-  { icon: ShieldCheck, label: 'Hàng chính hãng 100%' },
-  { icon: RotateCcw, label: 'Đổi trả trong 7 ngày' },
-];
-
 export function ProductInfo({ product }: ProductInfoProps) {
   const [quantity, setQuantity] = useState(1);
   const [wished, setWished] = useState(false);
+  const [isEditingQuantity, setIsEditingQuantity] = useState(false);
+  const [inputValue, setInputValue] = useState('');
 
-  const hasDiscount = product.originalPrice && product.originalPrice > product.price;
+  const maxQuantity = Math.min(50, product.stockQuantity || 50);
+
+  const hasDiscount =
+    product.originalPrice && product.originalPrice > product.price;
   const discountPct = hasDiscount
-    ? Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100)
+    ? Math.round(
+        ((product.originalPrice! - product.price) / product.originalPrice!) *
+          100
+      )
     : 0;
 
+  const router = useRouter();
+  const addItem = useCartStore((s) => s.addItem);
+  const clearSelection = useCartStore((s) => s.clearSelection);
+  const toggleSelection = useCartStore((s) => s.toggleSelection);
+
+  const soldCount =
+    product.reviewCount > 100
+      ? `${Math.round(product.reviewCount / 100) / 10}K+`
+      : `${product.reviewCount * 3}+`;
+
   const handleAddToCart = () => {
-    // Phase 3.1 sẽ wire vào Zustand cart store
-    toast.success(`Đã thêm ${quantity} × ${product.name} vào giỏ`, {
-      description: 'Cart store sẽ hoạt động ở Phase 3.1',
-    });
+    addItem(
+      {
+        id: product.id,
+        slug: product.slug,
+        name: product.name,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        image: product.imageUrl,
+        stockQuantity: product.stockQuantity,
+      },
+      quantity
+    );
+    toast.success(`Đã thêm ${quantity} sản phẩm vào giỏ hàng`);
+  };
+
+  const handleBuyNow = () => {
+    addItem(
+      {
+        id: product.id,
+        slug: product.slug,
+        name: product.name,
+        price: product.price,
+        originalPrice: product.originalPrice,
+        image: product.imageUrl,
+        stockQuantity: product.stockQuantity,
+      },
+      quantity
+    );
+    clearSelection();
+    toggleSelection(product.id);
+    router.push('/checkout');
   };
 
   const handleShare = async () => {
@@ -60,155 +109,297 @@ export function ProductInfo({ product }: ProductInfoProps) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="flex flex-col gap-5"
+      className="flex flex-col"
     >
-      {/* Brand + name */}
+      {/* ── Product Name + Badges ── */}
       <div>
-        <p className="text-xs font-semibold tracking-wider text-rose-600 uppercase dark:text-rose-400">
-          {product.brandName}
-        </p>
-        <h1 className="mt-1 text-2xl font-bold tracking-tight text-zinc-900 md:text-3xl dark:text-white">
+        {(product.isFeatured || product.isNew) && (
+          <div className="mb-2 flex items-center gap-2">
+            {product.isFeatured && (
+              <span className="inline-flex items-center gap-1 rounded bg-rose-600 px-2 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase">
+                Yêu thích
+              </span>
+            )}
+            {product.isNew && (
+              <span className="inline-flex items-center gap-1 rounded bg-emerald-500 px-2 py-0.5 text-[10px] font-bold tracking-wider text-white uppercase">
+                Mới
+              </span>
+            )}
+          </div>
+        )}
+        <h1 className="text-lg font-medium leading-snug text-zinc-900 md:text-xl dark:text-white">
           {product.name}
         </h1>
       </div>
 
-      {/* Rating + tags */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-1">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star
-              key={i}
-              className={cn(
-                'h-4 w-4',
-                i < Math.round(product.rating)
-                  ? 'fill-amber-400 text-amber-400'
-                  : 'text-zinc-300 dark:text-zinc-700'
-              )}
-            />
-          ))}
-          <span className="ml-1 text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+      {/* ── Rating | Reviews | Sold ── */}
+      <div className="mt-3 flex flex-wrap items-center gap-0 text-sm">
+        {/* Rating */}
+        <div className="flex items-center gap-1 pr-3">
+          <span className="font-semibold text-rose-600 underline underline-offset-2 dark:text-rose-400">
             {product.rating.toFixed(1)}
           </span>
-          <span className="text-sm text-zinc-500 dark:text-zinc-500">
-            ({product.reviewCount} đánh giá)
+          <div className="flex items-center gap-px">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star
+                key={i}
+                className={cn(
+                  'h-3.5 w-3.5',
+                  i < Math.round(product.rating)
+                    ? 'fill-rose-500 text-rose-500'
+                    : 'text-zinc-300 dark:text-zinc-700'
+                )}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Separator */}
+        <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700" />
+
+        {/* Reviews */}
+        <div className="px-3">
+          <span className="font-semibold text-zinc-800 underline underline-offset-2 dark:text-zinc-200">
+            {product.reviewCount}
+          </span>
+          <span className="ml-1 text-zinc-500 dark:text-zinc-500">
+            Đánh Giá
           </span>
         </div>
 
-        {product.isNew && (
-          <Badge className="bg-emerald-500 text-white hover:bg-emerald-500">MỚI</Badge>
-        )}
-        {product.isFeatured && (
-          <Badge className="bg-amber-500 text-white hover:bg-amber-500">Nổi bật</Badge>
-        )}
+        {/* Separator */}
+        <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700" />
+
+        {/* Sold */}
+        <div className="px-3">
+          <span className="font-semibold text-zinc-800 dark:text-zinc-200">
+            {soldCount}
+          </span>
+          <span className="ml-1 text-zinc-500 dark:text-zinc-500">Đã Bán</span>
+        </div>
+
+        {/* Share */}
+        <button
+          type="button"
+          onClick={handleShare}
+          className="ml-auto flex items-center gap-1 text-zinc-500 transition hover:text-rose-600 dark:text-zinc-500 dark:hover:text-rose-400"
+        >
+          <Share2 className="h-3.5 w-3.5" strokeWidth={2} />
+          <span className="text-xs">Chia sẻ</span>
+        </button>
       </div>
 
-      <Separator />
-
-      {/* Price */}
-      <div className="flex items-baseline gap-3">
-        <span className="text-3xl font-bold text-rose-600 md:text-4xl dark:text-rose-400">
-          {formatVND(product.price)}
-        </span>
-        {hasDiscount && (
-          <>
-            <span className="text-lg text-zinc-400 line-through dark:text-zinc-600">
+      {/* ── Price Banner ── */}
+      <div className="mt-4 rounded-xl bg-gradient-to-r from-rose-50 via-amber-50/60 to-rose-50/40 px-5 py-4 dark:from-rose-500/10 dark:via-amber-500/5 dark:to-transparent">
+        <div className="flex items-center gap-3">
+          {hasDiscount && (
+            <span className="text-base text-zinc-400 line-through dark:text-zinc-600">
               {formatVND(product.originalPrice!)}
             </span>
-            <Badge className="bg-rose-500 text-white hover:bg-rose-500">-{discountPct}%</Badge>
-          </>
-        )}
-      </div>
-
-      {/* Short description */}
-      <p className="text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        {product.description}
-      </p>
-
-      <Separator />
-
-      {/* Stock status */}
-      <div className="flex items-center gap-2">
-        <span
-          className={cn(
-            'inline-flex h-2 w-2 rounded-full',
-            product.inStock ? 'animate-pulse bg-emerald-500' : 'bg-zinc-400'
           )}
-        />
-        <span
-          className={cn(
-            'text-sm font-medium',
-            product.inStock ? 'text-emerald-700 dark:text-emerald-400' : 'text-zinc-500'
+          <span className="text-3xl font-bold text-rose-600 dark:text-rose-400">
+            {formatVND(product.price)}
+          </span>
+          {hasDiscount && (
+            <span className="rounded bg-rose-600 px-2 py-0.5 text-xs font-bold text-white uppercase">
+              -{discountPct}% Giảm
+            </span>
           )}
-        >
-          {product.inStock ? 'Còn hàng - giao trong 2-4h' : 'Tạm hết hàng'}
-        </span>
-      </div>
-
-      {/* Quantity + Add to cart */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div>
-          <p className="mb-2 text-xs font-semibold tracking-wider text-zinc-700 uppercase dark:text-zinc-300">
-            Số lượng
-          </p>
-          <QuantityStepper value={quantity} onChange={setQuantity} />
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
+      {/* ── Info Rows (Shopee-style label:value rows) ── */}
+      <div className="mt-5 space-y-4">
+        {/* Shipping */}
+        <div className="flex items-start gap-4 text-sm">
+          <span className="w-28 shrink-0 text-zinc-500 dark:text-zinc-500">
+            Vận Chuyển
+          </span>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2 text-zinc-700 dark:text-zinc-300">
+              <Truck
+                className="h-4 w-4 text-emerald-600 dark:text-emerald-400"
+                strokeWidth={2}
+              />
+              <span>Miễn phí ship đơn từ 500K</span>
+            </div>
+            <span className="text-xs text-zinc-500 dark:text-zinc-500">
+              Giao trong 2-4h nội thành
+            </span>
+          </div>
+        </div>
+
+        {/* Separator */}
+        <div className="h-px bg-zinc-100 dark:bg-zinc-800/60" />
+
+        {/* Policies */}
+        <div className="flex items-start gap-4 text-sm">
+          <span className="w-28 shrink-0 text-zinc-500 dark:text-zinc-500">
+            Chính Sách
+          </span>
+          <div className="flex flex-wrap gap-x-6 gap-y-2">
+            <div className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300">
+              <ShieldCheck
+                className="h-4 w-4 text-rose-600 dark:text-rose-400"
+                strokeWidth={2}
+              />
+              <span>Hàng chính hãng 100%</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300">
+              <RotateCcw
+                className="h-4 w-4 text-rose-600 dark:text-rose-400"
+                strokeWidth={2}
+              />
+              <span>Đổi trả trong 7 ngày</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Separator */}
+        <div className="h-px bg-zinc-100 dark:bg-zinc-800/60" />
+
+        {/* Brand */}
+        <div className="flex items-center gap-4 text-sm">
+          <span className="w-28 shrink-0 text-zinc-500 dark:text-zinc-500">
+            Thương Hiệu
+          </span>
+          <span className="font-semibold text-rose-600 dark:text-rose-400">
+            {product.brandName}
+          </span>
+        </div>
+
+        {/* Separator */}
+        <div className="h-px bg-zinc-100 dark:bg-zinc-800/60" />
+
+        {/* Quantity */}
+        <div className="flex items-center gap-4 text-sm">
+          <span className="w-28 shrink-0 text-zinc-500 dark:text-zinc-500">
+            Số Lượng
+          </span>
+          <div className="flex items-center gap-4">
+            {/* Quantity stepper - Shopee style */}
+            <div className="inline-flex items-center border border-zinc-300 dark:border-zinc-700">
+              <button
+                type="button"
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                disabled={quantity <= 1}
+                className="grid h-8 w-8 place-items-center text-zinc-600 transition hover:bg-zinc-50 disabled:text-zinc-300 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:disabled:text-zinc-700"
+              >
+                <Minus className="h-3.5 w-3.5" strokeWidth={2.4} />
+              </button>
+              
+              {isEditingQuantity ? (
+                <input
+                  autoFocus
+                  type="number"
+                  min={1}
+                  max={maxQuantity}
+                  value={inputValue}
+                  onChange={(e) => {
+                    let val = e.target.value;
+                    if (val !== '') {
+                      const parsed = parseInt(val, 10);
+                      if (!isNaN(parsed) && parsed > maxQuantity) {
+                        val = maxQuantity.toString();
+                      }
+                    }
+                    setInputValue(val);
+                  }}
+                  onBlur={() => {
+                    const val = parseInt(inputValue, 10);
+                    if (isNaN(val) || val < 1) {
+                      setQuantity(1);
+                    } else if (val > maxQuantity) {
+                      setQuantity(maxQuantity);
+                    } else {
+                      setQuantity(val);
+                    }
+                    setIsEditingQuantity(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.currentTarget.blur();
+                    }
+                  }}
+                  className="h-8 w-12 border-x border-zinc-300 bg-transparent text-center text-sm font-medium tabular-nums text-zinc-900 focus:outline-none dark:border-zinc-700 dark:text-white [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                />
+              ) : (
+                <span
+                  onDoubleClick={() => {
+                    setInputValue(quantity.toString());
+                    setIsEditingQuantity(true);
+                  }}
+                  title="Nhấn đúp để nhập số lượng"
+                  className="grid h-8 w-12 cursor-text place-items-center border-x border-zinc-300 text-sm font-medium tabular-nums text-zinc-900 dark:border-zinc-700 dark:text-white select-none"
+                >
+                  {quantity}
+                </span>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setQuantity((q) => Math.min(maxQuantity, q + 1))}
+                disabled={quantity >= maxQuantity}
+                className="grid h-8 w-8 place-items-center text-zinc-600 transition hover:bg-zinc-50 disabled:text-zinc-300 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:disabled:text-zinc-700"
+              >
+                <Plus className="h-3.5 w-3.5" strokeWidth={2.4} />
+              </button>
+            </div>
+
+            {/* Stock status */}
+            <span
+              className={cn(
+                'text-sm',
+                product.inStock
+                  ? 'text-zinc-500 dark:text-zinc-500'
+                  : 'font-medium text-red-500'
+              )}
+            >
+              {product.inStock
+                ? `${product.stockQuantity} sản phẩm có sẵn`
+                : 'Tạm hết hàng'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── CTA Buttons (Shopee dual-button) ── */}
+      <div className="mt-6 flex items-center gap-3">
+        <Button
+          size="lg"
+          variant="outline"
+          disabled={!product.inStock}
+          onClick={handleAddToCart}
+          className="h-12 flex-1 border-rose-600 text-rose-600 transition hover:bg-rose-50 dark:border-rose-400 dark:text-rose-400 dark:hover:bg-rose-500/10"
+        >
+          <ShoppingCart className="mr-2 h-4 w-4" strokeWidth={2.2} />
+          Thêm Vào Giỏ Hàng
+        </Button>
         <Button
           size="lg"
           disabled={!product.inStock}
-          onClick={handleAddToCart}
-          className="h-12 flex-1 bg-gradient-to-br from-rose-500 to-amber-500 text-white shadow-lg shadow-rose-500/25 transition hover:shadow-xl hover:shadow-rose-500/40"
+          onClick={handleBuyNow}
+          className="h-12 flex-1 bg-gradient-to-r from-rose-500 to-amber-500 text-white shadow-lg shadow-rose-500/25 transition hover:shadow-xl hover:shadow-rose-500/40"
         >
-          <ShoppingCart className="h-4 w-4" strokeWidth={2.2} />
-          Thêm vào giỏ
+          <Zap className="mr-2 h-4 w-4" strokeWidth={2.2} />
+          Mua Ngay
         </Button>
-        <Button
-          size="lg"
-          variant="outline"
+        <button
+          type="button"
           onClick={() => setWished((w) => !w)}
           className={cn(
-            'h-12 transition',
+            'grid h-12 w-12 shrink-0 place-items-center rounded-md border transition',
             wished
-              ? 'border-rose-500/50 bg-rose-50 text-rose-600 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-400'
-              : ''
+              ? 'border-rose-500/50 bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400'
+              : 'border-zinc-200 text-zinc-400 hover:border-rose-300 hover:text-rose-500 dark:border-zinc-800 dark:text-zinc-600 dark:hover:border-rose-700 dark:hover:text-rose-400'
           )}
           aria-label="Yêu thích"
         >
-          <Heart className={cn('h-4 w-4', wished && 'fill-rose-500')} strokeWidth={2.2} />
-        </Button>
-        <Button
-          size="lg"
-          variant="outline"
-          onClick={handleShare}
-          className="h-12"
-          aria-label="Chia sẻ"
-        >
-          <Share2 className="h-4 w-4" strokeWidth={2.2} />
-        </Button>
-      </div>
-
-      <Separator />
-
-      {/* Trust badges */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        {TRUST_BADGES.map((badge) => {
-          const Icon = badge.icon;
-          return (
-            <div
-              key={badge.label}
-              className="flex items-center gap-2 rounded-xl border border-zinc-200/70 bg-white/60 px-3 py-2 dark:border-zinc-800/60 dark:bg-zinc-900/40"
-            >
-              <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-rose-500/10 to-amber-500/10 text-rose-600 dark:text-rose-400">
-                <Icon className="h-4 w-4" strokeWidth={2.2} />
-              </span>
-              <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                {badge.label}
-              </span>
-            </div>
-          );
-        })}
+          <Heart
+            className={cn('h-5 w-5', wished && 'fill-rose-500')}
+            strokeWidth={2}
+          />
+        </button>
       </div>
     </motion.div>
   );
