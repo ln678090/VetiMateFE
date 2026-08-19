@@ -6,9 +6,7 @@ import { z } from 'zod';
 // Schema cho form tạo/sửa pet
 export const petFormSchema = z.object({
   name: z.string().min(1, 'Tên thú cưng là bắt buộc').max(100, 'Tên tối đa 100 ký tự'),
-  species: z.enum(['DOG', 'CAT'], {
-    required_error: 'Vui lòng chọn loài',
-  }),
+  species: z.enum(['DOG', 'CAT'], { error: 'Vui lòng chọn loài' }),
   breed: z
     .string()
     .max(100, 'Giống tối đa 100 ký tự')

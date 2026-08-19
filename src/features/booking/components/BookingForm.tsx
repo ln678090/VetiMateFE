@@ -1,6 +1,9 @@
 'use client';
 // src/features/booking/components/BookingForm.tsx
-
+interface ApiErrorResponse {
+  message?: string;
+}
+import axios from 'axios';
 import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -55,10 +58,7 @@ export function BookingForm({ customerId }: Props) {
   } = useAvailableSlots(selectedServiceId, selectedDate);
 
   // Chỉ hiển thị slots available = true
-  const availableSlots = useMemo(
-    () => slots?.filter((s) => s.available) ?? [],
-    [slots]
-  );
+  const availableSlots = useMemo(() => slots?.filter((s) => s.available) ?? [], [slots]);
 
   // ===== Chỉ chó & mèo, group theo giống loài =====
   const dogs = pets?.filter((p) => p.species === 'DOG') ?? [];
@@ -85,7 +85,6 @@ export function BookingForm({ customerId }: Props) {
       setValue('startAt', startAt, { shouldValidate: true });
     }
   };
-
 
   // ===== Khi đổi ngày -> reset slot đã chọn =====
   const handleDateChange = (date: string) => {
@@ -119,15 +118,21 @@ export function BookingForm({ customerId }: Props) {
           setPetSpecies('DOG');
           setShowAddPet(false);
         },
-        onError: (err: any) => {
-          const status = err?.response?.status;
-          const msg = err?.response?.data?.message ?? err?.message ?? 'Không rõ lỗi';
-          if (status === 401) {
-            alert('Bạn cần đăng nhập để thêm thú cưng (401).');
-          } else {
-            alert(`Thêm thú cưng thất bại: ${msg}`);
+        onError: (error: unknown) => {
+          if (axios.isAxiosError<ApiErrorResponse>(error)) {
+            const status = error.response?.status;
+            const message = error.response?.data?.message ?? error.message ?? 'Không rõ lỗi';
+            if (status === 401) {
+              alert('Bạn cần đăng nhập để thêm thú cưng.');
+              return;
+            }
+
+            alert(message);
+            return;
           }
-          console.error('createPet error:', status, err);
+
+          const message = error instanceof Error ? error.message : 'Không rõ lỗi';
+          alert(message);
         },
       }
     );
@@ -214,12 +219,10 @@ export function BookingForm({ customerId }: Props) {
 
         {!hasBookablePet && !showAddPet && (
           <p className="text-sm text-amber-600">
-            Bạn chưa có chó hoặc mèo nào. Hãy bấm "+ Thêm thú cưng".
+            Bạn chưa có chó hoặc mèo nào. Hãy bấm Thêm thú cưng.
           </p>
         )}
-        {errors.petId && (
-          <p className="text-sm text-rose-500">{errors.petId.message}</p>
-        )}
+        {errors.petId && <p className="text-sm text-rose-500">{errors.petId.message}</p>}
 
         {/* Inline form thêm thú cưng */}
         {showAddPet && (
@@ -296,13 +299,9 @@ export function BookingForm({ customerId }: Props) {
           ))}
         </select>
         {selectedService && (
-          <p className="text-xs text-gray-500">
-            Thời lượng: {selectedService.durationMin} phút
-          </p>
+          <p className="text-xs text-gray-500">Thời lượng: {selectedService.durationMin} phút</p>
         )}
-        {errors.serviceId && (
-          <p className="text-sm text-rose-500">{errors.serviceId.message}</p>
-        )}
+        {errors.serviceId && <p className="text-sm text-rose-500">{errors.serviceId.message}</p>}
       </div>
 
       {/* ===== Chọn ngày ===== */}
@@ -319,9 +318,7 @@ export function BookingForm({ customerId }: Props) {
           className="w-full rounded-lg border px-3 py-2"
           disabled={!selectedServiceId}
         />
-        {!selectedServiceId && (
-          <p className="text-xs text-gray-400">Vui lòng chọn dịch vụ trước</p>
-        )}
+        {!selectedServiceId && <p className="text-xs text-gray-400">Vui lòng chọn dịch vụ trước</p>}
       </div>
 
       {/* ===== Slot Picker ===== */}
@@ -361,10 +358,11 @@ export function BookingForm({ customerId }: Props) {
                   key={slot.startTime}
                   type="button"
                   onClick={() => handleSlotSelect(slot.startTime)}
-                  className={`rounded-lg border px-3 py-2 text-sm font-medium transition-all ${selectedSlot === slot.startTime
-                    ? 'border-rose-500 bg-rose-500 text-white shadow-md'
-                    : 'border-gray-200 bg-white hover:border-rose-300 hover:bg-rose-50'
-                    }`}
+                  className={`rounded-lg border px-3 py-2 text-sm font-medium transition-all ${
+                    selectedSlot === slot.startTime
+                      ? 'border-rose-500 bg-rose-500 text-white shadow-md'
+                      : 'border-gray-200 bg-white hover:border-rose-300 hover:bg-rose-50'
+                  }`}
                 >
                   {slot.startTime}
                 </button>
@@ -374,14 +372,12 @@ export function BookingForm({ customerId }: Props) {
 
           {selectedSlot && selectedService && (
             <p className="text-xs text-gray-500">
-              Đã chọn: {selectedSlot} - {slots?.find(s => s.startTime === selectedSlot)?.endTime}
-              ({selectedService.durationMin} phút)
+              Đã chọn: {selectedSlot} - {slots?.find((s) => s.startTime === selectedSlot)?.endTime}(
+              {selectedService.durationMin} phút)
             </p>
           )}
 
-          {errors.startAt && (
-            <p className="text-sm text-rose-500">{errors.startAt.message}</p>
-          )}
+          {errors.startAt && <p className="text-sm text-rose-500">{errors.startAt.message}</p>}
         </div>
       )}
 
@@ -397,9 +393,7 @@ export function BookingForm({ customerId }: Props) {
           className="w-full rounded-lg border px-3 py-2"
           placeholder="Triệu chứng, yêu cầu đặc biệt..."
         />
-        {errors.note && (
-          <p className="text-sm text-rose-500">{errors.note.message}</p>
-        )}
+        {errors.note && <p className="text-sm text-rose-500">{errors.note.message}</p>}
       </div>
 
       {/* ===== Submit Button ===== */}

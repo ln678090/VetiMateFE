@@ -1,5 +1,5 @@
 'use client';
-
+import { Phone } from 'lucide-react';
 import { RequiredLabel } from '@/components/ui/required-label';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowRight, AtSign, Lock, Mail, User } from 'lucide-react';
@@ -25,7 +25,9 @@ export function RegisterForm() {
       fullName: '',
       username: '',
       email: '',
+      phone: '',
       password: '',
+      confirmPassword: '',
     },
     mode: 'onBlur',
   });
@@ -123,7 +125,38 @@ export function RegisterForm() {
               )}
             />
           </StaggerItem>
+          <StaggerItem>
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <RequiredLabel required>Số điện thoại</RequiredLabel>
 
+                  <FormControl>
+                    <div className="relative">
+                      <Phone
+                        className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400"
+                        strokeWidth={2}
+                      />
+
+                      <Input
+                        {...field}
+                        type="tel"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        placeholder="0912345678"
+                        className="h-11 pl-10"
+                        disabled={isRegistering}
+                      />
+                    </div>
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </StaggerItem>
           <StaggerItem>
             <FormField
               control={form.control}
@@ -151,7 +184,36 @@ export function RegisterForm() {
               )}
             />
           </StaggerItem>
+          <StaggerItem>
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <RequiredLabel required>Nhập lại mật khẩu</RequiredLabel>
 
+                  <FormControl>
+                    <div className="relative">
+                      <Lock
+                        className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400"
+                        strokeWidth={2}
+                      />
+
+                      <PasswordInput
+                        {...field}
+                        autoComplete="new-password"
+                        placeholder="Nhập lại mật khẩu"
+                        className="h-11 pl-10"
+                        disabled={isRegistering}
+                      />
+                    </div>
+                  </FormControl>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </StaggerItem>
           <StaggerItem className="!mt-6">
             <AuthSubmitButton isLoading={isRegistering} loadingText="Đang tạo tài khoản">
               Tạo tài khoản
