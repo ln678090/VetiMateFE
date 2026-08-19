@@ -320,6 +320,13 @@ export function BookingForm({ customerId }: Props) {
           className="w-full rounded-lg border px-3 py-2"
           disabled={!selectedServiceId}
         />
+<<<<<<< HEAD
+  {
+    !selectedServiceId && (
+      <p className="text-xs text-gray-400">Vui lòng chọn dịch vụ trước</p>
+    )
+  }
+=======
         {!selectedServiceId && <p className="text-xs text-gray-400">Vui lòng chọn dịch vụ trước</p>}
       </div>
 
