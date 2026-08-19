@@ -2,6 +2,7 @@
 
 import { Loader2, LogOut, UserCircle2 } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -17,7 +18,9 @@ import { useAuth } from '@/hooks/use-auth';
 
 export function UserMenu() {
   const { user, logout } = useAuth();
+  const pathname = usePathname();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const isStaffPage = pathname?.startsWith('/staff');
 
   const handleLogout = async () => {
     setIsLoggingOut(true);
@@ -68,14 +71,18 @@ export function UserMenu() {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem asChild>
-          <Link href="/profile" className="flex items-center gap-2">
-            <UserCircle2 className="h-4 w-4" strokeWidth={2} />
-            Hồ sơ của tôi
-          </Link>
-        </DropdownMenuItem>
+        {!isStaffPage && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href="/profile" className="flex items-center gap-2">
+                <UserCircle2 className="h-4 w-4" strokeWidth={2} />
+                Hồ sơ của tôi
+              </Link>
+            </DropdownMenuItem>
 
-        <DropdownMenuSeparator />
+            <DropdownMenuSeparator />
+          </>
+        )}
 
         <DropdownMenuItem
           onClick={handleLogout}

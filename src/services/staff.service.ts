@@ -111,6 +111,18 @@ export const staffService = {
     );
   },
 
+  approveCancel: async (id: string) => {
+    return unwrap<ShopOrderResp>(
+      api.post(`${API_ROUTES.staff.orders}/${id}/cancel/approve`)
+    );
+  },
+
+  rejectCancel: async (id: string) => {
+    return unwrap<ShopOrderResp>(
+      api.post(`${API_ROUTES.staff.orders}/${id}/cancel/reject`)
+    );
+  },
+
   // --- Inventory ---
   getInventory: async (page = 0, size = 20, search?: string) => {
     const params = new URLSearchParams({ page: String(page), size: String(size) });
@@ -123,6 +135,19 @@ export const staffService = {
   updateStock: async (productId: string, payload: { stockQuantity: number }) => {
     return unwrap<ProductResp>(
       api.put(`${API_ROUTES.staff.inventory}/${productId}`, payload)
+    );
+  },
+
+  // --- POS ---
+  createPosOrder: async (payload: {
+    customerName?: string;
+    customerPhone?: string;
+    paymentMethod?: string;
+    note?: string;
+    items: { productId: string; quantity: number }[];
+  }) => {
+    return unwrap<ShopOrderResp>(
+      api.post(`${API_ROUTES.staff.orders}/pos`, payload)
     );
   },
 };

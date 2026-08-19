@@ -49,6 +49,8 @@ export interface Order {
   shippingFee: number;
   address: string;
   paymentMethod: string;
+  cancellationRequested?: boolean;
+  cancellationReason?: string;
 }
 
 /* ── Helpers ── */
@@ -135,7 +137,7 @@ export default function OrderTrackingPage() {
     queryFn: () => orderService.getMyOrders(0, 100),
   });
 
-  const orders: Order[] = (orderResponse?.content || []).map((backendOrder) => ({
+  const orders: Order[] = (orderResponse?.items || []).map((backendOrder) => ({
     id: backendOrder.id,
     code: backendOrder.orderCode,
     status: backendOrder.status.toLowerCase() as OrderStatus,

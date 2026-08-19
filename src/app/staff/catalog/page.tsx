@@ -89,14 +89,23 @@ export default function StaffCatalogPage() {
                         <td className="px-6 py-4 font-medium text-zinc-900 dark:text-white">
                           <div className="flex items-center gap-3">
                             {category.icon ? (
-                              <img 
-                                src={category.icon} 
-                                alt={category.name} 
-                                className="h-8 w-8 rounded object-cover" 
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).src = '/placeholder.png';
-                                }}
-                              />
+                              <>
+                                <img 
+                                  src={category.icon} 
+                                  alt={category.name} 
+                                  className="h-8 w-8 rounded object-cover" 
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    if (e.currentTarget.nextElementSibling) {
+                                      e.currentTarget.nextElementSibling.classList.remove('hidden');
+                                      e.currentTarget.nextElementSibling.classList.add('flex');
+                                    }
+                                  }}
+                                />
+                                <div className="hidden h-8 w-8 items-center justify-center rounded bg-zinc-100 dark:bg-zinc-800">
+                                  <Tags className="h-4 w-4 text-zinc-400" />
+                                </div>
+                              </>
                             ) : (
                               <div className="flex h-8 w-8 items-center justify-center rounded bg-zinc-100 dark:bg-zinc-800">
                                 <Tags className="h-4 w-4 text-zinc-400" />
@@ -145,14 +154,23 @@ export default function StaffCatalogPage() {
                         <td className="px-6 py-4 font-medium text-zinc-900 dark:text-white">
                           <div className="flex items-center gap-3">
                             {brand.logoUrl ? (
-                              <img 
-                                src={brand.logoUrl} 
-                                alt={brand.name} 
-                                className="h-8 w-8 rounded object-cover"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).src = '/placeholder.png';
-                                }}
-                              />
+                              <>
+                                <img 
+                                  src={brand.logoUrl} 
+                                  alt={brand.name} 
+                                  className="h-8 w-8 rounded object-cover"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    if (e.currentTarget.nextElementSibling) {
+                                      e.currentTarget.nextElementSibling.classList.remove('hidden');
+                                      e.currentTarget.nextElementSibling.classList.add('flex');
+                                    }
+                                  }}
+                                />
+                                <div className="hidden h-8 w-8 items-center justify-center rounded bg-zinc-100 dark:bg-zinc-800">
+                                  <Tags className="h-4 w-4 text-zinc-400" />
+                                </div>
+                              </>
                             ) : (
                               <div className="flex h-8 w-8 items-center justify-center rounded bg-zinc-100 dark:bg-zinc-800">
                                 <Tags className="h-4 w-4 text-zinc-400" />

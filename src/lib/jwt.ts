@@ -9,11 +9,18 @@ export function decodeJwtUser(token: string): User | null {
     const parts = token.split('.');
     if (parts.length !== 3) return null;
 
-    // Base64url → Base64 → decode
-    const payload = parts[1]
+    // Base64url → Base64 → decode (UTF-8 safe)
+    const base64 = parts[1]
       .replace(/-/g, '+')
       .replace(/_/g, '/');
-    const json = JSON.parse(atob(payload));
+    const binaryStr = atob(base64);
+    const jsonStr = decodeURIComponent(
+      binaryStr
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    const json = JSON.parse(jsonStr);
 
     return {
       id: json.sub ?? '',

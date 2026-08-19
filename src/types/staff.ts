@@ -28,6 +28,8 @@ export interface ShopOrderResp {
   note?: string;
   createdAt: string;
   updatedAt: string;
+  cancellationRequested?: boolean;
+  cancellationReason?: string;
   items: ShopOrderItemResp[];
 }
 

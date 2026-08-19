@@ -18,7 +18,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { use } from 'react';
 import { toast } from 'sonner';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -42,6 +42,18 @@ export default function OrderTrackingDetailPage({
   const { data: backendOrder, isLoading, error } = useQuery({
     queryKey: ['order', id],
     queryFn: () => orderService.getOrderById(id),
+  });
+
+  const queryClient = useQueryClient();
+  const cancelMutation = useMutation({
+    mutationFn: ({ reason }: { reason?: string }) => orderService.cancelOrder(id, reason),
+    onSuccess: () => {
+      toast.success('Đã gửi yêu cầu hủy đơn hàng thành công');
+      queryClient.invalidateQueries({ queryKey: ['order', id] });
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || 'Có lỗi xảy ra khi xử lý yêu cầu');
+    },
   });
 
   if (isLoading) {
@@ -76,6 +88,8 @@ export default function OrderTrackingDetailPage({
     shippingFee: backendOrder.shippingFee,
     address: backendOrder.shippingAddress,
     paymentMethod: backendOrder.paymentMethod,
+    cancellationRequested: backendOrder.cancellationRequested,
+    cancellationReason: backendOrder.cancellationReason,
   };
 
   const config = STATUS_CONFIG[order.status] || STATUS_CONFIG['pending'];
@@ -93,8 +107,13 @@ export default function OrderTrackingDetailPage({
           <ChevronLeft className="h-4 w-4" /> TRỞ LẠI
         </Link>
         <div className="flex items-center gap-4 text-sm">
-          <span className="font-medium text-zinc-500">MÃ ĐƠN HÀNG: {order.code}</span>
-          <span className="text-zinc-300">|</span>
+          {order.cancellationRequested && (
+            <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20">
+              Đang chờ duyệt hủy
+            </span>
+          )}
+          <span className="font-medium text-zinc-500 hidden sm:inline">MÃ ĐƠN HÀNG: {order.code}</span>
+          <span className="text-zinc-300 hidden sm:inline">|</span>
           <span className={`font-bold uppercase ${config.color}`}>
             {config.label}
           </span>
@@ -290,6 +309,25 @@ export default function OrderTrackingDetailPage({
             </span>
           </div>
         </div>
+
+        {/* Action Bar */}
+        {['pending', 'confirmed', 'processing', 'shipping'].includes(order.status) && !order.cancellationRequested && (
+          <div className="flex items-center justify-end gap-3 border-t border-zinc-100 p-4 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 rounded-b-xl">
+            <Button
+              variant="outline"
+              className="min-w-[140px] text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-zinc-800"
+              onClick={() => {
+                const reason = window.prompt('Vui lòng nhập lý do hủy đơn hàng:');
+                if (reason !== null) {
+                  cancelMutation.mutate({ reason: reason.trim() });
+                }
+              }}
+              disabled={cancelMutation.isPending}
+            >
+              {cancelMutation.isPending ? 'Đang xử lý...' : 'Hủy Đơn Hàng'}
+            </Button>
+          </div>
+        )}
       </Card>
     </div>
   );

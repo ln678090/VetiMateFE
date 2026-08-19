@@ -39,4 +39,12 @@ export const orderService = {
     );
     return data;
   },
+
+  cancelOrder: async (id: string, reason?: string) => {
+    const { data } = await api.post<ApiResp<ShopOrderResp>>(
+      `/api/orders/${id}/cancel`,
+      { reason }
+    );
+    return data;
+  },
 };

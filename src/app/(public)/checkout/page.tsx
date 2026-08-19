@@ -151,23 +151,38 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activeAddressId) {
-      toast.error('Vui lòng chọn địa chỉ giao hàng!');
-      return;
+
+    // Determine address source: saved address or manual form input
+    const savedAddr = activeAddressId
+      ? savedAddresses.find((a) => a.id === activeAddressId)
+      : null;
+
+    const recipientName = savedAddr?.fullName || formData.fullName;
+    const recipientPhone = savedAddr?.phone || formData.phone;
+    const addrLine = savedAddr
+      ? `${savedAddr.address}, ${savedAddr.ward}, ${savedAddr.city}`
+      : `${formData.address}, ${formData.ward}, ${formData.city}`;
+    const orderNote = savedAddr?.note || formData.note;
+
+    // Validate that we have enough info from either source
+    if (!recipientName || !recipientPhone || !formData.city || !formData.ward || !formData.address) {
+      if (!savedAddr) {
+        toast.error('Vui lòng điền đầy đủ thông tin giao hàng hoặc chọn địa chỉ đã lưu!');
+        return;
+      }
     }
     
     setIsSubmitting(true);
-    const address = savedAddresses.find(a => a.id === activeAddressId);
 
     try {
       // Lazy import to avoid cycle if any, or just use the existing service since we added it
       const { orderService } = await import('@/services/order.service');
       await orderService.createOrder({
-        recipientName: address.fullName,
-        recipientPhone: address.phone,
-        shippingAddress: `${address.address}, ${address.ward}, ${address.city}`,
+        recipientName,
+        recipientPhone,
+        shippingAddress: addrLine,
         paymentMethod: 'COD',
-        note: address.note,
+        note: orderNote,
         items: selectedItems.map(item => ({
           productId: item.id,
           quantity: item.quantity,

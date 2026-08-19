@@ -6,7 +6,8 @@ import { useState } from 'react';
 
 import { AuthGuard } from '@/components/shared/AuthGuard';
 import { staffService } from '@/services/staff.service';
-import { OrderStatus } from '@/types/staff';
+import { OrderStatus, ShopOrderResp } from '@/types/staff';
+import { OrderDetailsModal } from './components/OrderDetailsModal';
 
 const statusConfig: Record<OrderStatus, { label: string; color: string; bg: string }> = {
   PENDING: { label: 'Chờ xử lý', color: 'text-amber-700 dark:text-amber-400', bg: 'bg-amber-100 dark:bg-amber-500/10' },
@@ -20,6 +21,7 @@ const statusConfig: Record<OrderStatus, { label: string; color: string; bg: stri
 export default function StaffOrdersPage() {
   const [page, setPage] = useState(0);
   const [statusFilter, setStatusFilter] = useState<string>('');
+  const [selectedOrder, setSelectedOrder] = useState<ShopOrderResp | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['staff', 'orders', page, statusFilter],
@@ -82,14 +84,14 @@ export default function StaffOrdersPage() {
                       Đang tải dữ liệu...
                     </td>
                   </tr>
-                ) : data?.data?.items.length === 0 ? (
+                ) : data?.items?.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center text-zinc-500">
                       Không tìm thấy đơn hàng nào.
                     </td>
                   </tr>
                 ) : (
-                  data?.data?.items.map((order) => {
+                  data?.items?.map((order) => {
                     const status = statusConfig[order.status];
                     return (
                       <tr key={order.id} className="transition-colors hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50">
@@ -97,8 +99,15 @@ export default function StaffOrdersPage() {
                           #{order.orderCode}
                         </td>
                         <td className="px-6 py-4">
-                          <p className="font-medium text-zinc-900 dark:text-white">{order.recipientName}</p>
-                          <p className="text-zinc-500 dark:text-zinc-400">{order.recipientPhone}</p>
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-bold text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400">
+                              {order.recipientName?.charAt(0).toUpperCase() || 'U'}
+                            </div>
+                            <div>
+                              <p className="font-medium text-zinc-900 dark:text-white">{order.recipientName}</p>
+                              <p className="text-zinc-500 dark:text-zinc-400">{order.recipientPhone}</p>
+                            </div>
+                          </div>
                         </td>
                         <td className="px-6 py-4 text-zinc-500 dark:text-zinc-400">
                           {new Date(order.createdAt).toLocaleDateString('vi-VN')}
@@ -107,12 +116,22 @@ export default function StaffOrdersPage() {
                           {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalAmount)}
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${status?.bg} ${status?.color}`}>
-                            {status?.label || order.status}
-                          </span>
+                          <div className="flex flex-col items-start gap-1">
+                            <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${status?.bg} ${status?.color}`}>
+                              {status?.label || order.status}
+                            </span>
+                            {order.cancellationRequested && (
+                              <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400">
+                                Yêu cầu hủy
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button className="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium transition-colors">
+                          <button 
+                            onClick={() => setSelectedOrder(order)}
+                            className="inline-flex items-center gap-1.5 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-medium transition-colors"
+                          >
                             <Eye className="h-4 w-4" />
                             Xem
                           </button>
@@ -126,6 +145,12 @@ export default function StaffOrdersPage() {
           </div>
         </div>
       </div>
+      <OrderDetailsModal
+        order={data?.items?.find((o) => o.id === selectedOrder?.id) || selectedOrder}
+        isOpen={!!selectedOrder}
+        onClose={() => setSelectedOrder(null)}
+        statusConfig={statusConfig}
+      />
     </AuthGuard>
   );
 }
