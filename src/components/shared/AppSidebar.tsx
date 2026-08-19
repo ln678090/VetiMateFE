@@ -1,95 +1,179 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { PawPrint } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useMemo, useState } from 'react';
+import { ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
 
-import { APP } from '@/lib/constants';
-import { PROTECTED_NAV } from '@/lib/nav';
-import { cn } from '@/lib/utils';
+import { APP_NAVIGATION_ITEMS, canAccessNavigationItem } from '@/config/app-navigation';
+import { getAuthoritiesFromToken } from '@/lib/auth-roles';
+import { useAuthStore } from '@/stores/auth.store';
+
+function getRoutePath(href: string): string {
+  return href.split('?')[0] ?? href;
+}
+
+function isActiveRoute(pathname: string, href: string): boolean {
+  const routePath = getRoutePath(href);
+
+  if (routePath === '/dashboard') {
+    return pathname === routePath;
+  }
+
+  return pathname === routePath || pathname.startsWith(`${routePath}/`);
+}
 
 export function AppSidebar() {
   const pathname = usePathname();
 
-  return (
-    <aside className="hidden h-screen w-64 shrink-0 sticky top-0 border-r border-zinc-200/70 bg-white/70 backdrop-blur-xl lg:flex lg:flex-col dark:border-zinc-800/60 dark:bg-zinc-950/60">
-      {/* Brand */}
-      <div className="flex h-16 items-center gap-2 border-b border-zinc-200/70 px-5 dark:border-zinc-800/60">
-        <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-rose-500 to-amber-400 text-white shadow-md shadow-rose-200/50 dark:shadow-rose-500/20">
-          <PawPrint className="h-5 w-5" strokeWidth={2.4} />
-        </span>
-        <span className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-white">
-          {APP.name}
-        </span>
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const user = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.accessToken);
+
+  const authorities = useMemo(() => getAuthoritiesFromToken(accessToken), [accessToken]);
+
+  const visibleItems = useMemo(
+    () =>
+      APP_NAVIGATION_ITEMS.filter(
+        (item) => item.showInSidebar !== false && canAccessNavigationItem(item, authorities)
+      ),
+    [authorities]
+  );
+
+  const displayName = user?.fullName ?? user?.username ?? 'Tài khoản';
+
+  const avatarLetter = displayName.trim().charAt(0).toUpperCase() || 'U';
+
+  function closeMobileSidebar() {
+    setMobileOpen(false);
+  }
+
+  function toggleDesktopSidebar() {
+    setCollapsed((current) => !current);
+  }
+
+  const sidebarContent = (
+    <>
+      <div className="flex h-16 items-center justify-between border-b border-zinc-200 px-4 dark:border-zinc-800">
+        {!collapsed && (
+          <Link href="/dashboard" onClick={closeMobileSidebar} className="font-bold tracking-tight">
+            <span className="bg-gradient-to-r from-rose-500 to-amber-500 bg-clip-text text-transparent">
+              PetCare
+            </span>
+          </Link>
+        )}
+
+        <button
+          type="button"
+          onClick={toggleDesktopSidebar}
+          className="hidden rounded-lg p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 lg:inline-flex dark:hover:bg-zinc-800 dark:hover:text-white"
+          aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
+        >
+          {collapsed ? <ChevronRight className="size-5" /> : <ChevronLeft className="size-5" />}
+        </button>
+
+        <button
+          type="button"
+          onClick={closeMobileSidebar}
+          className="rounded-lg p-2 text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 lg:hidden dark:hover:bg-zinc-800 dark:hover:text-white"
+          aria-label="Đóng menu"
+        >
+          <X className="size-5" />
+        </button>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
-        <ul className="space-y-1">
-          {PROTECTED_NAV.map((item, idx) => {
-            const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
-            const Icon = item.icon;
-            return (
-              <motion.li
-                key={item.href}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{
-                  delay: 0.05 + idx * 0.04,
-                  duration: 0.4,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-              >
-                <Link
-                  href={item.href}
-                  className={cn(
-                    'group relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all',
-                    active
-                      ? 'bg-gradient-to-br from-rose-500/10 to-amber-500/10 text-rose-700 dark:from-rose-500/20 dark:to-amber-500/10 dark:text-rose-300'
-                      : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-white'
-                  )}
-                >
-                  {active && (
-                    <motion.span
-                      layoutId="sidebar-active"
-                      className="absolute inset-y-1.5 left-0 w-1 rounded-r-full bg-gradient-to-b from-rose-500 to-amber-400"
-                      transition={{
-                        type: 'spring',
-                        stiffness: 380,
-                        damping: 30,
-                      }}
-                    />
-                  )}
-                  <Icon
-                    className={cn(
-                      'h-4 w-4 shrink-0',
-                      active ? 'text-rose-600 dark:text-rose-400' : ''
-                    )}
-                    strokeWidth={2}
-                  />
-                  <span>{item.label}</span>
-                  {item.badge && (
-                    <span className="ml-auto rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              </motion.li>
-            );
-          })}
-        </ul>
+      <nav aria-label="Điều hướng chính" className="flex-1 space-y-1 overflow-y-auto p-3">
+        {visibleItems.map((item) => {
+          const Icon = item.icon;
+          const active = isActiveRoute(pathname, item.href);
+
+          return (
+            <Link
+              key={item.key}
+              href={item.href}
+              title={collapsed ? item.label : undefined}
+              onClick={closeMobileSidebar}
+              aria-current={active ? 'page' : undefined}
+              className={[
+                'flex h-11 items-center rounded-xl transition-all',
+                collapsed ? 'justify-center px-2' : 'gap-3 px-3',
+                active
+                  ? 'bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-sm'
+                  : 'text-zinc-600 hover:bg-rose-50 hover:text-rose-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-rose-400',
+              ].join(' ')}
+            >
+              <Icon className="size-5 shrink-0" strokeWidth={2} />
+
+              {!collapsed && <span className="truncate text-sm font-medium">{item.label}</span>}
+            </Link>
+          );
+        })}
       </nav>
 
-      {/* Footer */}
-      <div className="border-t border-zinc-200/70 p-4 dark:border-zinc-800/60">
-        <div className="rounded-xl bg-gradient-to-br from-rose-500/10 to-amber-500/10 p-4">
-          <p className="text-xs font-semibold text-rose-700 dark:text-rose-300">Mẹo nhỏ</p>
-          <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-            Đặt lịch khám định kỳ giúp thú cưng khỏe mạnh hơn.
-          </p>
+      <div className="border-t border-zinc-200 p-3 dark:border-zinc-800">
+        <div
+          className={[
+            'flex items-center rounded-xl bg-zinc-50 p-3 dark:bg-zinc-900',
+            collapsed ? 'justify-center' : 'gap-3',
+          ].join(' ')}
+        >
+          <div className="grid size-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-rose-500 to-amber-500 text-sm font-semibold text-white">
+            {avatarLetter}
+          </div>
+
+          {!collapsed && (
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-zinc-900 dark:text-white">
+                {displayName}
+              </p>
+
+              <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
+                {authorities.join(', ') || 'Đang xác thực'}
+              </p>
+            </div>
+          )}
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setMobileOpen(true)}
+        className="fixed left-4 top-4 z-40 rounded-lg border border-zinc-200 bg-white p-2 text-zinc-700 shadow-sm lg:hidden dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
+        aria-label="Mở menu"
+        aria-expanded={mobileOpen}
+      >
+        <Menu className="size-5" />
+      </button>
+
+      {mobileOpen && (
+        <button
+          type="button"
+          aria-label="Đóng menu"
+          onClick={closeMobileSidebar}
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+        />
+      )}
+
+      <aside
+        className={[
+          'fixed inset-y-0 left-0 z-50 flex bg-white transition-all duration-300 dark:bg-zinc-950',
+          'lg:static lg:z-auto',
+          collapsed ? 'lg:w-20' : 'lg:w-72',
+          mobileOpen ? 'w-72 translate-x-0' : 'w-72 -translate-x-full lg:translate-x-0',
+        ].join(' ')}
+      >
+        <div className="flex w-full flex-col border-r border-zinc-200 dark:border-zinc-800">
+          {sidebarContent}
+        </div>
+      </aside>
+    </>
   );
 }
+
+export default AppSidebar;

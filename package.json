@@ -8,7 +8,8 @@
     "start": "next start -p 3245",
     "lint": "eslint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "check-all": "tsc --noEmit && eslint ."
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

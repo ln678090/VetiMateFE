@@ -9,16 +9,20 @@ import type {
   CreatePetRequest,
   CustomerDto,
   UpdatePetRequest,
+  AppointmentStatus,
+  ManagementAppointmentParams,
+  SpringPage,
+  UpdateAppointmentStatusRequest,
 } from '@/types/clinic';
 
-// Spring Page<T> shape
-interface SpringPage<T> {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  number: number;
-  size: number;
-}
+// // Spring Page<T> shape
+// interface SpringPage<T> {
+//   content: T[];
+//   totalElements: number;
+//   totalPages: number;
+//   number: number;
+//   size: number;
+// }
 
 // Helper: chấp nhận cả T[] hoặc Page<T>, luôn trả về T[]
 function toArray<T>(data: T[] | SpringPage<T>): T[] {
@@ -106,4 +110,30 @@ export async function deletePet(petId: string): Promise<void> {
 // GET /api/clinic/pets/{id}
 export async function getPetById(petId: string): Promise<PetDto> {
   return unwrap<PetDto>(api.get(`/api/clinic/pets/${petId}`));
+}
+
+export async function getManagementAppointments(
+  params: ManagementAppointmentParams
+): Promise<SpringPage<AppointmentDto>> {
+  return unwrap<SpringPage<AppointmentDto>>(
+    api.get('/api/clinic/appointments/management', {
+      params: {
+        date: params.date,
+        status: params.status || undefined,
+        page: params.page ?? 0,
+        size: params.size ?? 20,
+        sort: 'startAt,asc',
+      },
+    })
+  );
+}
+
+export async function updateAppointmentStatus(
+  appointmentId: string,
+  status: AppointmentStatus
+): Promise<AppointmentDto> {
+  const body: UpdateAppointmentStatusRequest = { status };
+  return unwrap<AppointmentDto>(
+    api.patch(`/api/clinic/appointments/${appointmentId}/status`, body)
+  );
 }

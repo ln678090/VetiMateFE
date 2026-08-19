@@ -25,6 +25,8 @@ export const PROTECTED_NAV: NavItem[] = [
   { label: 'Theo dõi đơn hàng', href: '/order-tracking', icon: Truck },
   { label: 'Giỏ hàng', href: '/cart', icon: ShoppingCart },
   { label: 'Hồ sơ', href: '/profile', icon: UserCircle2 },
+  { label: 'Quản lý lịch  khám  ', href: '/management/appointments', icon: Stethoscope },
+  { label: 'Quản lý khám ', href: '/doctor/examinations', icon: Stethoscope },
 ];
 
 export const STAFF_NAV: NavItem[] = [
