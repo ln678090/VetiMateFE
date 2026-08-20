@@ -1,14 +1,21 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 import {
-  getActiveServices,
-  getMyPets,
   createAppointment,
-  getMyAppointments,
   createPet,
-  getMyCustomer,
-  updateAppointmentStatus,
+  getActiveServices,
+  getAvailableSlots,
+  getDoctorWorklist,
   getManagementAppointments,
+  getMyAppointments,
+  getMyCustomer,
+  getMyPets,
+  getPetById,
+  updateAppointmentStatus,
+  updatePet,
+  type AvailableSlotResponse,
 } from '../api/booking.api';
+
 import type {
   AppointmentStatus,
   CreateAppointmentRequest,
@@ -16,13 +23,29 @@ import type {
   CustomerDto,
   ManagementAppointmentParams,
   PetDto,
+  UpdatePetRequest,
 } from '@/types/clinic';
+
+interface DoctorWorklistParams {
+  date: string;
+  page: number;
+  size: number;
+}
 
 const CLINIC_QUERY_KEYS = {
   services: ['clinic', 'services'] as const,
+
   pets: (customerId: string) => ['clinic', 'pets', customerId] as const,
+
+  pet: (petId: string) => ['clinic', 'pets', 'detail', petId] as const,
+
   appointments: (customerId: string) => ['clinic', 'appointments', customerId] as const,
+
   myCustomer: () => ['clinic', 'me', 'customer'] as const,
+
+  availableSlots: (serviceId: string, date: string) =>
+    ['clinic', 'slots', serviceId, date] as const,
+
   managementAppointments: (params: ManagementAppointmentParams) =>
     [
       'clinic',
@@ -33,9 +56,18 @@ const CLINIC_QUERY_KEYS = {
       params.page ?? 0,
       params.size ?? 20,
     ] as const,
+
+  doctorWorklist: (params: DoctorWorklistParams) =>
+    ['doctor', 'examinations', params.date, params.page, params.size] as const,
 };
 
-// Danh sách dịch vụ đang mở bán:console.warn();
+export const PET_QUERY_KEYS = {
+  all: ['clinic', 'pets'] as const,
+
+  byCustomer: (customerId: string) => [...PET_QUERY_KEYS.all, customerId] as const,
+
+  byId: (petId: string) => [...PET_QUERY_KEYS.all, 'detail', petId] as const,
+};
 
 export function useActiveServices() {
   return useQuery({
@@ -45,128 +77,169 @@ export function useActiveServices() {
   });
 }
 
-// Danh sách pet của khách hàng (chỉ chạy khi có customerId)
 export function useMyPets(customerId: string | undefined) {
   return useQuery({
     queryKey: CLINIC_QUERY_KEYS.pets(customerId ?? ''),
-    queryFn: () => getMyPets(customerId as string),
+
+    queryFn: () => {
+      if (!customerId) {
+        throw new Error('Thiếu mã khách hàng.');
+      }
+
+      return getMyPets(customerId);
+    },
+
     enabled: Boolean(customerId),
     staleTime: 60_000,
   });
 }
 
-// Lịch sử đặt lịch của khách hàng
+export function usePet(petId: string | undefined) {
+  return useQuery<PetDto, Error>({
+    queryKey: CLINIC_QUERY_KEYS.pet(petId ?? ''),
+
+    queryFn: () => {
+      if (!petId) {
+        throw new Error('Thiếu mã thú cưng.');
+      }
+
+      return getPetById(petId);
+    },
+
+    enabled: Boolean(petId),
+    staleTime: 60_000,
+  });
+}
+
 export function useMyAppointments(customerId: string | undefined) {
   return useQuery({
     queryKey: CLINIC_QUERY_KEYS.appointments(customerId ?? ''),
-    queryFn: () => getMyAppointments(customerId as string),
+
+    queryFn: () => {
+      if (!customerId) {
+        throw new Error('Thiếu mã khách hàng.');
+      }
+
+      return getMyAppointments(customerId);
+    },
+
     enabled: Boolean(customerId),
     staleTime: 60_000,
   });
 }
 
-// Tạo lịch hẹn -> refetch lại danh sách lịch của khách
+export function useMyCustomer() {
+  return useQuery<CustomerDto, Error>({
+    queryKey: CLINIC_QUERY_KEYS.myCustomer(),
+
+    queryFn: getMyCustomer,
+
+    staleTime: 5 * 60 * 1000,
+    retry: 1,
+  });
+}
+
 export function useCreateAppointment(customerId: string | undefined) {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: (body: CreateAppointmentRequest) => createAppointment(body),
-    onSuccess: () => {
-      if (customerId) {
-        queryClient.invalidateQueries({
-          queryKey: CLINIC_QUERY_KEYS.appointments(customerId),
-        });
+    mutationFn: (request: CreateAppointmentRequest) => createAppointment(request),
+
+    onSuccess: async () => {
+      if (!customerId) {
+        return;
       }
+
+      await queryClient.invalidateQueries({
+        queryKey: CLINIC_QUERY_KEYS.appointments(customerId),
+      });
     },
   });
 }
 
 export function useCreatePet(customerId: string) {
   const queryClient = useQueryClient();
+
   return useMutation<PetDto, Error, CreatePetRequest>({
-    mutationFn: (body) => createPet(body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
+    mutationFn: (request) => createPet(request),
+
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
         queryKey: CLINIC_QUERY_KEYS.pets(customerId),
       });
     },
   });
 }
 
-export function useMyCustomer() {
-  return useQuery<CustomerDto>({
-    queryKey: CLINIC_QUERY_KEYS.myCustomer(),
-    queryFn: getMyCustomer,
-    staleTime: 5 * 60 * 1000, // 5 phút - customer ít đổi
-    retry: 1,
-  });
-}
-
-// ============================================================
-// THÊM IMPORT (đặt cùng chỗ imports khác ở đầu file)
-// ============================================================
-import { getAvailableSlots, type AvailableSlotResponse } from '../api/booking.api';
-
-// ============================================================
-// THÊM HOOK (đặt ở cuối file)
-// ============================================================
-
-/**
- * Hook lấy khung giờ trống cho dịch vụ trong ngày
- * @param serviceId - UUID của dịch vụ
- * @param date - Ngày cần check, format yyyy-MM-dd
- */
-export function useAvailableSlots(serviceId: string | undefined, date: string | undefined) {
-  return useQuery<AvailableSlotResponse[], Error>({
-    queryKey: ['clinic', 'slots', serviceId ?? '', date ?? ''],
-    queryFn: () => getAvailableSlots(serviceId!, date!),
-    enabled: !!serviceId && !!date && date.length === 10,
-    staleTime: 30 * 1000,
-    refetchOnWindowFocus: true,
-  });
-}
-
-// Re-export type để component khác dùng
-export type { AvailableSlotResponse };
-
-import { updatePet, deletePet, getPetById } from '../api/booking.api';
-import type { UpdatePetRequest } from '@/types/clinic';
-// ============ QUERY KEYS ============
-// Thêm vào CLINIC_QUERY_KEYS object (nếu có) hoặc tạo mới:
-export const PET_QUERY_KEYS = {
-  all: ['clinic', 'pets'] as const,
-  byCustomer: (customerId: string) => [...PET_QUERY_KEYS.all, customerId] as const,
-  byId: (petId: string) => [...PET_QUERY_KEYS.all, 'detail', petId] as const,
-};
-
-// ============ GET SINGLE PET ============
-export function usePet(petId: string | undefined) {
-  return useQuery<PetDto, Error>({
-    queryKey: PET_QUERY_KEYS.byId(petId ?? ''),
-    queryFn: () => getPetById(petId!),
-    enabled: !!petId,
-  });
-}
-
-// ============ UPDATE PET ============
 export function useUpdatePet(customerId: string) {
   const queryClient = useQueryClient();
 
-  return useMutation<PetDto, Error, { petId: string; data: UpdatePetRequest }>({
+  return useMutation<
+    PetDto,
+    Error,
+    {
+      petId: string;
+      data: UpdatePetRequest;
+    }
+  >({
     mutationFn: ({ petId, data }) => updatePet(petId, data),
-    onSuccess: (_, variables) => {
-      // Invalidate list + detail
-      queryClient.invalidateQueries({ queryKey: PET_QUERY_KEYS.byCustomer(customerId) });
-      queryClient.invalidateQueries({ queryKey: PET_QUERY_KEYS.byId(variables.petId) });
+
+    onSuccess: async (_, variables) => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: CLINIC_QUERY_KEYS.pets(customerId),
+        }),
+
+        queryClient.invalidateQueries({
+          queryKey: CLINIC_QUERY_KEYS.pet(variables.petId),
+        }),
+      ]);
     },
+  });
+}
+
+export function useAvailableSlots(serviceId: string | undefined, date: string | undefined) {
+  return useQuery<AvailableSlotResponse[], Error>({
+    queryKey: CLINIC_QUERY_KEYS.availableSlots(serviceId ?? '', date ?? ''),
+
+    queryFn: () => {
+      if (!serviceId || !date) {
+        throw new Error('Thiếu dịch vụ hoặc ngày khám.');
+      }
+
+      return getAvailableSlots(serviceId, date);
+    },
+
+    enabled: Boolean(serviceId) && Boolean(date) && date?.length === 10,
+
+    staleTime: 30_000,
+    refetchOnWindowFocus: true,
   });
 }
 
 export function useManagementAppointments(params: ManagementAppointmentParams) {
   return useQuery({
     queryKey: CLINIC_QUERY_KEYS.managementAppointments(params),
+
     queryFn: () => getManagementAppointments(params),
+
     enabled: params.date.length === 10,
     staleTime: 15_000,
+
+    placeholderData: (previousData) => previousData,
+  });
+}
+
+export function useDoctorWorklist(params: DoctorWorklistParams) {
+  return useQuery({
+    queryKey: CLINIC_QUERY_KEYS.doctorWorklist(params),
+
+    queryFn: () => getDoctorWorklist(params),
+
+    enabled: params.date.length === 10,
+    staleTime: 30_000,
+    retry: 1,
+
     placeholderData: (previousData) => previousData,
   });
 }
@@ -183,10 +256,17 @@ export function useUpdateAppointmentStatus() {
         queryClient.invalidateQueries({
           queryKey: ['clinic', 'management', 'appointments'],
         }),
+
         queryClient.invalidateQueries({
           queryKey: ['clinic', 'appointments'],
+        }),
+
+        queryClient.invalidateQueries({
+          queryKey: ['doctor', 'examinations'],
         }),
       ]);
     },
   });
 }
+
+export type { AvailableSlotResponse };

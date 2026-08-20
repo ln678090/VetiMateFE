@@ -2,15 +2,25 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { CalendarDays, ChevronLeft, ChevronRight, History, Stethoscope } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, Eye, History, Stethoscope } from 'lucide-react';
 
 import { useManagementAppointments } from '@/features/booking/hooks/use-clinic';
 import { useExaminationHistory } from '@/features/examination/hooks/use-examination';
 import { formatDateTime } from '@/lib/utils';
 
+import type { PetHealthStatus } from '@/types/examination';
+
 type ExaminationTab = 'waiting' | 'history';
 
 const PAGE_SIZE = 20;
+
+const HEALTH_STATUS_LABELS: Record<PetHealthStatus, string> = {
+  HEALTHY: 'Khỏe mạnh',
+  MONITORING: 'Cần theo dõi',
+  TREATMENT: 'Đang điều trị',
+  CRITICAL: 'Nghiêm trọng',
+  RECOVERING: 'Đang hồi phục',
+};
 
 function getLocalDate(): string {
   const now = new Date();
@@ -36,7 +46,9 @@ export default function DoctorExaminationsPage() {
   const [activeTab, setActiveTab] = useState<ExaminationTab>('waiting');
 
   const [date, setDate] = useState(getLocalDate);
+
   const [waitingPage, setWaitingPage] = useState(0);
+
   const [historyPage, setHistoryPage] = useState(0);
 
   const examinationsQuery = useManagementAppointments({
@@ -66,12 +78,12 @@ export default function DoctorExaminationsPage() {
 
   const historyTotalElements = historyQuery.data?.totalElements ?? 0;
 
-  function changeDate(value: string) {
+  function changeDate(value: string): void {
     setDate(value);
     setWaitingPage(0);
   }
 
-  function changeTab(tab: ExaminationTab) {
+  function changeTab(tab: ExaminationTab): void {
     setActiveTab(tab);
 
     if (tab === 'history') {
@@ -133,7 +145,7 @@ export default function DoctorExaminationsPage() {
 
       {activeTab === 'waiting' && (
         <>
-          <section className="rounded-2xl border bg-white/80 p-5 shadow-sm backdrop-blur-xl">
+          <section className="rounded-2xl border bg-white/80 p-5 shadow-sm">
             <label className="block max-w-xs space-y-2">
               <span className="text-sm font-medium">Ngày khám</span>
 
@@ -150,7 +162,7 @@ export default function DoctorExaminationsPage() {
 
           {examinationsQuery.isError && (
             <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-red-700">
-              Không tải được danh sách ca khám. Hãy kiểm tra quyền bác sĩ và kết nối backend.
+              Không tải được danh sách ca khám: {examinationsQuery.error.message}
             </div>
           )}
 
@@ -172,7 +184,7 @@ export default function DoctorExaminationsPage() {
             {examinations.map((appointment) => (
               <article
                 key={appointment.id}
-                className="grid gap-4 rounded-2xl border bg-white/80 p-5 shadow-sm backdrop-blur-xl transition hover:border-rose-200 hover:shadow-md md:grid-cols-[1fr_auto]"
+                className="grid gap-4 rounded-2xl border bg-white/80 p-5 shadow-sm md:grid-cols-[1fr_auto]"
               >
                 <div className="space-y-2">
                   <div className="flex flex-wrap items-center gap-2">
@@ -213,7 +225,7 @@ export default function DoctorExaminationsPage() {
                 <div className="flex items-center">
                   <Link
                     href={`/doctor/examinations/${encodeURIComponent(appointment.id)}`}
-                    className="inline-flex h-10 items-center gap-2 rounded-md bg-emerald-600 px-4 text-sm font-medium text-white hover:bg-emerald-700"
+                    className="inline-flex h-10 items-center gap-2 rounded-md bg-emerald-600 px-4 text-sm font-medium text-white"
                   >
                     <Stethoscope className="size-4" />
                     Bắt đầu khám
@@ -268,19 +280,12 @@ export default function DoctorExaminationsPage() {
               <History className="mx-auto size-10 text-muted-foreground" />
 
               <p className="mt-3 font-medium">Chưa có lịch sử khám</p>
-
-              <p className="text-sm text-muted-foreground">
-                Ca đã hoàn thành sẽ xuất hiện tại đây.
-              </p>
             </div>
           )}
 
           <section className="space-y-3">
             {historyRecords.map((record) => (
-              <article
-                key={record.id}
-                className="rounded-2xl border bg-white/80 p-5 shadow-sm backdrop-blur-xl"
-              >
+              <article key={record.id} className="rounded-2xl border bg-white/80 p-5 shadow-sm">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <h2 className="text-xl font-semibold">{record.petName}</h2>
@@ -291,14 +296,36 @@ export default function DoctorExaminationsPage() {
                   </div>
 
                   <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
-                    Đã khám
+                    {HEALTH_STATUS_LABELS[record.healthStatus]}
                   </span>
                 </div>
 
-                <div className="mt-4 rounded-xl bg-muted/60 p-4">
-                  <p className="text-xs font-medium uppercase text-muted-foreground">Chẩn đoán</p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl bg-muted/60 p-4">
+                    <p className="text-xs font-medium uppercase text-muted-foreground">Chẩn đoán</p>
 
-                  <p className="mt-1 text-sm">{record.diagnosis?.trim() || 'Chưa ghi chẩn đoán'}</p>
+                    <p className="mt-1 text-sm">
+                      {record.diagnosis?.trim() || 'Chưa ghi chẩn đoán'}
+                    </p>
+                  </div>
+
+                  <div className="rounded-xl bg-muted/60 p-4">
+                    <p className="text-xs font-medium uppercase text-muted-foreground">Cân nặng</p>
+
+                    <p className="mt-1 text-sm">
+                      {record.weightKg !== null ? `${record.weightKg} kg` : 'Chưa ghi nhận'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex justify-end">
+                  <Link
+                    href={`/doctor/examinations/history/${encodeURIComponent(record.id)}`}
+                    className="inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium"
+                  >
+                    <Eye className="size-4" />
+                    Xem bệnh án
+                  </Link>
                 </div>
               </article>
             ))}

@@ -1,4 +1,5 @@
 import {
+  keepPreviousData,
   useMutation,
   useQuery,
   useQueryClient,
@@ -9,6 +10,9 @@ import {
 import { staffApi } from '@/features/staff/api/staff.api';
 import type {
   CreateStaffRequest,
+  DeactivateStaffRequest,
+  EligibleUserFilters,
+  EligibleUserResponse,
   SpringPage,
   StaffFilters,
   StaffResponse,
@@ -25,6 +29,11 @@ export const STAFF_QUERY_KEYS = {
   details: () => [...STAFF_QUERY_KEYS.all, 'detail'] as const,
 
   detail: (staffId: string) => [...STAFF_QUERY_KEYS.details(), staffId] as const,
+
+  eligibleUsers: () => [...STAFF_QUERY_KEYS.all, 'eligible-users'] as const,
+
+  eligibleUserList: (filters: EligibleUserFilters) =>
+    [...STAFF_QUERY_KEYS.eligibleUsers(), filters] as const,
 };
 
 export function useStaffList(
@@ -33,7 +42,20 @@ export function useStaffList(
   return useQuery({
     queryKey: STAFF_QUERY_KEYS.list(filters),
     queryFn: () => staffApi.search(filters),
-    placeholderData: (previousData) => previousData,
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useEligibleUsers(
+  filters: EligibleUserFilters,
+  enabled = true
+): UseQueryResult<SpringPage<EligibleUserResponse>, Error> {
+  return useQuery({
+    queryKey: STAFF_QUERY_KEYS.eligibleUserList(filters),
+    queryFn: () => staffApi.searchEligibleUsers(filters),
+    enabled,
+    staleTime: 30_000,
+    placeholderData: keepPreviousData,
   });
 }
 
@@ -49,11 +71,19 @@ export function useCreateStaff(): UseMutationResult<StaffResponse, Error, Create
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: staffApi.create,
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: STAFF_QUERY_KEYS.lists(),
-      });
+    mutationFn: (request) => staffApi.create(request),
+
+    onSuccess: async (staff) => {
+      queryClient.setQueryData(STAFF_QUERY_KEYS.detail(staff.id), staff);
+
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: STAFF_QUERY_KEYS.lists(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: STAFF_QUERY_KEYS.eligibleUsers(),
+        }),
+      ]);
     },
   });
 }
@@ -81,20 +111,30 @@ export function useUpdateStaff(): UseMutationResult<
   });
 }
 
-export function useDeactivateStaff(): UseMutationResult<void, Error, string> {
+export function useDeactivateStaff(): UseMutationResult<
+  StaffResponse,
+  Error,
+  {
+    staffId: string;
+    request: DeactivateStaffRequest;
+  }
+> {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: staffApi.deactivate,
+    mutationFn: ({ staffId, request }) => staffApi.deactivate(staffId, request),
 
-    onSuccess: async (_, staffId) => {
-      queryClient.removeQueries({
-        queryKey: STAFF_QUERY_KEYS.detail(staffId),
-      });
+    onSuccess: async (staff) => {
+      queryClient.setQueryData(STAFF_QUERY_KEYS.detail(staff.id), staff);
 
-      await queryClient.invalidateQueries({
-        queryKey: STAFF_QUERY_KEYS.lists(),
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: STAFF_QUERY_KEYS.lists(),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: STAFF_QUERY_KEYS.eligibleUsers(),
+        }),
+      ]);
     },
   });
 }

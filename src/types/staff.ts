@@ -8,29 +8,38 @@ export type StaffRoleType =
 
 export interface StaffResponse {
   id: string;
-  userId: string | null;
+  userId: string;
+  username: string;
   fullName: string;
+  email: string;
   phone: string | null;
   roleType: StaffRoleType;
-  licenseNumber: string | null;
-  baseSalary: number;
-  commissionRate: number;
   active: boolean;
   createdAt: string;
 }
 
-export interface CreateStaffRequest {
-  userId: string | null;
+export interface EligibleUserResponse {
+  id: string;
+  username: string;
   fullName: string;
+  email: string;
   phone: string | null;
-  roleType: StaffRoleType;
-  licenseNumber: string | null;
-  baseSalary: number;
-  commissionRate: number;
 }
 
-export interface UpdateStaffRequest extends CreateStaffRequest {
+export interface CreateStaffRequest {
+  userId: string;
+  roleType: StaffRoleType;
+  reason: string;
+}
+
+export interface UpdateStaffRequest {
+  roleType: StaffRoleType;
   active: boolean;
+  reason: string;
+}
+
+export interface DeactivateStaffRequest {
+  reason: string;
 }
 
 export interface StaffFilters {
@@ -41,12 +50,19 @@ export interface StaffFilters {
   size: number;
 }
 
+export interface EligibleUserFilters {
+  keyword?: string;
+  page: number;
+  size: number;
+}
+
 export interface SpringPage<T> {
   content: T[];
   number: number;
   size: number;
   totalElements: number;
   totalPages: number;
+  numberOfElements: number;
   first: boolean;
   last: boolean;
   empty: boolean;

@@ -21,6 +21,7 @@ import { Label } from '@/components/ui/label';
 import {
   useCreateStaff,
   useDeactivateStaff,
+  useEligibleUsers,
   useStaffList,
   useUpdateStaff,
 } from '@/features/staff/hooks/use-staff';
@@ -28,6 +29,7 @@ import { getApiErrorMessage } from '@/lib/axios';
 import { staffFormSchema, type StaffFormValues } from '@/schemas/staff.schema';
 import type {
   CreateStaffRequest,
+  EligibleUserResponse,
   StaffFilters,
   StaffResponse,
   StaffRoleType,
@@ -47,53 +49,49 @@ const ROLE_LABELS: Record<StaffRoleType, string> = {
 
 const DEFAULT_FORM_VALUES: StaffFormValues = {
   userId: '',
-  fullName: '',
-  phone: '',
   roleType: 'DOCTOR',
-  licenseNumber: '',
-  baseSalary: '0',
-  commissionRate: '0',
   active: true,
+  reason: '',
 };
-
-function nullableText(value: string): string | null {
-  const normalized = value.trim();
-  return normalized.length > 0 ? normalized : null;
-}
 
 function toCreateRequest(values: StaffFormValues): CreateStaffRequest {
   return {
-    userId: nullableText(values.userId),
-    fullName: values.fullName.trim(),
-    phone: nullableText(values.phone),
+    userId: values.userId,
     roleType: values.roleType,
-    licenseNumber: nullableText(values.licenseNumber),
-    baseSalary: Number(values.baseSalary),
-    commissionRate: Number(values.commissionRate),
+    reason: values.reason.trim(),
   };
 }
 
 function toUpdateRequest(values: StaffFormValues): UpdateStaffRequest {
   return {
-    ...toCreateRequest(values),
-    active: values.active,
+    roleType: values.roleType,
+    active: true,
+    reason: values.reason.trim(),
   };
 }
 
 export default function StaffManagementPage() {
   const [filters, setFilters] = useState<StaffFilters>({
-    keyword: undefined,
-    roleType: undefined,
-    active: undefined,
     page: 0,
     size: PAGE_SIZE,
   });
 
   const [keywordDraft, setKeywordDraft] = useState('');
+  const [accountKeyword, setAccountKeyword] = useState('');
   const [editingStaffId, setEditingStaffId] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
 
   const staffQuery = useStaffList(filters);
+
+  const eligibleUsersQuery = useEligibleUsers(
+    {
+      keyword: accountKeyword.trim() || undefined,
+      page: 0,
+      size: 20,
+    },
+    formOpen && editingStaffId === null
+  );
+
   const createMutation = useCreateStaff();
   const updateMutation = useUpdateStaff();
   const deactivateMutation = useDeactivateStaff();
@@ -101,28 +99,38 @@ export default function StaffManagementPage() {
   const form = useForm<StaffFormValues>({
     resolver: zodResolver(staffFormSchema),
     defaultValues: DEFAULT_FORM_VALUES,
+    mode: 'onBlur',
   });
+
+  const page = staffQuery.data;
+  const staffItems = page?.content ?? [];
+  const eligibleUsers = eligibleUsersQuery.data?.content ?? [];
+
+  const selectedUserId = form.watch('userId');
 
   const submitting = createMutation.isPending || updateMutation.isPending;
 
   function openCreateForm() {
     setEditingStaffId(null);
+    setAccountKeyword('');
     form.reset(DEFAULT_FORM_VALUES);
     setFormOpen(true);
   }
 
   function openEditForm(staff: StaffResponse) {
+    if (!staff.active) {
+      toast.error('Nhân viên đã ngừng hoạt động nên không thể chỉnh sửa.');
+      return;
+    }
+
     setEditingStaffId(staff.id);
+    setAccountKeyword('');
 
     form.reset({
-      userId: staff.userId ?? '',
-      fullName: staff.fullName,
-      phone: staff.phone ?? '',
+      userId: staff.userId,
       roleType: staff.roleType,
-      licenseNumber: staff.licenseNumber ?? '',
-      baseSalary: String(staff.baseSalary),
-      commissionRate: String(staff.commissionRate),
-      active: staff.active,
+      active: true,
+      reason: '',
     });
 
     setFormOpen(true);
@@ -131,6 +139,7 @@ export default function StaffManagementPage() {
   function closeForm() {
     setFormOpen(false);
     setEditingStaffId(null);
+    setAccountKeyword('');
     form.reset(DEFAULT_FORM_VALUES);
   }
 
@@ -142,6 +151,22 @@ export default function StaffManagementPage() {
     }));
   }
 
+  function resetFilters() {
+    setKeywordDraft('');
+
+    setFilters({
+      page: 0,
+      size: PAGE_SIZE,
+    });
+  }
+
+  function selectAccount(user: EligibleUserResponse) {
+    form.setValue('userId', user.id, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  }
+
   async function submitForm(values: StaffFormValues) {
     try {
       if (editingStaffId) {
@@ -150,11 +175,11 @@ export default function StaffManagementPage() {
           request: toUpdateRequest(values),
         });
 
-        toast.success('Cập nhật nhân viên thành công');
+        toast.success('Cập nhật vai trò nhân viên thành công');
       } else {
         await createMutation.mutateAsync(toCreateRequest(values));
 
-        toast.success('Tạo nhân viên thành công');
+        toast.success('Tiếp nhận nhân viên thành công');
       }
 
       closeForm();
@@ -164,22 +189,36 @@ export default function StaffManagementPage() {
   }
 
   async function deactivateStaff(staff: StaffResponse) {
-    const accepted = window.confirm(`Ngừng hoạt động nhân viên "${staff.fullName}"?`);
+    const reason = window.prompt(`Nhập lý do ngừng hoạt động của "${staff.fullName}":`);
 
-    if (!accepted) {
+    if (reason === null) {
+      return;
+    }
+
+    const normalizedReason = reason.trim();
+
+    if (normalizedReason.length < 10) {
+      toast.error('Lý do phải có ít nhất 10 ký tự');
       return;
     }
 
     try {
-      await deactivateMutation.mutateAsync(staff.id);
+      await deactivateMutation.mutateAsync({
+        staffId: staff.id,
+        request: {
+          reason: normalizedReason,
+        },
+      });
+
       toast.success('Đã ngừng hoạt động nhân viên');
+
+      if (editingStaffId === staff.id) {
+        closeForm();
+      }
     } catch (error: unknown) {
       toast.error(getApiErrorMessage(error));
     }
   }
-
-  const page = staffQuery.data;
-  const staffItems = page?.content ?? [];
 
   return (
     <main className="mx-auto max-w-7xl space-y-6">
@@ -190,13 +229,13 @@ export default function StaffManagementPage() {
           <h1 className="text-2xl font-bold tracking-tight">Nhân viên & bác sĩ</h1>
 
           <p className="mt-1 text-sm text-muted-foreground">
-            Quản lý hồ sơ nghiệp vụ, lương, hoa hồng và trạng thái làm việc.
+            Tiếp nhận tài khoản, phân vai trò nghiệp vụ và quản lý trạng thái làm việc.
           </p>
         </div>
 
         <Button type="button" onClick={openCreateForm}>
           <Plus className="mr-2 size-4" />
-          Thêm nhân viên
+          Tiếp nhận nhân viên
         </Button>
       </header>
 
@@ -208,10 +247,11 @@ export default function StaffManagementPage() {
               onChange={(event) => setKeywordDraft(event.target.value)}
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
+                  event.preventDefault();
                   applySearch();
                 }
               }}
-              placeholder="Tên, điện thoại hoặc chứng chỉ"
+              placeholder="Tên, username hoặc email"
             />
 
             <Button type="button" variant="outline" onClick={applySearch} aria-label="Tìm kiếm">
@@ -224,7 +264,8 @@ export default function StaffManagementPage() {
             onChange={(event) =>
               setFilters((current) => ({
                 ...current,
-                roleType: (event.target.value as StaffRoleType) || undefined,
+                roleType:
+                  event.target.value === '' ? undefined : (event.target.value as StaffRoleType),
                 page: 0,
               }))
             }
@@ -255,17 +296,7 @@ export default function StaffManagementPage() {
             <option value="false">Ngừng hoạt động</option>
           </select>
 
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => {
-              setKeywordDraft('');
-              setFilters({
-                page: 0,
-                size: PAGE_SIZE,
-              });
-            }}
-          >
+          <Button type="button" variant="ghost" onClick={resetFilters}>
             Xóa lọc
           </Button>
         </CardContent>
@@ -274,27 +305,93 @@ export default function StaffManagementPage() {
       {formOpen && (
         <Card>
           <CardHeader>
-            <CardTitle>{editingStaffId ? 'Cập nhật nhân viên' : 'Thêm nhân viên'}</CardTitle>
+            <CardTitle>
+              {editingStaffId ? 'Cập nhật vai trò nhân viên' : 'Tiếp nhận nhân viên'}
+            </CardTitle>
           </CardHeader>
 
           <CardContent>
             <form onSubmit={form.handleSubmit(submitForm)} className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="fullName">
-                  Họ và tên
-                  <span className="ml-0.5 text-rose-500">*</span>
-                </Label>
+              {editingStaffId === null && (
+                <div className="space-y-3 md:col-span-2">
+                  <Label>
+                    Tài khoản
+                    <span className="ml-0.5 text-rose-500">*</span>
+                  </Label>
 
-                <Input id="fullName" {...form.register('fullName')} />
+                  <Input
+                    value={accountKeyword}
+                    onChange={(event) => setAccountKeyword(event.target.value)}
+                    placeholder="Tìm tên, username hoặc email"
+                  />
 
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.fullName?.message}
-                </p>
-              </div>
+                  <div className="max-h-56 overflow-y-auto rounded-md border">
+                    {eligibleUsers.map((user) => {
+                      const selected = selectedUserId === user.id;
 
-              <div className="space-y-2">
+                      return (
+                        <button
+                          key={user.id}
+                          type="button"
+                          onClick={() => selectAccount(user)}
+                          className={[
+                            'block w-full border-b px-4 py-3 text-left last:border-b-0',
+                            selected
+                              ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/30 dark:text-rose-300'
+                              : 'hover:bg-muted',
+                          ].join(' ')}
+                        >
+                          <p className="text-sm font-medium">{user.fullName}</p>
+
+                          <p className="text-xs text-muted-foreground">
+                            {user.username} — {user.email}
+                          </p>
+
+                          {user.phone && (
+                            <p className="text-xs text-muted-foreground">{user.phone}</p>
+                          )}
+                        </button>
+                      );
+                    })}
+
+                    {eligibleUsersQuery.isLoading && (
+                      <p className="p-4 text-sm text-muted-foreground">Đang tải tài khoản...</p>
+                    )}
+
+                    {eligibleUsersQuery.isError && (
+                      <p className="p-4 text-sm text-destructive">
+                        {eligibleUsersQuery.error.message}
+                      </p>
+                    )}
+
+                    {!eligibleUsersQuery.isLoading &&
+                      !eligibleUsersQuery.isError &&
+                      eligibleUsers.length === 0 && (
+                        <p className="p-4 text-sm text-muted-foreground">
+                          Không có tài khoản phù hợp.
+                        </p>
+                      )}
+                  </div>
+
+                  <p className="text-xs text-destructive">
+                    {form.formState.errors.userId?.message}
+                  </p>
+                </div>
+              )}
+
+              {editingStaffId !== null && (
+                <div className="rounded-md border bg-muted/40 p-4 md:col-span-2">
+                  <p className="text-sm font-medium">Tài khoản đã được liên kết</p>
+
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Không thể thay đổi tài khoản sau khi tiếp nhận.
+                  </p>
+                </div>
+              )}
+
+              <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="roleType">
-                  Vai trò
+                  Vai trò nghiệp vụ
                   <span className="ml-0.5 text-rose-500">*</span>
                 </Label>
 
@@ -309,77 +406,30 @@ export default function StaffManagementPage() {
                     </option>
                   ))}
                 </select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="phone">Số điện thoại</Label>
-
-                <Input id="phone" {...form.register('phone')} />
-
-                <p className="text-xs text-destructive">{form.formState.errors.phone?.message}</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="licenseNumber">Số chứng chỉ</Label>
-
-                <Input id="licenseNumber" {...form.register('licenseNumber')} />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="baseSalary">
-                  Lương cơ bản
-                  <span className="ml-0.5 text-rose-500">*</span>
-                </Label>
-
-                <Input
-                  id="baseSalary"
-                  type="number"
-                  min="0"
-                  step="1000"
-                  {...form.register('baseSalary')}
-                />
 
                 <p className="text-xs text-destructive">
-                  {form.formState.errors.baseSalary?.message}
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="commissionRate">
-                  Hoa hồng (%)
-                  <span className="ml-0.5 text-rose-500">*</span>
-                </Label>
-
-                <Input
-                  id="commissionRate"
-                  type="number"
-                  min="0"
-                  max="100"
-                  step="0.01"
-                  {...form.register('commissionRate')}
-                />
-
-                <p className="text-xs text-destructive">
-                  {form.formState.errors.commissionRate?.message}
+                  {form.formState.errors.roleType?.message}
                 </p>
               </div>
 
               <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="userId">User UUID liên kết</Label>
+                <Label htmlFor="reason">
+                  Lý do
+                  <span className="ml-0.5 text-rose-500">*</span>
+                </Label>
 
-                <Input id="userId" {...form.register('userId')} placeholder="Có thể để trống" />
+                <textarea
+                  id="reason"
+                  rows={3}
+                  {...form.register('reason')}
+                  className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+                  placeholder="Ví dụ: Tiếp nhận nhân viên mới theo quyết định tuyển dụng..."
+                />
 
-                <p className="text-xs text-muted-foreground">
-                  Liên kết tài khoản không tự động cấp quyền đăng nhập.
-                </p>
+                <p className="text-xs text-muted-foreground">Nội dung được lưu vào Audit Log.</p>
+
+                <p className="text-xs text-destructive">{form.formState.errors.reason?.message}</p>
               </div>
-
-              {editingStaffId && (
-                <label className="flex items-center gap-2 md:col-span-2">
-                  <input type="checkbox" {...form.register('active')} />
-                  <span className="text-sm">Nhân viên đang hoạt động</span>
-                </label>
-              )}
 
               <div className="flex justify-end gap-2 md:col-span-2">
                 <Button type="button" variant="outline" onClick={closeForm}>
@@ -387,7 +437,11 @@ export default function StaffManagementPage() {
                 </Button>
 
                 <Button type="submit" disabled={submitting}>
-                  {submitting ? 'Đang lưu...' : 'Lưu nhân viên'}
+                  {submitting
+                    ? 'Đang lưu...'
+                    : editingStaffId
+                      ? 'Cập nhật vai trò'
+                      : 'Tiếp nhận nhân viên'}
                 </Button>
               </div>
             </form>
@@ -397,14 +451,12 @@ export default function StaffManagementPage() {
 
       <Card>
         <CardContent className="overflow-x-auto p-0">
-          <table className="w-full min-w-[900px] text-sm">
+          <table className="w-full min-w-[760px] text-sm">
             <thead className="bg-zinc-100 dark:bg-zinc-900">
               <tr>
-                <th className="px-4 py-3 text-left">Nhân viên</th>
+                <th className="px-4 py-3 text-left">Tài khoản</th>
+                <th className="px-4 py-3 text-left">Liên hệ</th>
                 <th className="px-4 py-3 text-left">Vai trò</th>
-                <th className="px-4 py-3 text-left">Điện thoại</th>
-                <th className="px-4 py-3 text-right">Lương</th>
-                <th className="px-4 py-3 text-right">Hoa hồng</th>
                 <th className="px-4 py-3 text-center">Trạng thái</th>
                 <th className="px-4 py-3 text-right">Thao tác</th>
               </tr>
@@ -416,54 +468,48 @@ export default function StaffManagementPage() {
                   <td className="px-4 py-3">
                     <p className="font-medium">{staff.fullName}</p>
 
-                    {staff.licenseNumber && (
-                      <p className="text-xs text-muted-foreground">
-                        Chứng chỉ: {staff.licenseNumber}
-                      </p>
-                    )}
+                    <p className="text-xs text-muted-foreground">@{staff.username}</p>
+                  </td>
+
+                  <td className="px-4 py-3">
+                    <p>{staff.email}</p>
+
+                    <p className="text-xs text-muted-foreground">{staff.phone ?? 'Chưa có SĐT'}</p>
                   </td>
 
                   <td className="px-4 py-3">{ROLE_LABELS[staff.roleType]}</td>
 
-                  <td className="px-4 py-3">{staff.phone ?? '—'}</td>
-
-                  <td className="px-4 py-3 text-right">
-                    {staff.baseSalary.toLocaleString('vi-VN')} ₫
-                  </td>
-
-                  <td className="px-4 py-3 text-right">
-                    {staff.commissionRate.toLocaleString('vi-VN')}%
-                  </td>
-
                   <td className="px-4 py-3 text-center">
                     <span className={staff.active ? 'text-emerald-600' : 'text-zinc-500'}>
-                      {staff.active ? 'Hoạt động' : 'Đã khóa'}
+                      {staff.active ? 'Hoạt động' : 'Ngừng hoạt động'}
                     </span>
                   </td>
 
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-2">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => openEditForm(staff)}
-                      >
-                        <Pencil className="mr-1 size-4" />
-                        Sửa
-                      </Button>
-
                       {staff.active && (
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="destructive"
-                          disabled={deactivateMutation.isPending}
-                          onClick={() => deactivateStaff(staff)}
-                        >
-                          <UserRoundX className="mr-1 size-4" />
-                          Ngừng
-                        </Button>
+                        <>
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openEditForm(staff)}
+                          >
+                            <Pencil className="mr-1 size-4" />
+                            Sửa
+                          </Button>
+
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="destructive"
+                            disabled={deactivateMutation.isPending}
+                            onClick={() => deactivateStaff(staff)}
+                          >
+                            <UserRoundX className="mr-1 size-4" />
+                            Ngừng
+                          </Button>
+                        </>
                       )}
                     </div>
                   </td>
@@ -487,7 +533,8 @@ export default function StaffManagementPage() {
           {!staffQuery.isLoading && !staffQuery.isError && staffItems.length === 0 && (
             <div className="grid place-items-center p-12 text-center">
               <UsersRound className="mb-3 size-10 text-zinc-300" />
-              <p className="text-sm text-muted-foreground">Không tìm thấy nhân viên phù hợp.</p>
+
+              <p className="text-sm text-muted-foreground">Không tìm thấy nhân viên.</p>
             </div>
           )}
         </CardContent>
@@ -506,7 +553,7 @@ export default function StaffManagementPage() {
               onClick={() =>
                 setFilters((current) => ({
                   ...current,
-                  page: current.page - 1,
+                  page: Math.max(current.page - 1, 0),
                 }))
               }
             >
