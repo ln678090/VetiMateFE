@@ -11,20 +11,20 @@ export interface ClinicServiceDto {
 export interface PetDto {
   id: string;
   customerId: string;
+  customerName: string;
   name: string;
-  species: string;
+  species: PetSpecies;
   breed: string | null;
-  gender: string | null;
+  gender: PetGender | null;
   birthDate: string | null;
   weightKg: number | null;
   note: string | null;
 }
 
-export type AppointmentStatus = 'PENDING' | 'CONFIRMED' | 'SHIPPING' | 'DONE' | 'CANCELLED';
-
 export interface AppointmentDto {
   id: string;
   customerId: string;
+  customerName: string;
   petId: string;
   petName: string;
   serviceId: string;
@@ -45,13 +45,13 @@ export interface CreateAppointmentRequest {
   note?: string;
 }
 
-export type PetSpecies = 'DOG' | 'CAT';
-
 export const PET_SPECIES_OPTIONS: { value: PetSpecies; label: string }[] = [
   { value: 'DOG', label: 'Chó' },
   { value: 'CAT', label: 'Mèo' },
 ];
+export type PetSpecies = 'DOG' | 'CAT';
 
+export type PetGender = 'MALE' | 'FEMALE' | 'UNKNOWN';
 export interface CustomerDto {
   id: string;
   userId: string | null;
@@ -84,8 +84,6 @@ export const PET_GENDER_OPTIONS = [
   { value: 'UNKNOWN', label: 'Không xác định' },
 ] as const;
 
-export type PetGender = 'MALE' | 'FEMALE' | 'UNKNOWN';
-
 // ============ UPDATE PET REQUEST ============
 export interface UpdatePetRequest {
   name: string;
@@ -95,4 +93,27 @@ export interface UpdatePetRequest {
   birthDate?: string | null; // yyyy-MM-dd
   weightKg?: number | null;
   note?: string | null;
+}
+
+export type AppointmentStatus = 'SCHEDULED' | 'CONFIRMED' | 'DONE' | 'CANCELLED' | 'NO_SHOW';
+
+export interface SpringPage<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+  first: boolean;
+  last: boolean;
+}
+
+export interface ManagementAppointmentParams {
+  date: string;
+  status?: AppointmentStatus;
+  page?: number;
+  size?: number;
+}
+
+export interface UpdateAppointmentStatusRequest {
+  status: AppointmentStatus;
 }

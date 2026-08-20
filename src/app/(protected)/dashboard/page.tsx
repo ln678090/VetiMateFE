@@ -1,125 +1,244 @@
 'use client';
 
+import { useMemo } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { CalendarHeart, PawPrint, ShoppingBag, Stethoscope, TrendingUp } from 'lucide-react';
+import { UserRoundCog } from 'lucide-react';
 
 import { Stagger, StaggerItem } from '@/components/animations/Stagger';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { APP_NAVIGATION_ITEMS, canAccessNavigationItem } from '@/config/app-navigation';
+import { getAuthoritiesFromToken } from '@/lib/auth-roles';
 import { useAuthStore } from '@/stores/auth.store';
 
-const STATS = [
-  {
-    label: 'Lịch chăm sóc',
-    value: '3',
-    sub: 'Tuần này',
-    icon: CalendarHeart,
-    gradient: 'from-rose-500 to-pink-500',
+type DashboardRole = 'ADMIN' | 'MANAGER' | 'RECEPTIONIST' | 'DOCTOR' | 'USER';
+
+interface DashboardConfiguration {
+  title: string;
+  description: string;
+  activityTitle: string;
+  activityDescription: string;
+}
+
+const DASHBOARD_CONFIGURATIONS: Record<DashboardRole, DashboardConfiguration> = {
+  ADMIN: {
+    title: 'Trung tâm quản trị',
+    description: 'Điều phối hoạt động phòng khám và giám sát các quy trình nghiệp vụ.',
+    activityTitle: 'Công việc quản trị',
+    activityDescription: 'Chọn một chức năng bên trên để bắt đầu quản lý hệ thống.',
   },
-  {
-    label: 'Khám thú y',
-    value: '1',
-    sub: 'Sắp tới',
-    icon: Stethoscope,
-    gradient: 'from-sky-500 to-indigo-500',
+
+  MANAGER: {
+    title: 'Trung tâm quản lý',
+    description: 'Quản lý dịch vụ, bảng giá và vận hành phòng khám.',
+    activityTitle: 'Công việc quản lý',
+    activityDescription: 'Chọn chức năng cần quản lý để bắt đầu.',
   },
-  {
-    label: 'Đơn hàng',
-    value: '12',
-    sub: 'Tháng này',
-    icon: ShoppingBag,
-    gradient: 'from-amber-500 to-orange-500',
+
+  RECEPTIONIST: {
+    title: 'Quầy lễ tân',
+    description: 'Tiếp nhận khách hàng và điều phối lịch khám trong ngày.',
+    activityTitle: 'Công việc lễ tân',
+    activityDescription: 'Mở quản lý lịch hẹn để xác nhận và điều phối khách hàng.',
   },
-  {
-    label: 'Thú cưng',
-    value: '2',
-    sub: 'Đang chăm',
-    icon: PawPrint,
-    gradient: 'from-emerald-500 to-teal-500',
+
+  DOCTOR: {
+    title: 'Khu vực bác sĩ',
+    description: 'Theo dõi ca chờ khám và tra cứu hồ sơ đã hoàn thành.',
+    activityTitle: 'Quy trình khám bệnh',
+    activityDescription: 'Các ca được lễ tân xác nhận sẽ xuất hiện trong danh sách ca khám.',
   },
-];
+
+  USER: {
+    title: 'Chăm sóc thú cưng',
+    description: 'Quản lý thú cưng, đặt lịch và mua sắm sản phẩm phù hợp.',
+    activityTitle: 'Hoạt động gần đây',
+    activityDescription: 'Đặt lịch hoặc cập nhật hồ sơ thú cưng để bắt đầu.',
+  },
+};
+
+function resolveDashboardRole(authorities: readonly string[]): DashboardRole {
+  if (authorities.includes('ROLE_ADMIN')) {
+    return 'ADMIN';
+  }
+
+  if (authorities.includes('ROLE_MANAGER')) {
+    return 'MANAGER';
+  }
+
+  if (authorities.includes('ROLE_RECEPTIONIST')) {
+    return 'RECEPTIONIST';
+  }
+
+  if (authorities.includes('ROLE_DOCTOR')) {
+    return 'DOCTOR';
+  }
+
+  return 'USER';
+}
+
+function getFallbackGreeting(role: DashboardRole): string {
+  switch (role) {
+    case 'ADMIN':
+      return 'quản trị viên';
+
+    case 'MANAGER':
+      return 'quản lý';
+
+    case 'RECEPTIONIST':
+      return 'lễ tân';
+
+    case 'DOCTOR':
+      return 'bác sĩ';
+
+    default:
+      return 'bạn';
+  }
+}
 
 export default function DashboardPage() {
-  const user = useAuthStore((s) => s.user);
-  const greeting = user?.fullName || user?.username || 'bạn';
+  const user = useAuthStore((state) => state.user);
+  const accessToken = useAuthStore((state) => state.accessToken);
+
+  const authorities = useMemo(() => getAuthoritiesFromToken(accessToken), [accessToken]);
+
+  const dashboardRole = useMemo(() => resolveDashboardRole(authorities), [authorities]);
+
+  const dashboardActions = useMemo(
+    () =>
+      APP_NAVIGATION_ITEMS.filter(
+        (item) => Boolean(item.dashboardDescription) && canAccessNavigationItem(item, authorities)
+      ),
+    [authorities]
+  );
+
+  const configuration = DASHBOARD_CONFIGURATIONS[dashboardRole];
+
+  const greeting = user?.fullName ?? user?.username ?? getFallbackGreeting(dashboardRole);
 
   return (
-    <div className="mx-auto max-w-7xl space-y-6">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+    <main className="mx-auto max-w-7xl space-y-6">
+      <motion.header
+        initial={{
+          opacity: 0,
+          y: 12,
+        }}
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
+        transition={{
+          duration: 0.5,
+          ease: [0.22, 1, 0.36, 1],
+        }}
       >
-        <h1 className="text-2xl font-bold tracking-tight text-zinc-900 md:text-3xl dark:text-white">
+        <p className="text-sm font-medium text-rose-600">{configuration.title}</p>
+
+        <h1 className="mt-1 text-2xl font-bold tracking-tight text-zinc-900 md:text-3xl dark:text-white">
           Chào mừng trở lại, {greeting}
         </h1>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Đây là tổng quan các hoạt động chăm sóc thú cưng của bạn.
-        </p>
-      </motion.div>
 
-      {/* Stats grid */}
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+          {configuration.description}
+        </p>
+      </motion.header>
+
       <Stagger
         delayChildren={0.15}
         staggerChildren={0.08}
-        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
       >
-        {STATS.map((stat) => {
-          const Icon = stat.icon;
+        {dashboardActions.map((action) => {
+          const Icon = action.icon;
+
+          const gradient = action.gradient ?? 'from-rose-500 to-orange-500';
+
           return (
-            <StaggerItem key={stat.label}>
-              <Card className="relative overflow-hidden border-zinc-200/70 bg-white/80 backdrop-blur-xl transition-all hover:shadow-lg hover:shadow-rose-100/50 dark:border-zinc-800/60 dark:bg-zinc-900/60 dark:hover:shadow-rose-500/5">
-                <div
-                  className={`absolute -top-12 -right-12 h-32 w-32 rounded-full bg-gradient-to-br ${stat.gradient} opacity-10 blur-2xl`}
-                />
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-                    {stat.label}
-                  </CardTitle>
-                  <span
-                    className={`grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br ${stat.gradient} text-white shadow-md`}
-                  >
-                    <Icon className="h-4 w-4" strokeWidth={2.2} />
-                  </span>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
-                    {stat.value}
-                  </div>
-                  <p className="mt-1 flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-500">
-                    <TrendingUp className="h-3 w-3" strokeWidth={2.4} />
-                    {stat.sub}
-                  </p>
-                </CardContent>
-              </Card>
+            <StaggerItem key={action.key}>
+              <Link href={action.href} className="block h-full">
+                <Card className="group relative h-full overflow-hidden border-zinc-200/70 bg-white/80 backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-rose-100/50 dark:border-zinc-800/60 dark:bg-zinc-900/60">
+                  <div
+                    className={[
+                      'absolute -right-12 -top-12 h-32 w-32 rounded-full bg-gradient-to-br opacity-10 blur-2xl',
+                      gradient,
+                    ].join(' ')}
+                  />
+
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                    <CardTitle className="text-base font-semibold text-zinc-900 dark:text-white">
+                      {action.label}
+                    </CardTitle>
+
+                    <span
+                      className={[
+                        'grid size-10 place-items-center rounded-xl bg-gradient-to-br text-white shadow-md',
+                        gradient,
+                      ].join(' ')}
+                    >
+                      <Icon className="size-5" strokeWidth={2.2} />
+                    </span>
+                  </CardHeader>
+
+                  <CardContent>
+                    <p className="text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+                      {action.dashboardDescription}
+                    </p>
+
+                    <p className="mt-4 text-sm font-medium text-rose-600 transition-transform group-hover:translate-x-1 dark:text-rose-400 ">
+                      Mở chức năng →
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
             </StaggerItem>
           );
         })}
       </Stagger>
 
-      {/* Quick actions placeholder */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      {dashboardActions.length === 0 && (
+        <Card className="border-amber-200 bg-amber-50/70 dark:border-amber-900 dark:bg-amber-950/20">
+          <CardContent className="py-6">
+            <p className="text-sm text-amber-800 dark:text-amber-300">
+              Tài khoản chưa có chức năng Dashboard phù hợp. Hãy đăng nhập lại để làm mới quyền.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      <motion.section
+        initial={{
+          opacity: 0,
+          y: 12,
+        }}
+        animate={{
+          opacity: 1,
+          y: 0,
+        }}
+        transition={{
+          duration: 0.5,
+          delay: 0.45,
+          ease: [0.22, 1, 0.36, 1],
+        }}
       >
         <Card className="border-zinc-200/70 bg-white/80 backdrop-blur-xl dark:border-zinc-800/60 dark:bg-zinc-900/60">
           <CardHeader>
-            <CardTitle>Hoạt động gần đây</CardTitle>
+            <CardTitle>{configuration.activityTitle}</CardTitle>
           </CardHeader>
+
           <CardContent>
-            <div className="grid place-items-center py-12 text-center">
-              <PawPrint
-                className="mb-3 h-10 w-10 text-zinc-300 dark:text-zinc-700"
+            <div className="grid place-items-center py-10 text-center">
+              <UserRoundCog
+                className="mb-3 size-10 text-zinc-300 dark:text-zinc-700"
                 strokeWidth={1.6}
               />
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                Chưa có hoạt động nào. Đặt lịch đầu tiên để bắt đầu nhé.
+
+              <p className="max-w-lg text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+                {configuration.activityDescription}
               </p>
             </div>
           </CardContent>
         </Card>
-      </motion.div>
-    </div>
+      </motion.section>
+    </main>
   );
 }

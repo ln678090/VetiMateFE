@@ -6,11 +6,15 @@ import {
   getMyAppointments,
   createPet,
   getMyCustomer,
+  updateAppointmentStatus,
+  getManagementAppointments,
 } from '../api/booking.api';
 import type {
+  AppointmentStatus,
   CreateAppointmentRequest,
   CreatePetRequest,
   CustomerDto,
+  ManagementAppointmentParams,
   PetDto,
 } from '@/types/clinic';
 
@@ -19,9 +23,20 @@ const CLINIC_QUERY_KEYS = {
   pets: (customerId: string) => ['clinic', 'pets', customerId] as const,
   appointments: (customerId: string) => ['clinic', 'appointments', customerId] as const,
   myCustomer: () => ['clinic', 'me', 'customer'] as const,
+  managementAppointments: (params: ManagementAppointmentParams) =>
+    [
+      'clinic',
+      'management',
+      'appointments',
+      params.date,
+      params.status ?? 'ALL',
+      params.page ?? 0,
+      params.size ?? 20,
+    ] as const,
 };
 
-// Danh sách dịch vụ đang mở bán
+// Danh sách dịch vụ đang mở bán:console.warn();
+
 export function useActiveServices() {
   return useQuery({
     queryKey: CLINIC_QUERY_KEYS.services,
@@ -146,15 +161,32 @@ export function useUpdatePet(customerId: string) {
   });
 }
 
-// ============ DELETE PET ============
-export function useDeletePet(customerId: string) {
+export function useManagementAppointments(params: ManagementAppointmentParams) {
+  return useQuery({
+    queryKey: CLINIC_QUERY_KEYS.managementAppointments(params),
+    queryFn: () => getManagementAppointments(params),
+    enabled: params.date.length === 10,
+    staleTime: 15_000,
+    placeholderData: (previousData) => previousData,
+  });
+}
+
+export function useUpdateAppointmentStatus() {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, string>({
-    mutationFn: (petId) => deletePet(petId),
-    onSuccess: () => {
-      // Invalidate pet list
-      queryClient.invalidateQueries({ queryKey: PET_QUERY_KEYS.byCustomer(customerId) });
+  return useMutation({
+    mutationFn: ({ appointmentId, status }: { appointmentId: string; status: AppointmentStatus }) =>
+      updateAppointmentStatus(appointmentId, status),
+
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ['clinic', 'management', 'appointments'],
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['clinic', 'appointments'],
+        }),
+      ]);
     },
   });
 }

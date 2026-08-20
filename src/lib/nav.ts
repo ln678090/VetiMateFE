@@ -25,4 +25,6 @@ export const PROTECTED_NAV: NavItem[] = [
   { label: 'Cửa hàng', href: '/shop', icon: ShoppingBag },
   { label: 'Giỏ hàng', href: '/cart', icon: ShoppingCart },
   { label: 'Hồ sơ', href: '/profile', icon: UserCircle2 },
+  { label: 'Quản lý lịch  khám  ', href: '/management/appointments', icon: Stethoscope },
+  { label: 'Quản lý khám ', href: '/doctor/examinations', icon: Stethoscope },
 ];
