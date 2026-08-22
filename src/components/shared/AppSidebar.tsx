@@ -58,7 +58,7 @@ export function AppSidebar() {
     <>
       <div className="flex h-16 items-center justify-between border-b border-zinc-200 px-4 dark:border-zinc-800">
         {!collapsed && (
-          <Link href="/dashboard" onClick={closeMobileSidebar} className="font-bold tracking-tight">
+          <Link href="/" onClick={closeMobileSidebar} className="font-bold tracking-tight">
             <span className="bg-gradient-to-r from-rose-500 to-amber-500 bg-clip-text text-transparent">
               PetCare
             </span>
