@@ -10,48 +10,19 @@ export const STAFF_ROLE_TYPES = [
 ] as const;
 
 export const staffFormSchema = z.object({
-  userId: z.string().trim(),
-
-  fullName: z
-    .string()
-    .trim()
-    .min(1, 'Vui lòng nhập họ tên')
-    .max(150, 'Họ tên không được vượt quá 150 ký tự'),
-
-  phone: z
-    .string()
-    .trim()
-    .refine(
-      (value) => value.length === 0 || /^[0-9+()\-\s]{8,20}$/.test(value),
-      'Số điện thoại không hợp lệ'
-    ),
+  userId: z.string().min(1, 'Vui lòng chọn tài khoản').uuid('Tài khoản không hợp lệ'),
 
   roleType: z.enum(STAFF_ROLE_TYPES, {
     error: 'Vui lòng chọn vai trò',
   }),
 
-  licenseNumber: z.string().trim().max(100, 'Số chứng chỉ không được vượt quá 100 ký tự'),
-
-  baseSalary: z
-    .string()
-    .trim()
-    .min(1, 'Vui lòng nhập lương cơ bản')
-    .refine(
-      (value) => Number.isFinite(Number(value)) && Number(value) >= 0,
-      'Lương cơ bản phải từ 0 trở lên'
-    ),
-
-  commissionRate: z
-    .string()
-    .trim()
-    .min(1, 'Vui lòng nhập tỷ lệ hoa hồng')
-    .refine((value) => {
-      const number = Number(value);
-
-      return Number.isFinite(number) && number >= 0 && number <= 100;
-    }, 'Hoa hồng phải từ 0 đến 100'),
-
   active: z.boolean(),
+
+  reason: z
+    .string()
+    .trim()
+    .min(10, 'Lý do phải có ít nhất 10 ký tự')
+    .max(500, 'Lý do không được quá 500 ký tự'),
 });
 
 export type StaffFormValues = z.infer<typeof staffFormSchema>;

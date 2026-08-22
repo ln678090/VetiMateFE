@@ -1,89 +1,168 @@
-import { APP } from '@/lib/constants';
-import { PawPrint } from 'lucide-react';
+'use client';
+
+import { motion } from 'framer-motion';
+import { ArrowUp, Cat, Dog, Heart, PawPrint } from 'lucide-react';
 import Link from 'next/link';
 
-const FOOTER_COLS = [
+const FOOTER_GROUPS = [
   {
-    title: 'Sản phẩm',
+    title: 'Phòng khám',
     links: [
-      { label: 'Thức ăn', href: '/shop/category/food' },
-      { label: 'Đồ chơi', href: '/shop/category/toys' },
-      { label: 'Cát vệ sinh', href: '/shop/category/litter' },
-      { label: 'Phụ kiện', href: '/shop/category/accessories' },
+      {
+        label: 'Đặt lịch khám',
+        href: '/booking',
+      },
+      {
+        label: 'Hồ sơ thú cưng',
+        href: '/profile/pets',
+      },
+      {
+        label: 'Quy trình chăm sóc',
+        href: '#clinic',
+      },
     ],
   },
   {
-    title: 'Dịch vụ',
+    title: 'Cửa hàng',
     links: [
-      { label: 'Đặt lịch chăm sóc', href: '/booking' },
-      { label: 'Khám thú y', href: '/vet' },
-      { label: 'Hồ sơ thú cưng', href: '/profile' },
+      {
+        label: 'Khám phá sản phẩm',
+        href: '/shop',
+      },
+      {
+        label: 'Giỏ hàng',
+        href: '/cart',
+      },
+      {
+        label: 'Vì sao chọn PetCare',
+        href: '#shop',
+      },
     ],
   },
   {
-    title: 'Hỗ trợ',
+    title: 'Tài khoản',
     links: [
-      { label: 'Câu hỏi thường gặp', href: '#' },
-      { label: 'Chính sách đổi trả', href: '#' },
-      { label: 'Liên hệ', href: '#contact' },
+      {
+        label: 'Đăng nhập',
+        href: '/login',
+      },
+      {
+        label: 'Đăng ký',
+        href: '/register',
+      },
+      {
+        label: 'Tổng quan dịch vụ',
+        href: '#services',
+      },
     ],
   },
 ];
 
 export function LandingFooter() {
   return (
-    <footer
-      id="contact"
-      className="border-t border-zinc-200/70 bg-white/70 backdrop-blur-xl dark:border-zinc-800/60 dark:bg-zinc-950/60"
-    >
-      <div className="mx-auto max-w-7xl px-4 py-12 md:px-6 md:py-16">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-          {/* Brand col */}
-          <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-rose-500 to-amber-400 text-white shadow-md">
-                <PawPrint className="h-5 w-5" strokeWidth={2.4} />
+    <footer className="relative overflow-hidden border-t border-rose-100 bg-[#fffaf8]">
+      <div
+        aria-hidden="true"
+        className="absolute -left-40 bottom-0 size-96 rounded-full bg-rose-100/70 blur-3xl"
+      />
+
+      <div
+        aria-hidden="true"
+        className="absolute -right-40 top-0 size-96 rounded-full bg-amber-100/70 blur-3xl"
+      />
+
+      <div className="relative mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-20">
+        <div className="grid gap-12 lg:grid-cols-[1.1fr_1.9fr]">
+          <div>
+            <Link href="/" className="inline-flex items-center gap-3">
+              <span className="relative grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-rose-500 to-amber-400 text-white shadow-lg shadow-rose-200">
+                <PawPrint className="size-6" />
+
+                <motion.span
+                  animate={{
+                    y: [0, -3, 0],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                  className="absolute -left-3 -top-3 grid size-7 place-items-center rounded-full border-2 border-white bg-rose-400 text-white"
+                >
+                  <Dog className="size-4" strokeWidth={1.5} />
+                </motion.span>
+
+                <motion.span
+                  animate={{
+                    y: [0, 3, 0],
+                  }}
+                  transition={{
+                    duration: 3.4,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }}
+                  className="absolute -bottom-3 -right-3 grid size-7 place-items-center rounded-full border-2 border-white bg-amber-400 text-white"
+                >
+                  <Cat className="size-4" strokeWidth={1.5} />
+                </motion.span>
               </span>
-              <span className="text-sm font-semibold tracking-tight">{APP.name}</span>
+
+              <div>
+                <p className="text-xl font-black tracking-[-0.04em] text-zinc-950">PetCare</p>
+
+                <p className="text-xs font-medium text-rose-500">Clinic & Shop</p>
+              </div>
             </Link>
-            <p className="mt-4 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
-              Chăm sóc thú cưng cao cấp dành cho chó mèo. Đặt lịch khám và mua sắm tiện lợi mọi lúc.
+
+            <p className="mt-6 max-w-sm text-sm leading-6 text-zinc-600">
+              Một nơi để đặt lịch, theo dõi sức khỏe và mua sắm cho chó mèo.
             </p>
+
+            <div className="mt-7 flex items-center gap-2 text-xs font-medium text-zinc-500">
+              <Heart className="size-4 fill-rose-400 text-rose-400" />
+              Thiết kế vì hành trình khỏe mạnh của thú cưng.
+            </div>
           </div>
 
-          {FOOTER_COLS.map((col) => (
-            <div key={col.title}>
-              <h4 className="text-xs font-semibold tracking-wider text-zinc-900 uppercase dark:text-white">
-                {col.title}
-              </h4>
-              <ul className="mt-4 space-y-2">
-                {col.links.map((link) => (
-                  <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-zinc-600 transition hover:text-rose-600 dark:text-zinc-400 dark:hover:text-rose-400"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <div className="grid gap-8 sm:grid-cols-3">
+            {FOOTER_GROUPS.map((group) => (
+              <nav key={group.title} aria-label={group.title}>
+                <h2 className="text-xs font-black uppercase tracking-[0.17em] text-zinc-900">
+                  {group.title}
+                </h2>
+
+                <ul className="mt-5 space-y-3">
+                  {group.links.map((link) => (
+                    <li key={link.label}>
+                      <Link
+                        href={link.href}
+                        className="text-sm text-zinc-500 transition-colors hover:text-rose-500"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            ))}
+          </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-zinc-200/70 pt-6 sm:flex-row dark:border-zinc-800/60">
-          <p className="text-xs text-zinc-500 dark:text-zinc-500">
-            © {new Date().getFullYear()} {APP.name}. Đồ án tốt nghiệp.
-          </p>
-          <div className="flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-500">
-            <Link href="#" className="hover:text-zinc-900 dark:hover:text-white">
-              Điều khoản
-            </Link>
-            <Link href="#" className="hover:text-zinc-900 dark:hover:text-white">
-              Bảo mật
-            </Link>
-          </div>
+        <div className="mt-14 h-px bg-gradient-to-r from-transparent via-rose-200 to-transparent" />
+
+        <div className="mt-7 flex flex-col items-center justify-between gap-4 text-center text-xs text-zinc-400 sm:flex-row sm:text-left">
+          <p>© {new Date().getFullYear()} PetCare. Veterinary Clinic & Pet Shop.</p>
+
+          <motion.a
+            href="#top"
+            whileHover={{
+              y: -3,
+            }}
+            className="inline-flex items-center gap-2 rounded-full border border-rose-100 bg-white px-3 py-2 font-semibold text-rose-500 shadow-sm"
+          >
+            Lên đầu trang
+            <ArrowUp className="size-3.5" />
+          </motion.a>
         </div>
       </div>
     </footer>

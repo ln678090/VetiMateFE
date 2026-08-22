@@ -6,10 +6,9 @@ import {
   type UseQueryResult,
 } from '@tanstack/react-query';
 
-import { examinationApi } from '../api/examination.api';
+import { examinationApi } from '@/features/examination/api/examination.api';
 
 import type { SpringPage } from '@/types/clinic';
-
 import type {
   ExaminationHistoryItem,
   MedicalRecordResponse,
@@ -21,7 +20,7 @@ import type {
 export const EXAMINATION_QUERY_KEYS = {
   all: ['examinations'] as const,
 
-  medicalRecords: () => [...EXAMINATION_QUERY_KEYS.all, 'medical-record'] as const,
+  medicalRecords: () => [...EXAMINATION_QUERY_KEYS.all, 'medical-records'] as const,
 
   medicalRecord: (medicalRecordId: string) =>
     [...EXAMINATION_QUERY_KEYS.medicalRecords(), medicalRecordId] as const,
@@ -47,11 +46,11 @@ interface ReplacePrescriptionsVariables {
 export function useOpenExamination(): UseMutationResult<MedicalRecordResponse, Error, string> {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<MedicalRecordResponse, Error, string>({
     mutationFn: (appointmentId) => examinationApi.openExamination(appointmentId),
 
     onSuccess: (medicalRecord) => {
-      queryClient.setQueryData(
+      queryClient.setQueryData<MedicalRecordResponse>(
         EXAMINATION_QUERY_KEYS.medicalRecord(medicalRecord.id),
         medicalRecord
       );
@@ -60,9 +59,10 @@ export function useOpenExamination(): UseMutationResult<MedicalRecordResponse, E
 }
 
 export function useMedicalRecord(
-  medicalRecordId: string | null
+  medicalRecordId: string | null,
+  enabled = true
 ): UseQueryResult<MedicalRecordResponse, Error> {
-  return useQuery({
+  return useQuery<MedicalRecordResponse, Error>({
     queryKey: EXAMINATION_QUERY_KEYS.medicalRecord(medicalRecordId ?? 'disabled'),
 
     queryFn: () => {
@@ -73,15 +73,20 @@ export function useMedicalRecord(
       return examinationApi.getMedicalRecord(medicalRecordId);
     },
 
-    enabled: Boolean(medicalRecordId),
+    enabled: enabled && Boolean(medicalRecordId),
+    staleTime: 60_000,
+    retry: 1,
   });
 }
 
 export function useMedicines(): UseQueryResult<MedicineOptionResponse[], Error> {
-  return useQuery({
+  return useQuery<MedicineOptionResponse[], Error>({
     queryKey: EXAMINATION_QUERY_KEYS.medicines(),
+
     queryFn: () => examinationApi.getMedicines(),
+
     staleTime: 5 * 60 * 1000,
+    retry: 1,
   });
 }
 
@@ -90,13 +95,14 @@ export function useExaminationHistory(
   size = 10,
   enabled = true
 ): UseQueryResult<SpringPage<ExaminationHistoryItem>, Error> {
-  return useQuery({
+  return useQuery<SpringPage<ExaminationHistoryItem>, Error>({
     queryKey: EXAMINATION_QUERY_KEYS.history(page, size),
 
     queryFn: () => examinationApi.getHistory(page, size),
 
     enabled,
     staleTime: 30_000,
+    retry: 1,
   });
 }
 
@@ -107,12 +113,12 @@ export function useSaveExamination(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<MedicalRecordResponse, Error, SaveExaminationVariables>({
     mutationFn: ({ medicalRecordId, request }) =>
       examinationApi.saveExamination(medicalRecordId, request),
 
     onSuccess: (medicalRecord) => {
-      queryClient.setQueryData(
+      queryClient.setQueryData<MedicalRecordResponse>(
         EXAMINATION_QUERY_KEYS.medicalRecord(medicalRecord.id),
         medicalRecord
       );
@@ -127,12 +133,12 @@ export function useReplacePrescriptions(): UseMutationResult<
 > {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<MedicalRecordResponse, Error, ReplacePrescriptionsVariables>({
     mutationFn: ({ medicalRecordId, request }) =>
       examinationApi.replacePrescriptions(medicalRecordId, request),
 
     onSuccess: (medicalRecord) => {
-      queryClient.setQueryData(
+      queryClient.setQueryData<MedicalRecordResponse>(
         EXAMINATION_QUERY_KEYS.medicalRecord(medicalRecord.id),
         medicalRecord
       );
@@ -143,11 +149,11 @@ export function useReplacePrescriptions(): UseMutationResult<
 export function useCompleteExamination(): UseMutationResult<MedicalRecordResponse, Error, string> {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<MedicalRecordResponse, Error, string>({
     mutationFn: (medicalRecordId) => examinationApi.completeExamination(medicalRecordId),
 
     onSuccess: async (medicalRecord) => {
-      queryClient.setQueryData(
+      queryClient.setQueryData<MedicalRecordResponse>(
         EXAMINATION_QUERY_KEYS.medicalRecord(medicalRecord.id),
         medicalRecord
       );

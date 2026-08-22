@@ -1,603 +1,492 @@
 'use client';
 
-import { use, useCallback, useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, CheckCircle2, Plus, Save, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft, LoaderCircle, Plus, Save, Stethoscope, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { examinationApi } from '@/features/examination/api/examination.api';
 import {
+  EXAMINATION_QUERY_KEYS,
   useCompleteExamination,
   useMedicines,
-  useOpenExamination,
   useReplacePrescriptions,
   useSaveExamination,
 } from '@/features/examination/hooks/use-examination';
-import { getApiErrorMessage } from '@/lib/axios';
+
 import type {
   MedicalRecordResponse,
+  PetHealthStatus,
   PrescriptionItemRequest,
-  ReplacePrescriptionsRequest,
   SaveExaminationRequest,
 } from '@/types/examination';
 
-interface DoctorExaminationPageProps {
-  params: Promise<{
-    appointmentId: string;
-  }>;
-}
-
-interface ExaminationFormState {
-  symptoms: string;
-  diagnosis: string;
-  treatmentPlan: string;
-  weightKg: string;
-  doctorNote: string;
-}
-
-interface PrescriptionFormItem {
-  clientId: string;
+interface PrescriptionDraft {
+  key: string;
   medicineId: string;
-  quantity: string;
+  quantity: number;
   dosage: string;
-  durationDays: string;
+  durationDays: number;
   note: string;
 }
 
-type PrescriptionField = 'medicineId' | 'quantity' | 'dosage' | 'durationDays' | 'note';
-
-type InitializationStatus = 'loading' | 'success' | 'error';
-
-const EMPTY_EXAMINATION_FORM: ExaminationFormState = {
-  symptoms: '',
-  diagnosis: '',
-  treatmentPlan: '',
-  weightKg: '',
-  doctorNote: '',
-};
-
-function createClientId(): string {
-  return crypto.randomUUID();
+interface ExaminationFormProps {
+  initialRecord: MedicalRecordResponse;
 }
 
-function createEmptyPrescription(): PrescriptionFormItem {
+const HEALTH_OPTIONS: Array<{
+  value: PetHealthStatus;
+  label: string;
+}> = [
+  {
+    value: 'HEALTHY',
+    label: 'Khỏe mạnh',
+  },
+  {
+    value: 'MONITORING',
+    label: 'Cần theo dõi',
+  },
+  {
+    value: 'TREATMENT',
+    label: 'Đang điều trị',
+  },
+  {
+    value: 'CRITICAL',
+    label: 'Nghiêm trọng',
+  },
+  {
+    value: 'RECOVERING',
+    label: 'Đang hồi phục',
+  },
+];
+
+function createPrescriptionDraft(): PrescriptionDraft {
   return {
-    clientId: createClientId(),
+    key: crypto.randomUUID(),
     medicineId: '',
-    quantity: '1',
+    quantity: 1,
     dosage: '',
-    durationDays: '1',
+    durationDays: 1,
     note: '',
   };
 }
 
-export default function DoctorExaminationPage({ params }: DoctorExaminationPageProps) {
-  const { appointmentId } = use(params);
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Đã xảy ra lỗi không xác định.';
+}
+
+function ExaminationForm({ initialRecord }: ExaminationFormProps) {
   const router = useRouter();
 
-  const initializationStartedRef = useRef(false);
+  const [symptoms, setSymptoms] = useState(initialRecord.symptoms ?? '');
 
-  const [initializationStatus, setInitializationStatus] = useState<InitializationStatus>('loading');
+  const [diagnosis, setDiagnosis] = useState(initialRecord.diagnosis ?? '');
 
-  const [initializationError, setInitializationError] = useState('');
+  const [treatmentPlan, setTreatmentPlan] = useState(initialRecord.treatmentPlan ?? '');
 
-  const [medicalRecord, setMedicalRecord] = useState<MedicalRecordResponse | null>(null);
+  const [weightKg, setWeightKg] = useState<number | null>(initialRecord.weightKg);
 
-  const [form, setForm] = useState<ExaminationFormState>(EMPTY_EXAMINATION_FORM);
+  const [healthStatus, setHealthStatus] = useState<PetHealthStatus>(
+    initialRecord.healthStatus ?? 'MONITORING'
+  );
 
-  const [prescriptions, setPrescriptions] = useState<PrescriptionFormItem[]>([]);
+  const [doctorNote, setDoctorNote] = useState(initialRecord.doctorNote ?? '');
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const { mutateAsync: openExaminationAsync } = useOpenExamination();
-
-  const { mutateAsync: saveExaminationAsync } = useSaveExamination();
-
-  const { mutateAsync: replacePrescriptionsAsync } = useReplacePrescriptions();
-
-  const { mutateAsync: completeExaminationAsync } = useCompleteExamination();
-
-  const {
-    data: medicines = [],
-    isLoading: isLoadingMedicines,
-    error: medicinesError,
-  } = useMedicines();
-
-  const initializeForm = useCallback((record: MedicalRecordResponse) => {
-    setMedicalRecord(record);
-
-    setForm({
-      symptoms: record.symptoms ?? '',
-      diagnosis: record.diagnosis ?? '',
-      treatmentPlan: record.treatmentPlan ?? '',
-      weightKg: record.weightKg === null ? '' : String(record.weightKg),
-      doctorNote: record.doctorNote ?? '',
-    });
-
-    const prescriptionItems = (record.prescriptions ?? []).map((item) => ({
-      clientId: item.id,
+  const [prescriptions, setPrescriptions] = useState<PrescriptionDraft[]>(
+    initialRecord.prescriptions.map((item) => ({
+      key: item.id,
       medicineId: item.medicineId,
-      quantity: String(item.quantity),
+      quantity: item.quantity,
       dosage: item.dosage,
-      durationDays: String(item.durationDays),
+      durationDays: item.durationDays,
       note: item.note ?? '',
-    }));
+    }))
+  );
 
-    setPrescriptions(prescriptionItems);
-  }, []);
+  const medicinesQuery = useMedicines();
+  const saveMutation = useSaveExamination();
 
-  useEffect(() => {
-    if (!appointmentId || initializationStartedRef.current) {
-      return;
-    }
+  const replaceMutation = useReplacePrescriptions();
 
-    if (initializationStartedRef.current) {
-      return;
-    }
+  const completeMutation = useCompleteExamination();
 
-    initializationStartedRef.current = true;
+  const isReadOnly = initialRecord.status === 'COMPLETED';
 
-    const initialize = async (): Promise<void> => {
-      setInitializationStatus('loading');
-      setInitializationError('');
+  const isSubmitting =
+    saveMutation.isPending || replaceMutation.isPending || completeMutation.isPending;
 
-      try {
-        const record = await openExaminationAsync(appointmentId);
-
-        initializeForm(record);
-        setInitializationStatus('success');
-      } catch (error: unknown) {
-        setInitializationError(getApiErrorMessage(error));
-        setInitializationStatus('error');
-      }
-    };
-
-    void initialize();
-  }, [appointmentId, initializeForm, openExaminationAsync]);
-
-  const updateForm = (field: keyof ExaminationFormState, value: string): void => {
-    setForm((current) => ({
-      ...current,
-      [field]: value,
-    }));
-  };
-
-  const updatePrescription = (clientId: string, field: PrescriptionField, value: string): void => {
-    setPrescriptions((current) =>
-      current.map((item) =>
-        item.clientId === clientId
-          ? {
-              ...item,
-              [field]: value,
-            }
-          : item
-      )
-    );
-  };
-
-  const addPrescription = (): void => {
-    setPrescriptions((current) => [...current, createEmptyPrescription()]);
-  };
-
-  const removePrescription = (clientId: string): void => {
-    setPrescriptions((current) => current.filter((item) => item.clientId !== clientId));
-  };
-
-  const createSaveRequest = (): SaveExaminationRequest => {
-    const diagnosis = form.diagnosis.trim();
-
-    if (!diagnosis) {
-      throw new Error('Chẩn đoán không được để trống.');
-    }
-
-    if (diagnosis.length > 5000) {
-      throw new Error('Chẩn đoán không được vượt quá 5000 ký tự.');
-    }
-
-    const weightInput = form.weightKg.trim();
-    let weightKg: number | null = null;
-
-    if (weightInput) {
-      const parsedWeight = Number(weightInput);
-
-      if (!Number.isFinite(parsedWeight) || parsedWeight <= 0) {
-        throw new Error('Cân nặng phải là số lớn hơn 0.');
-      }
-
-      weightKg = parsedWeight;
-    }
-
+  function buildSaveRequest(): SaveExaminationRequest {
     return {
-      symptoms: form.symptoms.trim(),
-      diagnosis,
-      treatmentPlan: form.treatmentPlan.trim(),
+      symptoms: symptoms.trim(),
+      diagnosis: diagnosis.trim(),
+      treatmentPlan: treatmentPlan.trim(),
       weightKg,
-      doctorNote: form.doctorNote.trim(),
+      healthStatus,
+      doctorNote: doctorNote.trim(),
     };
-  };
+  }
 
-  const createPrescriptionRequest = (): ReplacePrescriptionsRequest => {
-    // if (prescriptions.length === 0) {
-    //   throw new Error('Đơn thuốc phải có ít nhất một thuốc.');
-    // }
+  function buildPrescriptionItems(): PrescriptionItemRequest[] {
+    const medicineIds = prescriptions.map((item) => item.medicineId);
 
-    const items: PrescriptionItemRequest[] = prescriptions.map((item, index) => {
-      const rowNumber = index + 1;
-      const quantity = Number(item.quantity);
-      const durationDays = Number(item.durationDays);
-      const dosage = item.dosage.trim();
+    if (medicineIds.some((id) => !id)) {
+      throw new Error('Hãy chọn thuốc cho tất cả các dòng.');
+    }
 
-      if (!item.medicineId) {
-        throw new Error(`Dòng thuốc ${rowNumber}: chưa chọn thuốc.`);
+    if (new Set(medicineIds).size !== medicineIds.length) {
+      throw new Error('Một loại thuốc không được kê nhiều lần.');
+    }
+
+    return prescriptions.map((item) => {
+      if (!Number.isFinite(item.quantity) || item.quantity <= 0) {
+        throw new Error('Số lượng thuốc phải lớn hơn 0.');
       }
 
-      if (!Number.isFinite(quantity) || quantity <= 0) {
-        throw new Error(`Dòng thuốc ${rowNumber}: số lượng phải lớn hơn 0.`);
+      if (!item.dosage.trim()) {
+        throw new Error('Liều dùng không được để trống.');
       }
 
-      if (!dosage) {
-        throw new Error(`Dòng thuốc ${rowNumber}: liều dùng không được để trống.`);
-      }
-
-      if (dosage.length > 200) {
-        throw new Error(`Dòng thuốc ${rowNumber}: liều dùng không được vượt quá 200 ký tự.`);
-      }
-
-      if (!Number.isInteger(durationDays) || durationDays <= 0) {
-        throw new Error(`Dòng thuốc ${rowNumber}: số ngày phải là số nguyên dương.`);
+      if (!Number.isInteger(item.durationDays) || item.durationDays <= 0) {
+        throw new Error('Số ngày phải là số nguyên lớn hơn 0.');
       }
 
       return {
         medicineId: item.medicineId,
-        quantity,
-        dosage,
-        durationDays,
+        quantity: item.quantity,
+        dosage: item.dosage.trim(),
+        durationDays: item.durationDays,
         note: item.note.trim(),
       };
     });
+  }
 
-    return { items };
-  };
-
-  const persistExamination = async (): Promise<MedicalRecordResponse> => {
-    if (!medicalRecord) {
-      throw new Error('Hồ sơ khám chưa được khởi tạo.');
-    }
-
-    const saveRequest = createSaveRequest();
-    const prescriptionRequest = createPrescriptionRequest();
-
-    const savedRecord = await saveExaminationAsync({
-      medicalRecordId: medicalRecord.id,
-      request: saveRequest,
-    });
-
-    const recordWithPrescriptions = await replacePrescriptionsAsync({
-      medicalRecordId: savedRecord.id,
-      request: prescriptionRequest,
-    });
-
-    initializeForm(recordWithPrescriptions);
-
-    return recordWithPrescriptions;
-  };
-
-  const handleSave = async (): Promise<void> => {
-    if (isSubmitting) {
+  async function handleSave(): Promise<void> {
+    if (isReadOnly) {
       return;
     }
 
-    setIsSubmitting(true);
-
     try {
-      await persistExamination();
+      await saveMutation.mutateAsync({
+        medicalRecordId: initialRecord.id,
+        request: buildSaveRequest(),
+      });
 
-      toast.success('Đã lưu hồ sơ khám và đơn thuốc.');
-    } catch (error: unknown) {
-      toast.error(getApiErrorMessage(error));
-    } finally {
-      setIsSubmitting(false);
+      toast.success('Đã lưu bệnh án.');
+    } catch (error) {
+      toast.error(getErrorMessage(error));
     }
-  };
+  }
 
-  const handleComplete = async (): Promise<void> => {
-    if (isSubmitting) {
+  async function handleComplete(): Promise<void> {
+    if (isReadOnly) {
       return;
     }
 
-    setIsSubmitting(true);
+    if (!diagnosis.trim()) {
+      toast.error('Phải nhập chẩn đoán trước khi hoàn tất.');
+      return;
+    }
 
     try {
-      const savedRecord = await persistExamination();
+      const prescriptionItems = buildPrescriptionItems();
 
-      await completeExaminationAsync(savedRecord.id);
+      const savedRecord = await saveMutation.mutateAsync({
+        medicalRecordId: initialRecord.id,
+        request: buildSaveRequest(),
+      });
 
-      toast.success('Đã hoàn tất ca khám.');
+      await replaceMutation.mutateAsync({
+        medicalRecordId: savedRecord.id,
+        request: {
+          items: prescriptionItems,
+        },
+      });
 
-      router.push('/doctor/examinations');
-      router.refresh();
-    } catch (error: unknown) {
-      toast.error(getApiErrorMessage(error));
-    } finally {
-      setIsSubmitting(false);
+      await completeMutation.mutateAsync(savedRecord.id);
+
+      toast.success('Đã hoàn tất khám và cập nhật sức khỏe thú cưng.');
+
+      router.replace('/doctor/examinations');
+    } catch (error) {
+      toast.error(getErrorMessage(error));
     }
-  };
+  }
 
-  if (!appointmentId) {
-    return (
-      <main className="mx-auto max-w-3xl p-6">
-        <section className="rounded-2xl border border-red-200 bg-red-50 p-6">
-          <h1 className="text-lg font-semibold text-red-900">Không thể mở hồ sơ khám</h1>
+  function addPrescription(): void {
+    setPrescriptions((current) => [...current, createPrescriptionDraft()]);
+  }
 
-          <p className="mt-2 text-sm text-red-700">Không tìm thấy mã lịch hẹn.</p>
-        </section>
-      </main>
+  function removePrescription(key: string): void {
+    setPrescriptions((current) => current.filter((item) => item.key !== key));
+  }
+
+  function updatePrescription(key: string, changes: Partial<PrescriptionDraft>): void {
+    setPrescriptions((current) =>
+      current.map((item) =>
+        item.key === key
+          ? {
+              ...item,
+              ...changes,
+            }
+          : item
+      )
     );
   }
-  if (initializationStatus === 'loading') {
-    return (
-      <main className="mx-auto max-w-6xl p-6">
-        <section className="rounded-2xl border bg-white p-8 shadow-sm">
-          <div className="h-7 w-64 animate-pulse rounded bg-slate-200" />
-          <div className="mt-6 h-40 animate-pulse rounded-xl bg-slate-100" />
-          <div className="mt-6 h-40 animate-pulse rounded-xl bg-slate-100" />
-        </section>
-      </main>
-    );
-  }
-
-  if (initializationStatus === 'error') {
-    return (
-      <main className="mx-auto max-w-3xl p-6">
-        <section className="rounded-2xl border border-red-200 bg-red-50 p-6">
-          <h1 className="text-lg font-semibold text-red-900">Không thể mở hồ sơ khám</h1>
-
-          <p className="mt-2 text-sm text-red-700">{initializationError}</p>
-
-          <button
-            type="button"
-            onClick={() => router.push('/doctor/examinations')}
-            className="mt-5 inline-flex items-center gap-2 rounded-xl border border-red-300 px-4 py-2 text-sm font-medium text-red-800 hover:bg-red-100"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Quay lại danh sách
-          </button>
-        </section>
-      </main>
-    );
-  }
-
-  if (!medicalRecord) {
-    return null;
-  }
-
-  const isCompleted = medicalRecord.status === 'COMPLETED';
 
   return (
-    <main className="mx-auto max-w-6xl space-y-6 p-6">
-      <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <button
-            type="button"
-            onClick={() => router.push('/doctor/examinations')}
-            className="mb-3 inline-flex items-center gap-2 text-sm text-slate-600 hover:text-slate-950"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Danh sách ca khám
-          </button>
+    <main className="mx-auto max-w-6xl space-y-6 py-8">
+      <Link
+        href="/doctor/examinations"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" />
+        Quay lại danh sách khám
+      </Link>
 
-          <h1 className="text-2xl font-bold text-slate-950">Hồ sơ khám bệnh</h1>
+      <header>
+        <div className="flex items-center gap-2">
+          <Stethoscope className="size-7 text-rose-600" />
 
-          <p className="mt-1 text-sm text-slate-500">Mã lịch hẹn: {medicalRecord.appointmentId}</p>
+          <h1 className="text-3xl font-bold">Hồ sơ khám bệnh</h1>
         </div>
 
-        <span
-          className={
-            isCompleted
-              ? 'rounded-full bg-emerald-100 px-3 py-1 text-sm font-medium text-emerald-700'
-              : 'rounded-full bg-amber-100 px-3 py-1 text-sm font-medium text-amber-700'
-          }
-        >
-          {isCompleted ? 'Đã hoàn tất' : 'Đang khám'}
-        </span>
+        <p className="mt-2 text-muted-foreground">
+          Ghi nhận tình trạng sức khỏe, chẩn đoán và đơn thuốc.
+        </p>
       </header>
 
-      <section className="rounded-2xl border bg-white p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-900">Thông tin lâm sàng</h2>
-
-        <div className="mt-5 grid gap-5 md:grid-cols-2">
-          <label className="space-y-2 md:col-span-2">
-            <span className="text-sm font-medium text-slate-700">Triệu chứng</span>
-
-            <textarea
-              value={form.symptoms}
-              disabled={isCompleted}
-              maxLength={5000}
-              onChange={(event) => updateForm('symptoms', event.target.value)}
-              className="min-h-24 w-full rounded-xl border px-3 py-2 outline-none focus:border-rose-400 disabled:bg-slate-100"
-            />
-          </label>
-
-          <label className="space-y-2 md:col-span-2">
-            <span className="text-sm font-medium text-slate-700">
-              Chẩn đoán <span className="text-red-500">*</span>
-            </span>
-
-            <textarea
-              value={form.diagnosis}
-              disabled={isCompleted}
-              required
-              maxLength={5000}
-              onChange={(event) => updateForm('diagnosis', event.target.value)}
-              className="min-h-24 w-full rounded-xl border px-3 py-2 outline-none focus:border-rose-400 disabled:bg-slate-100"
-            />
-          </label>
-
-          <label className="space-y-2 md:col-span-2">
-            <span className="text-sm font-medium text-slate-700">Kế hoạch điều trị</span>
-
-            <textarea
-              value={form.treatmentPlan}
-              disabled={isCompleted}
-              maxLength={5000}
-              onChange={(event) => updateForm('treatmentPlan', event.target.value)}
-              className="min-h-24 w-full rounded-xl border px-3 py-2 outline-none focus:border-rose-400 disabled:bg-slate-100"
-            />
-          </label>
-
-          <label className="space-y-2">
-            <span className="text-sm font-medium text-slate-700">Cân nặng (kg)</span>
-
-            <input
-              type="number"
-              min="0.01"
-              step="0.01"
-              value={form.weightKg}
-              disabled={isCompleted}
-              onChange={(event) => updateForm('weightKg', event.target.value)}
-              className="w-full rounded-xl border px-3 py-2 outline-none focus:border-rose-400 disabled:bg-slate-100"
-            />
-          </label>
-
-          <label className="space-y-2">
-            <span className="text-sm font-medium text-slate-700">Ghi chú bác sĩ</span>
-
-            <input
-              type="text"
-              value={form.doctorNote}
-              disabled={isCompleted}
-              maxLength={5000}
-              onChange={(event) => updateForm('doctorNote', event.target.value)}
-              className="w-full rounded-xl border px-3 py-2 outline-none focus:border-rose-400 disabled:bg-slate-100"
-            />
-          </label>
+      {isReadOnly && (
+        <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+          Bệnh án đã hoàn thành chỉ được xem. Tình trạng mới phải được ghi nhận bằng lần khám mới.
         </div>
+      )}
+
+      <section className="grid gap-5 rounded-2xl border bg-white p-6 shadow-sm md:grid-cols-2">
+        <label className="space-y-2">
+          <span className="text-sm font-medium">
+            Tình trạng sức khỏe
+            <span aria-hidden="true" className="ml-0.5 text-red-500">
+              *
+            </span>
+          </span>
+
+          <select
+            value={healthStatus}
+            disabled={isReadOnly}
+            onChange={(event) => setHealthStatus(event.target.value as PetHealthStatus)}
+            className="h-10 w-full rounded-md border bg-background px-3 text-sm disabled:opacity-60"
+          >
+            {HEALTH_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="space-y-2">
+          <span className="text-sm font-medium">Cân nặng (kg)</span>
+
+          <input
+            type="number"
+            min="0.01"
+            step="0.01"
+            value={weightKg ?? ''}
+            disabled={isReadOnly}
+            onChange={(event) => {
+              const value = event.target.value;
+
+              setWeightKg(value ? Number(value) : null);
+            }}
+            className="h-10 w-full rounded-md border bg-background px-3 text-sm disabled:opacity-60"
+          />
+        </label>
+
+        <label className="space-y-2 md:col-span-2">
+          <span className="text-sm font-medium">Triệu chứng</span>
+
+          <textarea
+            rows={4}
+            maxLength={5000}
+            value={symptoms}
+            disabled={isReadOnly}
+            onChange={(event) => setSymptoms(event.target.value)}
+            className="w-full rounded-md border bg-background p-3 text-sm disabled:opacity-60"
+          />
+        </label>
+
+        <label className="space-y-2 md:col-span-2">
+          <span className="text-sm font-medium">
+            Chẩn đoán
+            <span aria-hidden="true" className="ml-0.5 text-red-500">
+              *
+            </span>
+          </span>
+
+          <textarea
+            rows={4}
+            maxLength={5000}
+            value={diagnosis}
+            disabled={isReadOnly}
+            onChange={(event) => setDiagnosis(event.target.value)}
+            className="w-full rounded-md border bg-background p-3 text-sm disabled:opacity-60"
+          />
+        </label>
+
+        <label className="space-y-2 md:col-span-2">
+          <span className="text-sm font-medium">Phác đồ điều trị</span>
+
+          <textarea
+            rows={4}
+            maxLength={5000}
+            value={treatmentPlan}
+            disabled={isReadOnly}
+            onChange={(event) => setTreatmentPlan(event.target.value)}
+            className="w-full rounded-md border bg-background p-3 text-sm disabled:opacity-60"
+          />
+        </label>
+
+        <label className="space-y-2 md:col-span-2">
+          <span className="text-sm font-medium">Ghi chú bác sĩ</span>
+
+          <textarea
+            rows={3}
+            maxLength={5000}
+            value={doctorNote}
+            disabled={isReadOnly}
+            onChange={(event) => setDoctorNote(event.target.value)}
+            className="w-full rounded-md border bg-background p-3 text-sm disabled:opacity-60"
+          />
+        </label>
       </section>
 
       <section className="rounded-2xl border bg-white p-6 shadow-sm">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Đơn thuốc</h2>
+            <h2 className="text-lg font-semibold">Đơn thuốc</h2>
 
-            <p className="mt-1 text-sm text-slate-500">Đơn thuốc phải có ít nhất một dòng.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Có thể hoàn tất khám mà không kê thuốc.
+            </p>
           </div>
 
-          {!isCompleted && (
+          {!isReadOnly && (
             <button
               type="button"
               onClick={addPrescription}
-              className="inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium hover:bg-slate-50"
+              className="inline-flex h-9 items-center gap-2 rounded-md border px-3 text-sm font-medium hover:bg-muted"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="size-4" />
               Thêm thuốc
             </button>
           )}
         </div>
 
-        {medicinesError && (
-          <p className="mt-4 text-sm text-red-600">{getApiErrorMessage(medicinesError)}</p>
+        {medicinesQuery.isError && (
+          <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            Không tải được danh sách thuốc: {medicinesQuery.error.message}
+          </div>
+        )}
+
+        {prescriptions.length === 0 && (
+          <p className="mt-5 rounded-xl border border-dashed p-6 text-center text-sm text-muted-foreground">
+            Lần khám này chưa kê thuốc.
+          </p>
         )}
 
         <div className="mt-5 space-y-4">
-          {prescriptions.length === 0 && (
-            <div className="rounded-xl border border-dashed p-8 text-center text-sm text-slate-500">
-              Chưa có thuốc trong đơn.
-            </div>
-          )}
-
-          {prescriptions.map((item, index) => (
-            <article key={item.clientId} className="rounded-xl border bg-slate-50 p-4">
+          {prescriptions.map((prescription, index) => (
+            <article key={prescription.key} className="rounded-xl border p-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-medium text-slate-900">Thuốc {index + 1}</h3>
+                <h3 className="font-medium">Thuốc {index + 1}</h3>
 
-                {!isCompleted && (
+                {!isReadOnly && (
                   <button
                     type="button"
-                    aria-label={`Xóa thuốc ${index + 1}`}
-                    onClick={() => removePrescription(item.clientId)}
-                    className="rounded-lg p-2 text-red-600 hover:bg-red-50"
+                    aria-label="Xóa thuốc"
+                    onClick={() => removePrescription(prescription.key)}
+                    className="inline-flex size-8 items-center justify-center rounded-md text-red-600 hover:bg-red-50"
                   >
-                    <Trash2 className="h-4 w-4" />
+                    <Trash2 className="size-4" />
                   </button>
                 )}
               </div>
 
-              <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <label className="space-y-2 md:col-span-2">
-                  <span className="text-sm font-medium">
-                    Thuốc <span className="text-red-500">*</span>
-                  </span>
+                  <span className="text-sm font-medium">Thuốc</span>
 
                   <select
-                    value={item.medicineId}
-                    disabled={isCompleted || isLoadingMedicines}
+                    value={prescription.medicineId}
+                    disabled={isReadOnly}
                     onChange={(event) =>
-                      updatePrescription(item.clientId, 'medicineId', event.target.value)
+                      updatePrescription(prescription.key, {
+                        medicineId: event.target.value,
+                      })
                     }
-                    className="w-full rounded-xl border bg-white px-3 py-2"
+                    className="h-10 w-full rounded-md border bg-background px-3 text-sm disabled:opacity-60"
                   >
-                    <option value="">
-                      {isLoadingMedicines ? 'Đang tải thuốc...' : 'Chọn thuốc'}
-                    </option>
+                    <option value="">Chọn thuốc</option>
 
-                    {medicines.map((medicine) => (
+                    {(medicinesQuery.data ?? []).map((medicine) => (
                       <option key={medicine.id} value={medicine.id}>
-                        {medicine.name} — {medicine.sku} — {medicine.unit}
+                        {medicine.name} — {medicine.unit}
                       </option>
                     ))}
                   </select>
                 </label>
 
                 <label className="space-y-2">
-                  <span className="text-sm font-medium">
-                    Số lượng <span className="text-red-500">*</span>
-                  </span>
+                  <span className="text-sm font-medium">Số lượng</span>
 
                   <input
                     type="number"
                     min="0.01"
                     step="0.01"
-                    value={item.quantity}
-                    disabled={isCompleted}
+                    value={prescription.quantity}
+                    disabled={isReadOnly}
                     onChange={(event) =>
-                      updatePrescription(item.clientId, 'quantity', event.target.value)
+                      updatePrescription(prescription.key, {
+                        quantity: Number(event.target.value),
+                      })
                     }
-                    className="w-full rounded-xl border bg-white px-3 py-2"
+                    className="h-10 w-full rounded-md border bg-background px-3 text-sm disabled:opacity-60"
                   />
                 </label>
 
                 <label className="space-y-2">
-                  <span className="text-sm font-medium">
-                    Số ngày <span className="text-red-500">*</span>
-                  </span>
+                  <span className="text-sm font-medium">Số ngày</span>
 
                   <input
                     type="number"
                     min="1"
                     step="1"
-                    value={item.durationDays}
-                    disabled={isCompleted}
+                    value={prescription.durationDays}
+                    disabled={isReadOnly}
                     onChange={(event) =>
-                      updatePrescription(item.clientId, 'durationDays', event.target.value)
+                      updatePrescription(prescription.key, {
+                        durationDays: Number(event.target.value),
+                      })
                     }
-                    className="w-full rounded-xl border bg-white px-3 py-2"
+                    className="h-10 w-full rounded-md border bg-background px-3 text-sm disabled:opacity-60"
                   />
                 </label>
 
                 <label className="space-y-2 md:col-span-2">
-                  <span className="text-sm font-medium">
-                    Liều dùng <span className="text-red-500">*</span>
-                  </span>
+                  <span className="text-sm font-medium">Liều dùng</span>
 
                   <input
-                    type="text"
-                    value={item.dosage}
-                    disabled={isCompleted}
+                    value={prescription.dosage}
+                    disabled={isReadOnly}
                     maxLength={200}
-                    placeholder="Ví dụ: 1 viên, ngày 2 lần"
                     onChange={(event) =>
-                      updatePrescription(item.clientId, 'dosage', event.target.value)
+                      updatePrescription(prescription.key, {
+                        dosage: event.target.value,
+                      })
                     }
-                    className="w-full rounded-xl border bg-white px-3 py-2"
+                    className="h-10 w-full rounded-md border bg-background px-3 text-sm disabled:opacity-60"
                   />
                 </label>
 
@@ -605,14 +494,15 @@ export default function DoctorExaminationPage({ params }: DoctorExaminationPageP
                   <span className="text-sm font-medium">Ghi chú</span>
 
                   <input
-                    type="text"
-                    value={item.note}
-                    disabled={isCompleted}
+                    value={prescription.note}
+                    disabled={isReadOnly}
                     maxLength={500}
                     onChange={(event) =>
-                      updatePrescription(item.clientId, 'note', event.target.value)
+                      updatePrescription(prescription.key, {
+                        note: event.target.value,
+                      })
                     }
-                    className="w-full rounded-xl border bg-white px-3 py-2"
+                    className="h-10 w-full rounded-md border bg-background px-3 text-sm disabled:opacity-60"
                   />
                 </label>
               </div>
@@ -621,29 +511,101 @@ export default function DoctorExaminationPage({ params }: DoctorExaminationPageP
         </div>
       </section>
 
-      {!isCompleted && (
-        <footer className="flex flex-col justify-end gap-3 sm:flex-row">
+      {!isReadOnly && (
+        <footer className="flex flex-wrap justify-end gap-3">
           <button
             type="button"
             disabled={isSubmitting}
             onClick={() => void handleSave()}
-            className="inline-flex items-center justify-center gap-2 rounded-xl border px-5 py-3 font-medium disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-10 items-center gap-2 rounded-md border px-4 text-sm font-medium hover:bg-muted disabled:opacity-50"
           >
-            <Save className="h-4 w-4" />
-            {isSubmitting ? 'Đang lưu...' : 'Lưu hồ sơ'}
+            <Save className="size-4" />
+            Lưu bệnh án
           </button>
 
           <button
             type="button"
             disabled={isSubmitting}
             onClick={() => void handleComplete()}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 px-5 py-3 font-medium text-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex h-10 items-center gap-2 rounded-md bg-emerald-600 px-4 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
           >
-            <CheckCircle2 className="h-4 w-4" />
-            Hoàn tất ca khám
+            {isSubmitting && <LoaderCircle className="size-4 animate-spin" />}
+            Hoàn tất khám
           </button>
         </footer>
       )}
     </main>
   );
+}
+
+export default function DoctorExaminationPage() {
+  const params = useParams<{
+    appointmentId: string;
+  }>();
+
+  const appointmentId = typeof params.appointmentId === 'string' ? params.appointmentId : null;
+
+  const recordQuery = useQuery<MedicalRecordResponse, Error>({
+    queryKey: EXAMINATION_QUERY_KEYS.medicalRecord(appointmentId ?? 'missing'),
+
+    queryFn: () => {
+      if (!appointmentId) {
+        throw new Error('Thiếu mã lịch hẹn.');
+      }
+
+      return examinationApi.openExamination(appointmentId);
+    },
+
+    enabled: Boolean(appointmentId),
+
+    /*
+     * openExamination là idempotent theo appointment.
+     * Query cache tránh POST trùng trong Strict Mode.
+     */
+    staleTime: Number.POSITIVE_INFINITY,
+    gcTime: 10 * 60 * 1000,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+  });
+
+  if (!appointmentId) {
+    return (
+      <main className="mx-auto max-w-6xl py-8">
+        <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700">
+          Thiếu mã lịch hẹn.
+        </div>
+      </main>
+    );
+  }
+
+  if (recordQuery.isPending) {
+    return (
+      <main className="flex min-h-[500px] items-center justify-center">
+        <div className="text-center">
+          <LoaderCircle className="mx-auto size-8 animate-spin text-rose-600" />
+
+          <p className="mt-3 text-sm text-muted-foreground">Đang mở hồ sơ khám...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (recordQuery.isError || !recordQuery.data) {
+    return (
+      <main className="mx-auto max-w-6xl space-y-4 py-8">
+        <Link href="/doctor/examinations" className="inline-flex items-center gap-2 text-sm">
+          <ArrowLeft className="size-4" />
+          Quay lại
+        </Link>
+
+        <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700">
+          Không thể mở hồ sơ khám: {recordQuery.error?.message ?? 'Không tìm thấy dữ liệu'}
+        </div>
+      </main>
+    );
+  }
+
+  return <ExaminationForm key={recordQuery.data.id} initialRecord={recordQuery.data} />;
 }

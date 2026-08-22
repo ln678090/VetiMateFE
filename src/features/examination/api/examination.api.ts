@@ -1,5 +1,6 @@
 import { api } from '@/lib/axios';
 
+import type { SpringPage } from '@/types/clinic';
 import type {
   ExaminationHistoryItem,
   MedicalRecordResponse,
@@ -8,47 +9,68 @@ import type {
   SaveExaminationRequest,
 } from '@/types/examination';
 
-import type { SpringPage } from '@/types/clinic';
+const BASE_URL = '/api/clinic/examinations';
 
-const EXAMINATION_BASE_URL = '/api/clinic/examinations';
+function encodeId(id: string): string {
+  return encodeURIComponent(id);
+}
 
-function assertMedicalRecordResponse(payload: unknown): asserts payload is MedicalRecordResponse {
+function assertMedicalRecord(value: unknown): asserts value is MedicalRecordResponse {
+  if (typeof value !== 'object' || value === null) {
+    throw new Error('Backend trả về hồ sơ khám không hợp lệ.');
+  }
+
+  const record = value as Partial<MedicalRecordResponse>;
+
   if (
-    typeof payload !== 'object' ||
-    payload === null ||
-    typeof (payload as MedicalRecordResponse).id !== 'string' ||
-    (payload as MedicalRecordResponse).id.length === 0
+    typeof record.id !== 'string' ||
+    typeof record.appointmentId !== 'string' ||
+    typeof record.petId !== 'string' ||
+    typeof record.doctorId !== 'string' ||
+    typeof record.healthStatus !== 'string' ||
+    typeof record.status !== 'string' ||
+    !Array.isArray(record.prescriptions)
   ) {
-    throw new Error('Backend trả về hồ sơ khám không hợp lệ hoặc thiếu id.');
+    throw new Error('Backend trả về hồ sơ khám thiếu dữ liệu.');
   }
 }
 
-function assertSpringPage<T>(payload: unknown): asserts payload is SpringPage<T> {
-  if (
-    typeof payload !== 'object' ||
-    payload === null ||
-    !Array.isArray((payload as SpringPage<T>).content)
-  ) {
+function assertPage<T>(value: unknown): asserts value is SpringPage<T> {
+  if (typeof value !== 'object' || value === null) {
     throw new Error('Backend trả về dữ liệu phân trang không hợp lệ.');
+  }
+
+  const page = value as Partial<SpringPage<T>>;
+
+  if (
+    !Array.isArray(page.content) ||
+    typeof page.number !== 'number' ||
+    typeof page.size !== 'number' ||
+    typeof page.totalElements !== 'number' ||
+    typeof page.totalPages !== 'number'
+  ) {
+    throw new Error('Backend trả về dữ liệu phân trang không đầy đủ.');
   }
 }
 
 export const examinationApi = {
   async openExamination(appointmentId: string): Promise<MedicalRecordResponse> {
     const response = await api.post<MedicalRecordResponse>(
-      `${EXAMINATION_BASE_URL}/appointments/${appointmentId}`
+      `${BASE_URL}/appointments/${encodeId(appointmentId)}`
     );
 
-    assertMedicalRecordResponse(response.data);
+    assertMedicalRecord(response.data);
+
     return response.data;
   },
 
   async getMedicalRecord(medicalRecordId: string): Promise<MedicalRecordResponse> {
     const response = await api.get<MedicalRecordResponse>(
-      `${EXAMINATION_BASE_URL}/${medicalRecordId}`
+      `${BASE_URL}/${encodeId(medicalRecordId)}`
     );
 
-    assertMedicalRecordResponse(response.data);
+    assertMedicalRecord(response.data);
+
     return response.data;
   },
 
@@ -57,11 +79,12 @@ export const examinationApi = {
     request: SaveExaminationRequest
   ): Promise<MedicalRecordResponse> {
     const response = await api.put<MedicalRecordResponse>(
-      `${EXAMINATION_BASE_URL}/${medicalRecordId}`,
+      `${BASE_URL}/${encodeId(medicalRecordId)}`,
       request
     );
 
-    assertMedicalRecordResponse(response.data);
+    assertMedicalRecord(response.data);
+
     return response.data;
   },
 
@@ -70,25 +93,27 @@ export const examinationApi = {
     request: ReplacePrescriptionsRequest
   ): Promise<MedicalRecordResponse> {
     const response = await api.put<MedicalRecordResponse>(
-      `${EXAMINATION_BASE_URL}/${medicalRecordId}/prescriptions`,
+      `${BASE_URL}/${encodeId(medicalRecordId)}/prescriptions`,
       request
     );
 
-    assertMedicalRecordResponse(response.data);
+    assertMedicalRecord(response.data);
+
     return response.data;
   },
 
   async completeExamination(medicalRecordId: string): Promise<MedicalRecordResponse> {
     const response = await api.post<MedicalRecordResponse>(
-      `${EXAMINATION_BASE_URL}/${medicalRecordId}/complete`
+      `${BASE_URL}/${encodeId(medicalRecordId)}/complete`
     );
 
-    assertMedicalRecordResponse(response.data);
+    assertMedicalRecord(response.data);
+
     return response.data;
   },
 
   async getMedicines(): Promise<MedicineOptionResponse[]> {
-    const response = await api.get<MedicineOptionResponse[]>(`${EXAMINATION_BASE_URL}/medicines`);
+    const response = await api.get<MedicineOptionResponse[]>(`${BASE_URL}/medicines`);
 
     if (!Array.isArray(response.data)) {
       throw new Error('Backend trả về danh sách thuốc không hợp lệ.');
@@ -98,18 +123,16 @@ export const examinationApi = {
   },
 
   async getHistory(page: number, size = 10): Promise<SpringPage<ExaminationHistoryItem>> {
-    const response = await api.get<SpringPage<ExaminationHistoryItem>>(
-      `${EXAMINATION_BASE_URL}/history`,
-      {
-        params: {
-          page,
-          size,
-          sort: 'updatedAt,desc',
-        },
-      }
-    );
+    const response = await api.get<SpringPage<ExaminationHistoryItem>>(`${BASE_URL}/history`, {
+      params: {
+        page,
+        size,
+        sort: 'updatedAt,desc',
+      },
+    });
 
-    assertSpringPage<ExaminationHistoryItem>(response.data);
+    assertPage<ExaminationHistoryItem>(response.data);
+
     return response.data;
   },
 };

@@ -137,3 +137,22 @@ export async function updateAppointmentStatus(
     api.patch(`/api/clinic/appointments/${appointmentId}/status`, body)
   );
 }
+
+export interface DoctorWorklistParams {
+  date: string;
+  page: number;
+  size: number;
+}
+
+export async function getDoctorWorklist(params: DoctorWorklistParams) {
+  const response = await api.get('/api/clinic/appointments/doctor-worklist', {
+    params: {
+      date: params.date,
+      page: params.page,
+      size: params.size,
+      sort: 'startAt,asc',
+    },
+  });
+
+  return response.data;
+}
