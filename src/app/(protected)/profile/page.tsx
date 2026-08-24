@@ -40,11 +40,13 @@ function getInitials(name?: string, email?: string) {
 
 export default function ProfilePage() {
   const queryClient = useQueryClient();
-  const { data: customer, isLoading: loadingCustomer } = useMyCustomer();
-  const { data: profile, isLoading: loadingProfile } = useQuery({
+  const { data: customer, isLoading: loadingCustomer, isError: customerError } = useMyCustomer();
+  const { data: profile, isLoading: loadingProfile, isError: profileError } = useQuery({
     queryKey: ['my-profile'],
     queryFn: () => userService.getMyProfile(),
   });
+
+  const isError = customerError || profileError;
 
   const {
     register,
