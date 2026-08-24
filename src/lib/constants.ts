@@ -18,6 +18,11 @@ export const API_ROUTES = {
     refreshMobile: '/api/auth/refresh-mobile',
     logout: '/api/auth/logout',
     test: '/api/auth/test',
+    changePassword: '/api/auth/change-password',
+  },
+  users: {
+    me: '/api/users/me',
+    profile: '/api/users/me/profile',
   },
 } as const;
 
