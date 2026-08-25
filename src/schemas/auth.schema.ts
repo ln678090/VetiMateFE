@@ -34,3 +34,16 @@ export const registerSchema = z
   });
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
+
+export const changePasswordSchema = z
+  .object({
+    oldPassword: z.string().min(1, 'Vui lòng nhập mật khẩu cũ'),
+    newPassword: z.string().min(6, 'Mật khẩu mới phải từ 6 ký tự trở lên'),
+    confirmPassword: z.string().min(1, 'Vui lòng nhập lại mật khẩu mới'),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Mật khẩu xác nhận không khớp',
+    path: ['confirmPassword'],
+  });
+
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn, formatVND } from '@/lib/utils';
+import { useCartStore } from '@/stores/cart.store';
 import type { Product } from '@/types/shop';
 import { QuantityStepper } from './QuantityStepper';
 
@@ -31,11 +32,19 @@ export function ProductInfo({ product }: ProductInfoProps) {
     ? Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100)
     : 0;
 
+  const addItem = useCartStore((s) => s.addItem);
+
   const handleAddToCart = () => {
-    // Phase 3.1 sẽ wire vào Zustand cart store
-    toast.success(`Đã thêm ${quantity} × ${product.name} vào giỏ`, {
-      description: 'Cart store sẽ hoạt động ở Phase 3.1',
-    });
+    addItem(
+      {
+        ...product,
+        image: product.imageUrl,
+        brand: product.brandName,
+        category: product.categorySlug,
+      },
+      quantity
+    );
+    toast.success(`Đã thêm ${quantity} × ${product.name} vào giỏ`);
   };
 
   const handleShare = async () => {
@@ -148,9 +157,9 @@ export function ProductInfo({ product }: ProductInfoProps) {
       <div className="flex flex-wrap items-center gap-3">
         <div>
           <p className="mb-2 text-xs font-semibold tracking-wider text-zinc-700 uppercase dark:text-zinc-300">
-            Số lượng
+            Số lượng <span className="ml-1 text-zinc-500 font-normal normal-case">(Còn {product.stockQuantity} sản phẩm)</span>
           </p>
-          <QuantityStepper value={quantity} onChange={setQuantity} />
+          <QuantityStepper value={quantity} onChange={setQuantity} max={product.stockQuantity} />
         </div>
       </div>
 

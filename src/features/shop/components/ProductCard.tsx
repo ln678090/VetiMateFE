@@ -4,10 +4,12 @@ import { motion } from 'framer-motion';
 import { ShoppingCart, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn, formatVND } from '@/lib/utils';
+import { useCartStore } from '@/stores/cart.store';
 import type { Product } from '@/types/shop';
 
 interface ProductCardProps {
@@ -20,6 +22,7 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
   const discountPct = hasDiscount
     ? Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100)
     : 0;
+  const addItem = useCartStore((s) => s.addItem);
 
   return (
     <motion.article
@@ -108,6 +111,16 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         <Button
           size="sm"
           disabled={!product.inStock}
+          onClick={(e) => {
+            e.preventDefault();
+            addItem({
+              ...product,
+              image: product.imageUrl,
+              brand: product.brandName,
+              category: product.categorySlug,
+            });
+            toast.success('Đã thêm sản phẩm vào giỏ hàng');
+          }}
           className={cn(
             'mt-3 h-9 w-full bg-gradient-to-br from-rose-500 to-amber-500 text-white shadow-md shadow-rose-500/20 transition hover:shadow-lg hover:shadow-rose-500/30'
           )}
