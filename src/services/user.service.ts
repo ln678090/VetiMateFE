@@ -11,6 +11,38 @@ export const userService = {
   async getMyProfile(): Promise<{ id: string, fullName: string, username: string, email: string, phone: string }> {
     return unwrap(api.get<ApiResp<{ id: string, fullName: string, username: string, email: string, phone: string }>>('/api/users/me'));
   },
+
+  async toggleFavorite(productId: string): Promise<string> {
+    return unwrap(api.post<ApiResp<string>>(`/api/users/me/favorites/${productId}`));
+  },
+
+  async recordView(productId: string): Promise<string> {
+    return unwrap(api.post<ApiResp<string>>(`/api/users/me/viewed/${productId}`));
+  },
+
+  async getFavorites(
+    page: number = 0,
+    size: number = 12,
+    startDate?: string,
+    endDate?: string
+  ): Promise<any> {
+    const params: Record<string, any> = { page, size };
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
+    return unwrap(api.get('/api/users/me/favorites', { params }));
+  },
+
+  async getRecentlyViewed(
+    page: number = 0,
+    size: number = 12,
+    startDate?: string,
+    endDate?: string
+  ): Promise<any> {
+    const params: Record<string, any> = { page, size };
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
+    return unwrap(api.get('/api/users/me/viewed', { params }));
+  },
 };
 
 export type UserService = typeof userService;

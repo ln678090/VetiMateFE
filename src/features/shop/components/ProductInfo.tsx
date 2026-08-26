@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Heart, RotateCcw, Share2, ShieldCheck, ShoppingCart, Star, Truck } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,8 @@ import { Separator } from '@/components/ui/separator';
 import { cn, formatVND } from '@/lib/utils';
 import type { Product } from '@/types/shop';
 import { QuantityStepper } from './QuantityStepper';
+import { userService } from '@/services/user.service';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ProductInfoProps {
   product: Product;
@@ -31,11 +33,31 @@ export function ProductInfo({ product }: ProductInfoProps) {
     ? Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100)
     : 0;
 
+  useEffect(() => {
+    // Record view in the background
+    if (product?.id) {
+      userService.recordView(product.id).catch(() => {});
+    }
+  }, [product?.id]);
+
+  const queryClient = useQueryClient();
+
   const handleAddToCart = () => {
     // Phase 3.1 sẽ wire vào Zustand cart store
     toast.success(`Đã thêm ${quantity} × ${product.name} vào giỏ`, {
       description: 'Cart store sẽ hoạt động ở Phase 3.1',
     });
+  };
+
+  const handleToggleFavorite = async () => {
+    try {
+      await userService.toggleFavorite(product.id);
+      setWished((w) => !w);
+      queryClient.invalidateQueries({ queryKey: ['my-favorites'] });
+      toast.success(wished ? 'Đã bỏ yêu thích' : 'Đã thêm vào danh sách yêu thích');
+    } catch (error) {
+      toast.error('Vui lòng đăng nhập để yêu thích sản phẩm');
+    }
   };
 
   const handleShare = async () => {
@@ -167,7 +189,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
         <Button
           size="lg"
           variant="outline"
-          onClick={() => setWished((w) => !w)}
+          onClick={handleToggleFavorite}
           className={cn(
             'h-12 transition',
             wished
