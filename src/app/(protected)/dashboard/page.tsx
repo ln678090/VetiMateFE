@@ -11,7 +11,7 @@ import { APP_NAVIGATION_ITEMS, canAccessNavigationItem } from '@/config/app-navi
 import { getAuthoritiesFromToken } from '@/lib/auth-roles';
 import { useAuthStore } from '@/stores/auth.store';
 
-type DashboardRole = 'ADMIN' | 'MANAGER' | 'RECEPTIONIST' | 'DOCTOR' | 'USER';
+type DashboardRole = 'ADMIN' | 'MANAGER' | 'RECEPTIONIST' | 'DOCTOR' | 'ACCOUNTANT' | 'SHOP_STAFF' | 'USER';
 
 interface DashboardConfiguration {
   title: string;
@@ -49,6 +49,20 @@ const DASHBOARD_CONFIGURATIONS: Record<DashboardRole, DashboardConfiguration> = 
     activityDescription: 'Các ca được lễ tân xác nhận sẽ xuất hiện trong danh sách ca khám.',
   },
 
+  ACCOUNTANT: {
+    title: 'Kế toán & Tài chính',
+    description: 'Quản lý hóa đơn, thanh toán và báo cáo tài chính hàng ngày.',
+    activityTitle: 'Công việc kế toán',
+    activityDescription: 'Mở quản lý hóa đơn để tách/gộp bill và xử lý thanh toán.',
+  },
+
+  SHOP_STAFF: {
+    title: 'Nhân viên cửa hàng',
+    description: 'Quản lý sản phẩm, bán hàng tại quầy và xử lý đơn hàng.',
+    activityTitle: 'Công việc bán hàng',
+    activityDescription: 'Mở POS để bán hàng hoặc kiểm tra đơn hàng mới.',
+  },
+
   USER: {
     title: 'Chăm sóc thú cưng',
     description: 'Quản lý thú cưng, đặt lịch và mua sắm sản phẩm phù hợp.',
@@ -74,6 +88,14 @@ function resolveDashboardRole(authorities: readonly string[]): DashboardRole {
     return 'DOCTOR';
   }
 
+  if (authorities.includes('ROLE_ACCOUNTANT')) {
+    return 'ACCOUNTANT';
+  }
+
+  if (authorities.includes('ROLE_SHOP_STAFF')) {
+    return 'SHOP_STAFF';
+  }
+
   return 'USER';
 }
 
@@ -90,6 +112,12 @@ function getFallbackGreeting(role: DashboardRole): string {
 
     case 'DOCTOR':
       return 'bác sĩ';
+
+    case 'ACCOUNTANT':
+      return 'kế toán';
+
+    case 'SHOP_STAFF':
+      return 'nhân viên shop';
 
     default:
       return 'bạn';

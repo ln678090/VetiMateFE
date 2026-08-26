@@ -34,13 +34,25 @@ export function AppSidebar() {
 
   const authorities = useMemo(() => getAuthoritiesFromToken(accessToken), [accessToken]);
 
-  const visibleItems = useMemo(
-    () =>
-      APP_NAVIGATION_ITEMS.filter(
-        (item) => item.showInSidebar !== false && canAccessNavigationItem(item, authorities)
-      ),
-    [authorities]
-  );
+  const groupedItems = useMemo(() => {
+    const visible = APP_NAVIGATION_ITEMS.filter(
+      (item) => item.showInSidebar !== false && canAccessNavigationItem(item, authorities)
+    );
+
+    const groups: Record<string, typeof visible> = {};
+    const ungrouped: typeof visible = [];
+
+    visible.forEach((item) => {
+      if (item.group) {
+        if (!groups[item.group]) groups[item.group] = [];
+        groups[item.group].push(item);
+      } else {
+        ungrouped.push(item);
+      }
+    });
+
+    return { groups, ungrouped };
+  }, [authorities]);
 
   const displayName = user?.fullName ?? user?.username ?? 'Tài khoản';
 
@@ -84,32 +96,72 @@ export function AppSidebar() {
         </button>
       </div>
 
-      <nav aria-label="Điều hướng chính" className="flex-1 space-y-1 overflow-y-auto p-3">
-        {visibleItems.map((item) => {
-          const Icon = item.icon;
-          const active = isActiveRoute(pathname, item.href);
+      <nav aria-label="Điều hướng chính" className="flex-1 space-y-4 overflow-y-auto p-3">
+        {groupedItems.ungrouped.length > 0 && (
+          <div className="space-y-1">
+            {groupedItems.ungrouped.map((item) => {
+              const Icon = item.icon;
+              const active = isActiveRoute(pathname, item.href);
 
-          return (
-            <Link
-              key={item.key}
-              href={item.href}
-              title={collapsed ? item.label : undefined}
-              onClick={closeMobileSidebar}
-              aria-current={active ? 'page' : undefined}
-              className={[
-                'flex h-11 items-center rounded-xl transition-all',
-                collapsed ? 'justify-center px-2' : 'gap-3 px-3',
-                active
-                  ? 'bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-sm'
-                  : 'text-zinc-600 hover:bg-rose-50 hover:text-rose-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-rose-400',
-              ].join(' ')}
-            >
-              <Icon className="size-5 shrink-0" strokeWidth={2} />
+              return (
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  title={collapsed ? item.label : undefined}
+                  onClick={closeMobileSidebar}
+                  aria-current={active ? 'page' : undefined}
+                  className={[
+                    'flex h-11 items-center rounded-xl transition-all',
+                    collapsed ? 'justify-center px-2' : 'gap-3 px-3',
+                    active
+                      ? 'bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-sm'
+                      : 'text-zinc-600 hover:bg-rose-50 hover:text-rose-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-rose-400',
+                  ].join(' ')}
+                >
+                  <Icon className="size-5 shrink-0" strokeWidth={2} />
+                  {!collapsed && <span className="truncate text-sm font-medium">{item.label}</span>}
+                </Link>
+              );
+            })}
+          </div>
+        )}
 
-              {!collapsed && <span className="truncate text-sm font-medium">{item.label}</span>}
-            </Link>
-          );
-        })}
+        {Object.entries(groupedItems.groups).map(([groupName, items]) => (
+          <div key={groupName} className="space-y-1">
+            {!collapsed ? (
+              <h3 className="mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                {groupName}
+              </h3>
+            ) : (
+              <div className="my-4 h-px w-full bg-zinc-200 dark:bg-zinc-800" />
+            )}
+
+            {items.map((item) => {
+              const Icon = item.icon;
+              const active = isActiveRoute(pathname, item.href);
+
+              return (
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  title={collapsed ? item.label : undefined}
+                  onClick={closeMobileSidebar}
+                  aria-current={active ? 'page' : undefined}
+                  className={[
+                    'flex h-11 items-center rounded-xl transition-all',
+                    collapsed ? 'justify-center px-2' : 'gap-3 px-3',
+                    active
+                      ? 'bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-sm'
+                      : 'text-zinc-600 hover:bg-rose-50 hover:text-rose-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-rose-400',
+                  ].join(' ')}
+                >
+                  <Icon className="size-5 shrink-0" strokeWidth={2} />
+                  {!collapsed && <span className="truncate text-sm font-medium">{item.label}</span>}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
       <div className="border-t border-zinc-200 p-3 dark:border-zinc-800">

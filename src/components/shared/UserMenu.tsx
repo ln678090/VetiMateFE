@@ -28,8 +28,8 @@ export function UserMenu() {
     }
   };
 
-  // Initials từ fullName hoặc username, fallback "U"
-  const displayName = user?.fullName || user?.username || 'User';
+  // Initials từ fullName hoặc username, fallback "S"
+  const displayName = user?.fullName || user?.username || 'Staff';
   const initials = displayName
     .split(' ')
     .map((s) => s[0])
@@ -65,15 +65,6 @@ export function UserMenu() {
             )}
           </div>
         </DropdownMenuLabel>
-
-        <DropdownMenuSeparator />
-
-        <DropdownMenuItem asChild>
-          <Link href="/profile" className="flex items-center gap-2">
-            <UserCircle2 className="h-4 w-4" strokeWidth={2} />
-            Hồ sơ của tôi
-          </Link>
-        </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 
