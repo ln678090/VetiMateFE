@@ -29,7 +29,7 @@ const formSchema = z.object({
   name: z.string().min(2, 'Tên thương hiệu phải có ít nhất 2 ký tự'),
   description: z.string().optional(),
   logoUrl: z.string().url('URL không hợp lệ').optional().or(z.literal('')),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -44,7 +44,7 @@ export function BrandFormModal({ isOpen, onClose, brandToEdit }: BrandFormModalP
   const queryClient = useQueryClient();
   
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       name: '',
       description: '',

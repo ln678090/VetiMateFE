@@ -38,8 +38,8 @@ const formSchema = z.object({
   originalPrice: z.coerce.number().min(0, 'Giá không hợp lệ').optional(),
   stockQuantity: z.coerce.number().min(0, 'Số lượng không hợp lệ'),
   imageUrl: z.string().url('URL ảnh không hợp lệ'),
-  isFeatured: z.boolean().default(false),
-  isActive: z.boolean().default(true),
+  isFeatured: z.boolean(),
+  isActive: z.boolean(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -64,7 +64,7 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
   });
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       name: '',
       description: '',

@@ -63,7 +63,7 @@ export function CreateImportVoucherModal({ isOpen, onClose }: CreateImportVouche
   });
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       note: '',
       items: [{
@@ -121,7 +121,7 @@ export function CreateImportVoucherModal({ isOpen, onClose }: CreateImportVouche
   };
 
   const isPending = createMutation.isPending;
-  const products = productsData?.data?.content || [];
+  const products = productsData?.data?.items || [];
   const suppliers = suppliersData?.data || [];
 
   return (

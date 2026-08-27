@@ -29,7 +29,7 @@ import { catalogApi } from '@/features/shop/api/catalog.api';
 const formSchema = z.object({
   name: z.string().min(2, 'Tên danh mục phải có ít nhất 2 ký tự'),
   description: z.string().optional(),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
   parentId: z.string().optional(),
 });
 
@@ -46,7 +46,7 @@ export function CategoryFormModal({ isOpen, onClose, categoryToEdit, categories 
   const queryClient = useQueryClient();
   
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       name: '',
       description: '',

@@ -3,6 +3,7 @@ export interface Product {
   name: string;
   slug: string;
   sku: string;
+  description?: string;
   price: number;
   originalPrice?: number;
   stockQuantity: number;
@@ -16,6 +17,8 @@ export interface Product {
   petType: 'dog' | 'cat' | 'both';
   rating: number;
   reviewCount: number;
+  isNew?: boolean;
+  inStock?: boolean;
   isFeatured: boolean;
   isActive: boolean;
   createdAt: string;
