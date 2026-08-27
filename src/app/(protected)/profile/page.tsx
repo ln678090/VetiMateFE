@@ -16,8 +16,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMyCustomer } from '@/features/booking/hooks/use-clinic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthStore } from '@/stores/auth.store';
 import { ChangePasswordForm } from '@/features/profile/components/change-password-form';
+import { ProductCard } from '@/features/shop/components/ProductCard';
 
 type ProfileUser = {
   id?: string;
@@ -44,6 +46,16 @@ export default function ProfilePage() {
   const { data: profile, isLoading: loadingProfile, isError: profileError } = useQuery({
     queryKey: ['my-profile'],
     queryFn: () => userService.getMyProfile(),
+  });
+  
+  const { data: favoritesData, isLoading: loadingFavorites } = useQuery({
+    queryKey: ['my-favorites'],
+    queryFn: () => userService.getFavorites(),
+  });
+
+  const { data: viewedData, isLoading: loadingViewed } = useQuery({
+    queryKey: ['my-viewed'],
+    queryFn: () => userService.getRecentlyViewed(),
   });
 
   const isError = customerError || profileError;
@@ -185,13 +197,18 @@ export default function ProfilePage() {
       </div>
 
       {/* 3. Lịch sử đơn hàng */}
-      <Card className="rounded-3xl">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="size-5 text-indigo-500" />
-            Lịch sử đơn hàng
-          </CardTitle>
-          <CardDescription>Các đơn hàng bạn đã đặt trên hệ thống.</CardDescription>
+      <Card className="rounded-3xl relative">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Package className="size-5 text-indigo-500" />
+              Lịch sử đơn hàng
+            </CardTitle>
+            <CardDescription>Các đơn hàng bạn đã đặt trên hệ thống.</CardDescription>
+          </div>
+          <Button variant="ghost" className="text-sm font-medium text-indigo-600 hover:text-indigo-700" asChild>
+            <Link href="/profile/orders">Xem tất cả</Link>
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col items-center justify-center py-8 text-center bg-muted/30 rounded-2xl border border-dashed">
@@ -202,6 +219,65 @@ export default function ProfilePage() {
             </Button>
           </div>
         </CardContent>
+      </Card>
+
+      {/* 4. Sản phẩm đã thích & Đã xem gần đây */}
+      <Card className="rounded-3xl">
+        <Tabs defaultValue="favorites" className="w-full">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <TabsList className="bg-muted/50 rounded-2xl p-1">
+              <TabsTrigger value="favorites" className="rounded-xl px-6">Sản phẩm đã thích</TabsTrigger>
+              <TabsTrigger value="viewed" className="rounded-xl px-6">Đã xem gần đây</TabsTrigger>
+            </TabsList>
+            <Button variant="ghost" className="text-sm font-medium text-rose-600 hover:text-rose-700" asChild>
+              <Link href="/profile/interactions">Xem tất cả</Link>
+            </Button>
+          </CardHeader>
+          
+          <CardContent>
+            <TabsContent value="favorites" className="mt-0">
+              {loadingFavorites ? (
+                 <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
+                   {Array.from({ length: 5 }).map((_, i) => (
+                     <Skeleton key={i} className="h-64 rounded-2xl" />
+                   ))}
+                 </div>
+              ) : favoritesData?.content?.length ? (
+                 <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
+                   {favoritesData.content.map((product: any) => (
+                     <ProductCard key={product.id} product={product} />
+                   ))}
+                 </div>
+              ) : (
+                 <div className="flex flex-col items-center justify-center py-12 text-center bg-muted/30 rounded-2xl border border-dashed">
+                   <Package className="size-12 text-muted-foreground/50 mb-4" />
+                   <p className="text-muted-foreground">Bạn chưa có sản phẩm yêu thích nào.</p>
+                 </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="viewed" className="mt-0">
+              {loadingViewed ? (
+                 <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
+                   {Array.from({ length: 5 }).map((_, i) => (
+                     <Skeleton key={i} className="h-64 rounded-2xl" />
+                   ))}
+                 </div>
+              ) : viewedData?.content?.length ? (
+                 <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
+                   {viewedData.content.map((product: any) => (
+                     <ProductCard key={product.id} product={product} />
+                   ))}
+                 </div>
+              ) : (
+                 <div className="flex flex-col items-center justify-center py-12 text-center bg-muted/30 rounded-2xl border border-dashed">
+                   <Package className="size-12 text-muted-foreground/50 mb-4" />
+                   <p className="text-muted-foreground">Chưa có sản phẩm nào được xem gần đây.</p>
+                 </div>
+              )}
+            </TabsContent>
+          </CardContent>
+        </Tabs>
       </Card>
     </div>
   );
