@@ -7,8 +7,9 @@ import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { OrderCard } from '@/features/shop/components/OrderCard';
-import { MOCK_ORDERS } from '@/lib/mock-orders';
-import { OrderStatus } from '@/types/order';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { orderService } from '@/services/order.service';
+import { OrderStatus, Order } from '@/types/order';
 
 const TABS: { value: OrderStatus | 'ALL'; label: string }[] = [
   { value: 'ALL', label: 'Tất cả' },
@@ -22,7 +23,12 @@ const TABS: { value: OrderStatus | 'ALL'; label: string }[] = [
 export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState<OrderStatus | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
-  const [orders, setOrders] = useState(MOCK_ORDERS);
+  
+  const queryClient = useQueryClient();
+  const { data: orders = [] } = useQuery({
+    queryKey: ['my-orders'],
+    queryFn: orderService.getMyOrders,
+  });
 
   // Filter orders by status and search query
   const filteredOrders = orders.filter((order) => {
@@ -36,11 +42,14 @@ export default function OrdersPage() {
   });
 
   const handleCancelOrder = (orderId: string) => {
-    setOrders((prev) => 
-      prev.map(order => 
+    // Optimistic update
+    queryClient.setQueryData(['my-orders'], (oldOrders: Order[] | undefined) => {
+      if (!oldOrders) return [];
+      return oldOrders.map((order) =>
         order.id === orderId ? { ...order, status: 'CANCELLED' } : order
-      )
-    );
+      );
+    });
+    // Ideally we would also call an API to cancel the order here, e.g. orderService.cancelOrder(orderId)
   };
 
   return (

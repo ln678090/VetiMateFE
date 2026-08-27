@@ -18,4 +18,7 @@ export interface Order {
   shippingFee: number;
   finalAmount: number;
   createdAt: string;
+  paymentMethod?: string;
+  shippingAddress?: string;
+  note?: string;
 }

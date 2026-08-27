@@ -113,12 +113,7 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        <ActionCard
-          href="/profile/orders"
-          icon={<Package className="size-5" />}
-          title="Đơn mua của tôi"
-          description="Quản lý và theo dõi trạng thái các đơn hàng bạn đã mua tại shop."
-        />
+
 
         <ActionCard
           href="/profile/pets"

@@ -13,8 +13,12 @@ function getRoutePath(href: string): string {
   return href.split('?')[0] ?? href;
 }
 
-function isActiveRoute(pathname: string, href: string): boolean {
+function isActiveRoute(pathname: string, href: string, exact?: boolean): boolean {
   const routePath = getRoutePath(href);
+
+  if (exact) {
+    return pathname === routePath;
+  }
 
   if (routePath === '/dashboard') {
     return pathname === routePath;
@@ -87,7 +91,7 @@ export function AppSidebar() {
       <nav aria-label="Điều hướng chính" className="flex-1 space-y-1 overflow-y-auto p-3">
         {visibleItems.map((item) => {
           const Icon = item.icon;
-          const active = isActiveRoute(pathname, item.href);
+          const active = isActiveRoute(pathname, item.href, item.exact);
 
           return (
             <Link

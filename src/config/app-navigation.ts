@@ -31,6 +31,7 @@ export interface AppNavigationItem {
   showInSidebar?: boolean;
   dashboardDescription?: string;
   gradient?: string;
+  exact?: boolean;
 }
 
 export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
@@ -78,11 +79,19 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     roles: [ROLE.USER],
   },
   {
+    key: 'orders',
+    label: 'Đơn hàng',
+    href: '/profile/orders',
+    icon: ClipboardList,
+    roles: [ROLE.USER],
+  },
+  {
     key: 'profile',
     label: 'Hồ sơ',
     href: '/profile',
     icon: UserRound,
     roles: [ROLE.USER],
+    exact: true,
   },
 
   // Quản lý lịch hẹn
