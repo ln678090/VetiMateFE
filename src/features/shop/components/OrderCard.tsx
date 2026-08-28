@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import { Store, Truck } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -5,6 +8,15 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { cn, formatVND } from '@/lib/utils';
 import { useCartStore } from '@/stores/cart.store';
@@ -28,6 +40,7 @@ export function OrderCard({ order, onCancelOrder }: OrderCardProps) {
   const router = useRouter();
   const addItem = useCartStore((s) => s.addItem);
   const statusInfo = STATUS_MAP[order.status];
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
 
   const handleBuyAgain = () => {
     // Add all items from this order to the cart
@@ -67,11 +80,10 @@ export function OrderCard({ order, onCancelOrder }: OrderCardProps) {
   };
 
   const handleCancelOrder = () => {
-    if (window.confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')) {
-      if (onCancelOrder) {
-        onCancelOrder(order.id);
-        toast.success('Đã hủy đơn hàng thành công');
-      }
+    if (onCancelOrder) {
+      onCancelOrder(order.id);
+      toast.success('Đã hủy đơn hàng thành công');
+      setIsCancelDialogOpen(false);
     }
   };
 
@@ -150,13 +162,32 @@ export function OrderCard({ order, onCancelOrder }: OrderCardProps) {
 
         <div className="flex gap-3">
           {order.status === 'PENDING' && (
-            <Button 
-              variant="outline" 
-              onClick={handleCancelOrder}
-              className="h-10 rounded-xl border-zinc-200 font-semibold text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-300"
-            >
-              Hủy Đơn Hàng
-            </Button>
+            <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="h-10 rounded-xl border-zinc-200 font-semibold text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-300"
+                >
+                  Hủy Đơn Hàng
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Hủy đơn hàng</DialogTitle>
+                  <DialogDescription>
+                    Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này không thể hoàn tác.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="mt-4 gap-2 sm:gap-0">
+                  <Button variant="outline" onClick={() => setIsCancelDialogOpen(false)}>
+                    Không, giữ lại
+                  </Button>
+                  <Button variant="destructive" onClick={handleCancelOrder}>
+                    Có, hủy đơn
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           )}
           {order.status === 'DELIVERED' && (
             <Button 
