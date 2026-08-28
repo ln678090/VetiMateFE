@@ -215,12 +215,12 @@ export function AppSidebar() {
       <aside
         className={[
           'fixed inset-y-0 left-0 z-50 flex bg-white transition-all duration-300 dark:bg-zinc-950',
-          'lg:static lg:z-auto',
+          'lg:sticky lg:top-0 lg:h-screen lg:z-auto',
           collapsed ? 'lg:w-20' : 'lg:w-72',
           mobileOpen ? 'w-72 translate-x-0' : 'w-72 -translate-x-full lg:translate-x-0',
         ].join(' ')}
       >
-        <div className="flex w-full flex-col border-r border-zinc-200 dark:border-zinc-800">
+        <div className="flex h-full w-full flex-col border-r border-zinc-200 dark:border-zinc-800">
           {sidebarContent}
         </div>
       </aside>

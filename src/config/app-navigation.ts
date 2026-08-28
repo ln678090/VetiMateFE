@@ -141,7 +141,7 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     roles: [ROLE.ADMIN, ROLE.RECEPTIONIST],
     dashboardDescription: 'Xem/tạo/sửa lịch hẹn theo ngày, tuần, tháng.',
     gradient: 'from-emerald-500 to-teal-500',
-    group: 'Nghiệp vụ Lễ tân',
+    group: 'Lễ tân',
   },
 
   // ═══ Kế toán (ACCOUNTANT) ═══

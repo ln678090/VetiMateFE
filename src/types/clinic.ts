@@ -35,6 +35,7 @@ export interface AppointmentDto {
   durationMin: number;
   status: AppointmentStatus;
   note: string | null;
+  isCalledToConfirm: boolean;
 }
 
 // Body POST /api/clinic/appointments — CHỈ 4 field (anti-tamper)
@@ -95,7 +96,7 @@ export interface UpdatePetRequest {
   note?: string | null;
 }
 
-export type AppointmentStatus = 'SCHEDULED' | 'CONFIRMED' | 'DONE' | 'CANCELLED' | 'NO_SHOW';
+export type AppointmentStatus = 'SCHEDULED' | 'CONFIRMED' | 'DONE' | 'CANCELLED' | 'NO_SHOW' | 'ARRIVED';
 
 export interface SpringPage<T> {
   content: T[];
@@ -108,7 +109,8 @@ export interface SpringPage<T> {
 }
 
 export interface ManagementAppointmentParams {
-  date: string;
+  startDate?: string;
+  endDate?: string;
   status?: AppointmentStatus;
   page?: number;
   size?: number;

@@ -12,6 +12,7 @@ import {
   getMyPets,
   getPetById,
   updateAppointmentStatus,
+  updateAppointmentCallStatus,
   updatePet,
   type AvailableSlotResponse,
 } from '../api/booking.api';
@@ -51,7 +52,8 @@ const CLINIC_QUERY_KEYS = {
       'clinic',
       'management',
       'appointments',
-      params.date,
+      params.startDate,
+      params.endDate,
       params.status ?? 'ALL',
       params.page ?? 0,
       params.size ?? 20,
@@ -223,7 +225,7 @@ export function useManagementAppointments(params: ManagementAppointmentParams) {
 
     queryFn: () => getManagementAppointments(params),
 
-    enabled: params.date.length === 10,
+    enabled: Boolean(params.startDate && params.endDate),
     staleTime: 15_000,
 
     placeholderData: (previousData) => previousData,
@@ -263,6 +265,23 @@ export function useUpdateAppointmentStatus() {
 
         queryClient.invalidateQueries({
           queryKey: ['doctor', 'examinations'],
+        }),
+      ]);
+    },
+  });
+}
+
+export function useUpdateAppointmentCallStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ appointmentId, isCalled }: { appointmentId: string; isCalled: boolean }) =>
+      updateAppointmentCallStatus(appointmentId, isCalled),
+
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ['clinic', 'management', 'appointments'],
         }),
       ]);
     },
