@@ -13,8 +13,12 @@ function getRoutePath(href: string): string {
   return href.split('?')[0] ?? href;
 }
 
-function isActiveRoute(pathname: string, href: string): boolean {
+function isActiveRoute(pathname: string, href: string, exact?: boolean): boolean {
   const routePath = getRoutePath(href);
+
+  if (exact) {
+    return pathname === routePath;
+  }
 
   if (routePath === '/dashboard') {
     return pathname === routePath;
@@ -101,7 +105,7 @@ export function AppSidebar() {
           <div className="space-y-1">
             {groupedItems.ungrouped.map((item) => {
               const Icon = item.icon;
-              const active = isActiveRoute(pathname, item.href);
+              const active = isActiveRoute(pathname, item.href, item.exact);
 
               return (
                 <Link
@@ -138,7 +142,7 @@ export function AppSidebar() {
 
             {items.map((item) => {
               const Icon = item.icon;
-              const active = isActiveRoute(pathname, item.href);
+              const active = isActiveRoute(pathname, item.href, item.exact);
 
               return (
                 <Link

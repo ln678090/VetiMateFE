@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { orderService } from '@/services/order.service';
 import {
   Form,
   FormControl,
@@ -85,17 +86,31 @@ export function CheckoutForm() {
   const onSubmit = async (data: CheckoutInput) => {
     setIsSubmitting(true);
     
-    // Giả lập gọi API (1.5s)
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    setIsSubmitting(false);
-    toast.success('Đặt hàng thành công!', {
-      description: 'Cảm ơn bạn đã mua sắm tại PetCare Vet Shop. Chúng tôi sẽ sớm liên hệ.',
-    });
-    
-    // Clear cart and redirect
-    clearCart();
-    router.push('/profile/orders');
+    try {
+      const payload = {
+        ...data,
+        items: selectedItems.map(item => ({
+          productId: item.product.id,
+          quantity: item.quantity
+        }))
+      };
+
+      await orderService.checkout(payload);
+
+      toast.success('Đặt hàng thành công!', {
+        description: 'Cảm ơn bạn đã mua sắm tại PetCare Vet Shop. Chúng tôi sẽ sớm liên hệ.',
+      });
+      
+      // Clear cart and redirect
+      clearCart();
+      router.push('/profile/orders');
+    } catch (error: any) {
+      toast.error('Đặt hàng thất bại', {
+        description: error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại sau.'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -150,7 +165,7 @@ export function CheckoutForm() {
                     <FormLabel>Tỉnh / Thành phố <span className="text-rose-500">*</span></FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder={loadingProvinces ? "Đang tải..." : "Chọn Tỉnh / Thành phố"} />
                         </SelectTrigger>
                       </FormControl>
@@ -173,7 +188,7 @@ export function CheckoutForm() {
                     <FormLabel>Phường / Xã <span className="text-rose-500">*</span></FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={!selectedCityName || loadingDistricts}>
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder={loadingDistricts ? "Đang tải..." : "Chọn Phường / Xã"} />
                         </SelectTrigger>
                       </FormControl>

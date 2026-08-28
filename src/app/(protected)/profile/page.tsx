@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 
 import Link from 'next/link';
-import { Mail, UserRound, ShieldCheck, Package } from 'lucide-react';
+import { Mail, UserRound, ShieldCheck, Package, PawPrint, CalendarDays, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -179,7 +179,21 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-3xl h-full flex flex-col">
+        <ActionCard
+          href="/profile/pets"
+          icon={<PawPrint className="size-5" />}
+          title="Hồ sơ thú cưng"
+          description="Quản lý danh sách chó mèo, xem chi tiết và cập nhật thông tin."
+        />
+
+        <ActionCard
+          href="/booking"
+          icon={<CalendarDays className="size-5" />}
+          title="Đặt lịch chăm sóc"
+          description="Tạo lịch khám hoặc chăm sóc dựa trên thú cưng đã lưu."
+        />
+
+        <Card className="rounded-3xl md:col-span-2 xl:col-span-3 flex flex-col h-full">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="size-5 text-emerald-500" />
@@ -289,5 +303,38 @@ function InfoRow({ label, value }: { label: string; value: string }) {
       <span className="text-muted-foreground">{label}</span>
       <span className="text-right font-medium">{value}</span>
     </div>
+  );
+}
+
+function ActionCard({
+  href,
+  icon,
+  title,
+  description,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}) {
+  return (
+    <Card className="rounded-3xl transition hover:-translate-y-0.5 hover:shadow-md">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <span className="text-rose-500">{icon}</span>
+          {title}
+        </CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+
+      <CardContent>
+        <Button asChild className="w-full">
+          <Link href={href}>
+            Mở
+            <ChevronRight className="ml-2 size-4" />
+          </Link>
+        </Button>
+      </CardContent>
+    </Card>
   );
 }
