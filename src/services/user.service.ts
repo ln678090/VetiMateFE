@@ -12,6 +12,10 @@ export const userService = {
     return unwrap(api.get<ApiResp<{ id: string, fullName: string, username: string, email: string, phone: string }>>('/api/users/me'));
   },
 
+  async checkFavorite(productId: string): Promise<boolean> {
+    return unwrap(api.get<ApiResp<boolean>>(`/api/users/me/favorites/check/${productId}`));
+  },
+
   async toggleFavorite(productId: string): Promise<string> {
     return unwrap(api.post<ApiResp<string>>(`/api/users/me/favorites/${productId}`));
   },
