@@ -12,7 +12,7 @@ import { cn, formatVND } from '@/lib/utils';
 import type { Product } from '@/types/shop';
 import { QuantityStepper } from './QuantityStepper';
 import { userService } from '@/services/user.service';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 
 interface ProductInfoProps {
   product: Product;
@@ -26,7 +26,21 @@ const TRUST_BADGES = [
 
 export function ProductInfo({ product }: ProductInfoProps) {
   const [quantity, setQuantity] = useState(1);
+  const queryClient = useQueryClient();
+
+  const { data: isFavorited } = useQuery({
+    queryKey: ['favorite-status', product?.id],
+    queryFn: () => userService.checkFavorite(product.id),
+    enabled: !!product?.id,
+  });
+
   const [wished, setWished] = useState(false);
+
+  useEffect(() => {
+    if (isFavorited !== undefined) {
+      setWished(isFavorited);
+    }
+  }, [isFavorited]);
 
   const hasDiscount = product.originalPrice && product.originalPrice > product.price;
   const discountPct = hasDiscount
@@ -40,8 +54,6 @@ export function ProductInfo({ product }: ProductInfoProps) {
     }
   }, [product?.id]);
 
-  const queryClient = useQueryClient();
-
   const handleAddToCart = () => {
     // Phase 3.1 sẽ wire vào Zustand cart store
     toast.success(`Đã thêm ${quantity} × ${product.name} vào giỏ`, {
@@ -53,6 +65,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
     try {
       await userService.toggleFavorite(product.id);
       setWished((w) => !w);
+      queryClient.invalidateQueries({ queryKey: ['favorite-status', product.id] });
       queryClient.invalidateQueries({ queryKey: ['my-favorites'] });
       toast.success(wished ? 'Đã bỏ yêu thích' : 'Đã thêm vào danh sách yêu thích');
     } catch (error) {
