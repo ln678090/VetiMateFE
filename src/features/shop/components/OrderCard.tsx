@@ -22,6 +22,8 @@ import { cn, formatVND } from '@/lib/utils';
 import { useCartStore } from '@/stores/cart.store';
 import { Order, OrderStatus } from '@/types/order';
 import { ProductCardCompat } from '@/types/shop';
+import { CustomerOrderDetailsModal } from './CustomerOrderDetailsModal';
+import { CancelOrderRequestModal } from './CancelOrderRequestModal';
 
 const STATUS_MAP: Record<OrderStatus, { label: string; colorClass: string }> = {
   PENDING: { label: 'CHỜ XÁC NHẬN', colorClass: 'text-amber-500' },
@@ -33,7 +35,7 @@ const STATUS_MAP: Record<OrderStatus, { label: string; colorClass: string }> = {
 
 interface OrderCardProps {
   order: Order;
-  onCancelOrder?: (orderId: string) => void;
+  onCancelOrder?: (orderId: string, reason: string) => void;
 }
 
 export function OrderCard({ order, onCancelOrder }: OrderCardProps) {
@@ -41,6 +43,9 @@ export function OrderCard({ order, onCancelOrder }: OrderCardProps) {
   const addItem = useCartStore((s) => s.addItem);
   const statusInfo = STATUS_MAP[order.status];
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isItemsExpanded, setIsItemsExpanded] = useState(false);
+  const hasCancelRequest = order.note?.includes('[CANCEL_REQUEST]:');
 
   const handleBuyAgain = () => {
     // Add all items from this order to the cart
@@ -68,21 +73,20 @@ export function OrderCard({ order, onCancelOrder }: OrderCardProps) {
         reviewCount: 1,
         slug: item.productId,
       };
-      
+
       addItem(mockProduct, item.quantity);
     });
-    
+
     toast.success('Đã thêm sản phẩm vào giỏ hàng', {
       description: 'Chuyển hướng đến giỏ hàng...',
     });
-    
+
     router.push('/cart');
   };
 
-  const handleCancelOrder = () => {
+  const handleCancelOrder = (reason: string) => {
     if (onCancelOrder) {
-      onCancelOrder(order.id);
-      toast.success('Đã hủy đơn hàng thành công');
+      onCancelOrder(order.id, reason);
       setIsCancelDialogOpen(false);
     }
   };
@@ -96,8 +100,8 @@ export function OrderCard({ order, onCancelOrder }: OrderCardProps) {
             <Store className="h-4 w-4" />
           </div>
           <span className="font-bold text-zinc-900 dark:text-white">PetCare Vet Shop</span>
-          <Button variant="secondary" size="sm" className="ml-2 h-7 rounded-full px-3 text-xs font-semibold hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/20 dark:hover:text-rose-400" asChild>
-            <Link href="/shop">Xem Shop</Link>
+          <Button variant="secondary" size="sm" onClick={() => setIsDetailsOpen(true)} className="ml-2 h-7 rounded-full px-3 text-xs font-semibold hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/20 dark:hover:text-rose-400">
+            Xem chi tiết
           </Button>
         </div>
         <div className="flex items-center gap-4 text-sm font-medium">
@@ -106,22 +110,26 @@ export function OrderCard({ order, onCancelOrder }: OrderCardProps) {
               <Truck className="h-4 w-4" /> Đơn hàng đang được giao đến bạn
             </span>
           )}
-          <span className={cn('rounded-full px-3 py-1 text-xs font-bold tracking-wider', 
+          <span className={cn('rounded-full px-3 py-1 text-xs font-bold tracking-wider',
             order.status === 'PENDING' ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-500' :
-            order.status === 'CONFIRMED' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-500' :
-            order.status === 'SHIPPING' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-500' :
-            order.status === 'DELIVERED' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-500' :
-            'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-500'
+              order.status === 'CONFIRMED' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-500' :
+                order.status === 'SHIPPING' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-500' :
+                  order.status === 'DELIVERED' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-500' :
+                    'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-500'
           )}>
             {statusInfo.label}
           </span>
+          {hasCancelRequest && order.status !== 'CANCELLED' && (
+            <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-bold tracking-wider text-rose-500 dark:bg-rose-500/10 dark:text-rose-400">
+              ĐANG YÊU CẦU HỦY
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Body: Item List */}
       <div className="p-5">
         <ul className="space-y-5">
-          {order.items.map((item) => (
+          {(isItemsExpanded ? order.items : order.items.slice(0, 2)).map((item) => (
             <li key={item.id} className="flex gap-4">
               <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-2xl border border-zinc-200/80 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
                 <Image
@@ -129,8 +137,7 @@ export function OrderCard({ order, onCancelOrder }: OrderCardProps) {
                   alt={item.productName}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  unoptimized
-                />
+                  unoptimized />
               </div>
               <div className="flex flex-1 flex-col justify-start py-1">
                 <h4 className="line-clamp-2 text-base font-bold text-zinc-900 dark:text-white">
@@ -147,6 +154,30 @@ export function OrderCard({ order, onCancelOrder }: OrderCardProps) {
             </li>
           ))}
         </ul>
+        
+        {order.items.length > 2 && (
+          <div className="mt-4 flex justify-center border-t border-zinc-100 pt-4 dark:border-zinc-800/50">
+            <button
+              type="button"
+              onClick={() => setIsItemsExpanded(!isItemsExpanded)}
+              className="flex items-center gap-1.5 text-sm font-medium text-zinc-500 hover:text-rose-500 transition-colors dark:text-zinc-400 dark:hover:text-rose-400"
+            >
+              {isItemsExpanded ? 'Thu gọn' : `Xem thêm ${order.items.length - 2} sản phẩm`}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className={cn('h-4 w-4 transition-transform duration-200', isItemsExpanded && 'rotate-180')}
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
 
       <Separator />
@@ -161,36 +192,17 @@ export function OrderCard({ order, onCancelOrder }: OrderCardProps) {
         </div>
 
         <div className="flex gap-3">
-          {order.status === 'PENDING' && (
-            <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
-              <DialogTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  className="h-10 rounded-xl border-zinc-200 font-semibold text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-300"
-                >
-                  Hủy Đơn Hàng
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Hủy đơn hàng</DialogTitle>
-                  <DialogDescription>
-                    Bạn có chắc chắn muốn hủy đơn hàng này không? Hành động này không thể hoàn tác.
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter className="mt-4 gap-2 sm:gap-0">
-                  <Button variant="outline" onClick={() => setIsCancelDialogOpen(false)}>
-                    Không, giữ lại
-                  </Button>
-                  <Button variant="destructive" onClick={handleCancelOrder}>
-                    Có, hủy đơn
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+          {order.status === 'PENDING' && !hasCancelRequest && (
+            <Button
+              variant="outline"
+              onClick={() => setIsCancelDialogOpen(true)}
+              className="h-10 rounded-xl border-zinc-200 font-semibold text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-300"
+            >
+              Hủy Đơn Hàng
+            </Button>
           )}
           {order.status === 'DELIVERED' && (
-            <Button 
+            <Button
               onClick={handleBuyAgain}
               className="h-10 rounded-xl bg-rose-500 font-bold text-white shadow-md shadow-rose-500/20 hover:bg-rose-600"
             >
@@ -200,6 +212,19 @@ export function OrderCard({ order, onCancelOrder }: OrderCardProps) {
 
         </div>
       </div>
+
+      <CustomerOrderDetailsModal
+        isOpen={isDetailsOpen}
+        onClose={() => setIsDetailsOpen(false)}
+        order={order}
+        onOpenCancelDialog={() => setIsCancelDialogOpen(true)}
+      />
+
+      <CancelOrderRequestModal
+        isOpen={isCancelDialogOpen}
+        onClose={() => setIsCancelDialogOpen(false)}
+        onSubmit={handleCancelOrder}
+      />
     </div>
   );
 }

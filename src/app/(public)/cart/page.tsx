@@ -122,8 +122,7 @@ export default function CartPage() {
                           alt={item.product.name}
                           fill
                           className="object-cover transition-transform duration-500 group-hover:scale-110"
-                          unoptimized
-                        />
+                          unoptimized />
                       </Link>
                       <div className="flex flex-1 flex-col py-1">
                         <Link

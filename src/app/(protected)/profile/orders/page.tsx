@@ -5,16 +5,23 @@ import { PackageSearch, Search } from 'lucide-react';
 import { useState } from 'react';
 
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { OrderCard } from '@/features/shop/components/OrderCard';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { orderService } from '@/services/order.service';
 import { OrderStatus, Order } from '@/types/order';
 
 const TABS: { value: OrderStatus | 'ALL'; label: string }[] = [
   { value: 'ALL', label: 'Tất cả' },
   { value: 'PENDING', label: 'Chờ xác nhận' },
-  { value: 'CONFIRMED', label: 'Đang xử lý' },
   { value: 'SHIPPING', label: 'Đang giao' },
   { value: 'DELIVERED', label: 'Đã giao' },
   { value: 'CANCELLED', label: 'Đã hủy' },
@@ -23,6 +30,9 @@ const TABS: { value: OrderStatus | 'ALL'; label: string }[] = [
 export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState<OrderStatus | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [timeRange, setTimeRange] = useState<string>('ALL');
+  const [startDate, setStartDate] = useState<string>('');
+  const [endDate, setEndDate] = useState<string>('');
   
   const queryClient = useQueryClient();
   const { data: orders = [] } = useQuery({
@@ -38,18 +48,59 @@ export default function OrdersPage() {
       order.items.some((item) =>
         item.productName.toLowerCase().includes(searchQuery.toLowerCase())
       );
-    return matchesStatus && matchesSearch;
+      
+    let matchesDate = true;
+    const orderDate = new Date(order.createdAt);
+    orderDate.setHours(0, 0, 0, 0);
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (timeRange === 'TODAY') {
+      if (orderDate.getTime() !== today.getTime()) matchesDate = false;
+    } else if (timeRange === 'THIS_WEEK') {
+      const day = today.getDay();
+      const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+      const startOfWeek = new Date(today.setDate(diff));
+      startOfWeek.setHours(0, 0, 0, 0);
+      if (orderDate < startOfWeek) matchesDate = false;
+    } else if (timeRange === 'THIS_MONTH') {
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      if (orderDate < startOfMonth) matchesDate = false;
+    } else if (timeRange === 'CUSTOM') {
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        if (orderDate < start) matchesDate = false;
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(0, 0, 0, 0);
+        if (orderDate > end) matchesDate = false;
+      }
+    }
+
+    return matchesStatus && matchesSearch && matchesDate;
   });
 
-  const handleCancelOrder = (orderId: string) => {
-    // Optimistic update
-    queryClient.setQueryData(['my-orders'], (oldOrders: Order[] | undefined) => {
-      if (!oldOrders) return [];
-      return oldOrders.map((order) =>
-        order.id === orderId ? { ...order, status: 'CANCELLED' } : order
-      );
-    });
-    // Ideally we would also call an API to cancel the order here, e.g. orderService.cancelOrder(orderId)
+  const cancelMutation = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
+      orderService.cancelRequest({ id, reason }),
+    onSuccess: () => {
+      toast.success('Đã gửi yêu cầu hủy đơn hàng', {
+        description: 'Vui lòng chờ cửa hàng xác nhận.',
+      });
+      queryClient.invalidateQueries({ queryKey: ['my-orders'] });
+    },
+    onError: () => {
+      toast.error('Có lỗi xảy ra', {
+        description: 'Vui lòng thử lại sau.',
+      });
+    },
+  });
+
+  const handleCancelOrder = (orderId: string, reason: string) => {
+    cancelMutation.mutate({ id: orderId, reason });
   };
 
   return (
@@ -77,15 +128,50 @@ export default function OrdersPage() {
             <p className="mt-2 text-zinc-500">Quản lý và theo dõi trạng thái đơn hàng của bạn</p>
           </div>
           
-          <div className="relative w-full lg:w-96">
-            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400" />
-            <Input
-              type="text"
-              placeholder="Tìm kiếm theo mã đơn hoặc tên sản phẩm..."
-              className="h-12 w-full rounded-xl border-zinc-200 bg-white pl-10 pr-4 shadow-sm focus-visible:ring-rose-500 dark:border-zinc-800 dark:bg-zinc-950 dark:focus-visible:ring-rose-500"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+            {timeRange === 'CUSTOM' && (
+              <div className="flex items-center gap-2">
+                <Input 
+                  type="date" 
+                  value={startDate} 
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="h-12 w-[130px] rounded-xl border-zinc-200 bg-white text-sm shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
+                  title="Từ ngày"
+                />
+                <span className="text-zinc-400">-</span>
+                <Input 
+                  type="date" 
+                  value={endDate} 
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="h-12 w-[130px] rounded-xl border-zinc-200 bg-white text-sm shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
+                  title="Đến ngày"
+                />
+              </div>
+            )}
+            
+            <Select value={timeRange} onValueChange={setTimeRange}>
+              <SelectTrigger className="!h-12 w-full lg:w-[160px] rounded-xl border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+                <SelectValue placeholder="Thời gian" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Tất cả thời gian</SelectItem>
+                <SelectItem value="TODAY">Hôm nay</SelectItem>
+                <SelectItem value="THIS_WEEK">Tuần này</SelectItem>
+                <SelectItem value="THIS_MONTH">Tháng này</SelectItem>
+                <SelectItem value="CUSTOM">Tùy chọn...</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <div className="relative w-full lg:w-72">
+              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-zinc-400" />
+              <Input
+                type="text"
+                placeholder="Mã đơn hoặc tên SP..."
+                className="h-12 w-full rounded-xl border-zinc-200 bg-white pl-10 pr-4 shadow-sm focus-visible:ring-rose-500 dark:border-zinc-800 dark:bg-zinc-950 dark:focus-visible:ring-rose-500"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
           </div>
         </div>
 

@@ -15,7 +15,7 @@ export default function InventoryPage() {
   // Lấy dữ liệu sản phẩm để xem tồn kho
   const { data: productsData, isLoading } = useQuery({
     queryKey: ['products'],
-    queryFn: productApi.getProducts,
+    queryFn: () => productApi.getProducts(),
   });
 
   const products = productsData?.data?.items || [];

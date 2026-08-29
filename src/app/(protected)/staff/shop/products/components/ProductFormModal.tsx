@@ -37,7 +37,7 @@ const formSchema = z.object({
   price: z.coerce.number().min(0, 'Giá không hợp lệ'),
   originalPrice: z.coerce.number().min(0, 'Giá không hợp lệ').optional(),
   stockQuantity: z.coerce.number().min(0, 'Số lượng không hợp lệ'),
-  imageUrl: z.string().url('URL ảnh không hợp lệ'),
+  imageUrl: z.string().min(1, 'URL ảnh không được để trống'),
   isFeatured: z.boolean(),
   isActive: z.boolean(),
 });
@@ -90,12 +90,12 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
           categoryId: productToEdit.categoryId,
           brandId: productToEdit.brandId,
           petType: productToEdit.petType,
-          price: productToEdit.price,
+          price: productToEdit.price || 0,
           originalPrice: productToEdit.originalPrice || 0,
-          stockQuantity: productToEdit.stockQuantity,
-          imageUrl: productToEdit.imageUrl,
-          isFeatured: productToEdit.isFeatured,
-          isActive: productToEdit.isActive,
+          stockQuantity: productToEdit.stockQuantity || 0,
+          imageUrl: productToEdit.imageUrl || '',
+          isFeatured: productToEdit.isFeatured ?? false,
+          isActive: productToEdit.isActive ?? true,
         });
       } else {
         form.reset({
@@ -147,6 +147,11 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
     }
   };
 
+  const onInvalid = (errors: any) => {
+    console.error('Form validation failed:', Object.keys(errors), errors);
+    toast.error('Vui lòng kiểm tra lại thông tin nhập!');
+  };
+
   const isPending = createMutation.isPending || updateMutation.isPending;
   const categories = categoriesData?.data || [];
   const brands = brandsData?.data || [];
@@ -159,7 +164,7 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
         </DialogHeader>
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}

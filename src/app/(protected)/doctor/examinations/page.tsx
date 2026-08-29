@@ -52,7 +52,8 @@ export default function DoctorExaminationsPage() {
   const [historyPage, setHistoryPage] = useState(0);
 
   const examinationsQuery = useManagementAppointments({
-    date,
+    startDate: date,
+    endDate: date,
     status: 'CONFIRMED',
     page: waitingPage,
     size: PAGE_SIZE,

@@ -312,8 +312,7 @@ export function CheckoutForm() {
                         alt={item.product.name}
                         fill
                         className="object-cover"
-                        unoptimized
-                      />
+                        unoptimized />
                       <div className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-zinc-500 text-xs font-bold text-white shadow-sm ring-2 ring-white dark:ring-zinc-900">
                         {item.quantity}
                       </div>

@@ -142,16 +142,7 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     gradient: 'from-violet-500 to-purple-500',
     group: 'Lễ tân',
   },
-  {
-    key: 'appointment-calendar',
-    label: 'Lịch hẹn Calendar',
-    href: '/staff/appointments',
-    icon: CalendarCheck,
-    roles: [ROLE.ADMIN, ROLE.RECEPTIONIST],
-    dashboardDescription: 'Xem/tạo/sửa lịch hẹn theo ngày, tuần, tháng.',
-    gradient: 'from-emerald-500 to-teal-500',
-    group: 'Lễ tân',
-  },
+
 
   // ═══ Kế toán (ACCOUNTANT) ═══
   {

@@ -54,7 +54,7 @@ export function CreateImportVoucherModal({ isOpen, onClose }: CreateImportVouche
   
   const { data: productsData } = useQuery({
     queryKey: ['products'],
-    queryFn: productApi.getProducts,
+    queryFn: () => productApi.getProducts(),
   });
 
   const { data: suppliersData } = useQuery({

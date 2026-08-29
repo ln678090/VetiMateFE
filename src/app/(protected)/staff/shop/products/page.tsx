@@ -17,7 +17,7 @@ export default function ProductsPage() {
 
   const { data: productsData, isLoading } = useQuery({
     queryKey: ['products'],
-    queryFn: productApi.getProducts,
+    queryFn: () => productApi.getProducts('newest'),
   });
 
   const handleEdit = (product: Product) => {

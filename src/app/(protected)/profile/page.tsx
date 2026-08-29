@@ -179,21 +179,7 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        <ActionCard
-          href="/profile/pets"
-          icon={<PawPrint className="size-5" />}
-          title="Hồ sơ thú cưng"
-          description="Quản lý danh sách chó mèo, xem chi tiết và cập nhật thông tin."
-        />
-
-        <ActionCard
-          href="/booking"
-          icon={<CalendarDays className="size-5" />}
-          title="Đặt lịch chăm sóc"
-          description="Tạo lịch khám hoặc chăm sóc dựa trên thú cưng đã lưu."
-        />
-
-        <Card className="rounded-3xl md:col-span-2 xl:col-span-3 flex flex-col h-full">
+        <Card className="rounded-3xl flex flex-col h-full">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <ShieldCheck className="size-5 text-emerald-500" />
@@ -209,31 +195,6 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* 3. Lịch sử đơn hàng */}
-      <Card className="rounded-3xl relative">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Package className="size-5 text-indigo-500" />
-              Lịch sử đơn hàng
-            </CardTitle>
-            <CardDescription>Các đơn hàng bạn đã đặt trên hệ thống.</CardDescription>
-          </div>
-          <Button variant="ghost" className="text-sm font-medium text-indigo-600 hover:text-indigo-700" asChild>
-            <Link href="/profile/orders">Xem tất cả</Link>
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center py-8 text-center bg-muted/30 rounded-2xl border border-dashed">
-            <Package className="size-12 text-muted-foreground/30 mb-3" />
-            <p className="text-muted-foreground text-sm font-medium">Bạn chưa có đơn hàng nào.</p>
-            <Button variant="outline" className="mt-4 rounded-xl" asChild>
-              <Link href="/shop">Khám phá cửa hàng</Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* 4. Sản phẩm đã thích & Đã xem gần đây */}
       <Card className="rounded-3xl">
@@ -258,7 +219,7 @@ export default function ProfilePage() {
                  </div>
               ) : favoritesData?.content?.length ? (
                  <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
-                   {favoritesData.content.map((product: any) => (
+                   {favoritesData.content.slice(0, 5).map((product: any) => (
                      <ProductCard key={product.id} product={product} />
                    ))}
                  </div>
@@ -279,7 +240,7 @@ export default function ProfilePage() {
                  </div>
               ) : viewedData?.content?.length ? (
                  <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
-                   {viewedData.content.map((product: any) => (
+                   {viewedData.content.slice(0, 5).map((product: any) => (
                      <ProductCard key={product.id} product={product} />
                    ))}
                  </div>

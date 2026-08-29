@@ -77,7 +77,7 @@ export function BrandTable({ brands, isLoading, onEdit }: BrandTableProps) {
             <TableCell>
               {brand.logoUrl ? (
                 <div className="relative h-10 w-10 overflow-hidden rounded-md border border-zinc-200">
-                  <Image src={brand.logoUrl} alt={brand.name} fill className="object-cover" />
+                  <Image src={brand.logoUrl} alt={brand.name} fill className="object-cover" unoptimized />
                 </div>
               ) : (
                 <div className="flex h-10 w-10 items-center justify-center rounded-md border border-zinc-200 bg-zinc-100 text-xs text-zinc-500">

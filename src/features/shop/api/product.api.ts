@@ -20,8 +20,9 @@ export interface ProductReq {
 }
 
 export const productApi = {
-  getProducts: async () => {
-    const res = await api.get<ApiResp<ProductListResp>>('/api/products');
+  getProducts: async (sort?: string) => {
+    const query = sort ? `?sort=${sort}` : '';
+    const res = await api.get<ApiResp<ProductListResp>>(`/api/products${query}`);
     return res.data;
   },
   

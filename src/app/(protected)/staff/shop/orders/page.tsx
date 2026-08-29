@@ -6,7 +6,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { OrderTable } from './components/OrderTable';
 
+import { useQuery } from '@tanstack/react-query';
+import { orderService } from '@/services/order.service';
+
 export default function OrdersPage() {
+  const { data: orders = [], isLoading } = useQuery({
+    queryKey: ['shop-orders'],
+    queryFn: orderService.getAllShopOrders,
+  });
+
   return (
     <div className="space-y-6">
       <header className="flex items-center justify-between">
@@ -18,17 +26,13 @@ export default function OrdersPage() {
             Quản lý và theo dõi các đơn hàng bán ra của cửa hàng
           </p>
         </div>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Tạo đơn hàng mới
-        </Button>
       </header>
       
       <Card>
         <CardContent className="p-0">
           <OrderTable 
-            items={[]} // Backend for orders is planned for Phase 3
-            isLoading={false} 
+            items={orders as any}
+            isLoading={isLoading} 
           />
         </CardContent>
       </Card>

@@ -39,7 +39,7 @@ export default function POSPage() {
   // Fetch products
   const { data: productsData, isLoading, refetch } = useQuery({
     queryKey: ['products'],
-    queryFn: productApi.getProducts,
+    queryFn: () => productApi.getProducts(),
   });
 
   const products = productsData?.data?.items || [];
