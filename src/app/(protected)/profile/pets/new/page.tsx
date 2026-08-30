@@ -1,29 +1,51 @@
 'use client';
 
+import { ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+
 import { PetForm } from '@/features/profile/components/PetForm';
-import { useCreatePet, useMyCustomer } from '@/features/booking/hooks/use-clinic';
-import type { PetFormValues } from '@/schemas/pet.schema';
+import { useCreateOwnerPet } from '@/features/pets/hooks/use-pet-management';
+import { getApiErrorMessage } from '@/lib/axios';
 
 export default function NewPetPage() {
-  const { data: customer, isLoading } = useMyCustomer();
-  const createPet = useCreatePet(customer?.id ?? '');
-
-  if (isLoading) return <div className="p-8">Đang tải...</div>;
+  const router = useRouter();
+  const createPet = useCreateOwnerPet();
 
   return (
-    <div className="container max-w-3xl py-8">
-      <h1 className="mb-6 text-2xl font-bold">Thêm thú cưng</h1>
+    <div className="mx-auto max-w-3xl space-y-6">
+      <Link
+        href="/profile/pets"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="size-4" />
+        Quay lại danh sách
+      </Link>
 
-      <PetForm
-        mode="create"
-        customerId={customer?.id ?? ''}
-        onSubmitPet={async (values) => {
-          await createPet.mutateAsync({
-            ...values,
-            customerId: customer!.id,
-          });
-        }}
-      />
+      <header>
+        <h1 className="text-3xl font-bold">Thêm thú cưng</h1>
+        <p className="mt-2 text-muted-foreground">Tạo hồ sơ mới cho thú cưng của bạn.</p>
+      </header>
+
+      <div className="rounded-2xl border bg-card p-6 shadow-sm">
+        <PetForm
+          isSubmitting={createPet.isPending}
+          submitLabel="Thêm thú cưng"
+          onCancel={() => router.push('/profile/pets')}
+          onSubmit={async (request) => {
+            try {
+              const pet = await createPet.mutateAsync(request);
+
+              toast.success('Đã thêm thú cưng thành công');
+
+              router.push(`/profile/pets/${pet.id}`);
+            } catch (error) {
+              toast.error(getApiErrorMessage(error));
+            }
+          }}
+        />
+      </div>
     </div>
   );
 }
