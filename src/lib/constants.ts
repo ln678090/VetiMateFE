@@ -18,11 +18,16 @@ export const API_ROUTES = {
     refreshMobile: '/api/auth/refresh-mobile',
     logout: '/api/auth/logout',
     test: '/api/auth/test',
+    changePassword: '/api/auth/change-password',
+  },
+  users: {
+    me: '/api/users/me',
+    profile: '/api/users/me/profile',
   },
 } as const;
 
 /** Routes cần đăng nhập */
-export const PROTECTED_ROUTES = ['/dashboard', '/booking', '/cart', '/profile'] as const;
+export const PROTECTED_ROUTES = ['/dashboard', '/booking', '/cart', '/profile', '/management', '/doctor', '/staff'] as const;
 
 /** Routes auth (không cho user đã login truy cập) */
 export const AUTH_ROUTES = ['/login', '/register'] as const;

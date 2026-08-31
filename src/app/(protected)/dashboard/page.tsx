@@ -11,7 +11,7 @@ import { APP_NAVIGATION_ITEMS, canAccessNavigationItem } from '@/config/app-navi
 import { getAuthoritiesFromToken } from '@/lib/auth-roles';
 import { useAuthStore } from '@/stores/auth.store';
 
-type DashboardRole = 'ADMIN' | 'MANAGER' | 'RECEPTIONIST' | 'DOCTOR' | 'USER';
+type DashboardRole = 'ADMIN' | 'MANAGER' | 'RECEPTIONIST' | 'DOCTOR' | 'ACCOUNTANT' | 'SHOP_STAFF' | 'USER';
 
 interface DashboardConfiguration {
   title: string;
@@ -49,6 +49,20 @@ const DASHBOARD_CONFIGURATIONS: Record<DashboardRole, DashboardConfiguration> = 
     activityDescription: 'Các ca được lễ tân xác nhận sẽ xuất hiện trong danh sách ca khám.',
   },
 
+  ACCOUNTANT: {
+    title: 'Kế toán & Tài chính',
+    description: 'Quản lý hóa đơn, thanh toán và báo cáo tài chính hàng ngày.',
+    activityTitle: 'Công việc kế toán',
+    activityDescription: 'Mở quản lý hóa đơn để tách/gộp bill và xử lý thanh toán.',
+  },
+
+  SHOP_STAFF: {
+    title: 'Nhân viên cửa hàng',
+    description: 'Quản lý sản phẩm, bán hàng tại quầy và xử lý đơn hàng.',
+    activityTitle: 'Công việc bán hàng',
+    activityDescription: 'Mở POS để bán hàng hoặc kiểm tra đơn hàng mới.',
+  },
+
   USER: {
     title: 'Chăm sóc thú cưng',
     description: 'Quản lý thú cưng, đặt lịch và mua sắm sản phẩm phù hợp.',
@@ -74,27 +88,17 @@ function resolveDashboardRole(authorities: readonly string[]): DashboardRole {
     return 'DOCTOR';
   }
 
+  if (authorities.includes('ROLE_ACCOUNTANT')) {
+    return 'ACCOUNTANT';
+  }
+
+  if (authorities.includes('ROLE_SHOP_STAFF')) {
+    return 'SHOP_STAFF';
+  }
+
   return 'USER';
 }
 
-function getFallbackGreeting(role: DashboardRole): string {
-  switch (role) {
-    case 'ADMIN':
-      return 'quản trị viên';
-
-    case 'MANAGER':
-      return 'quản lý';
-
-    case 'RECEPTIONIST':
-      return 'lễ tân';
-
-    case 'DOCTOR':
-      return 'bác sĩ';
-
-    default:
-      return 'bạn';
-  }
-}
 
 export default function DashboardPage() {
   const user = useAuthStore((state) => state.user);
@@ -114,7 +118,8 @@ export default function DashboardPage() {
 
   const configuration = DASHBOARD_CONFIGURATIONS[dashboardRole];
 
-  const greeting = user?.fullName ?? user?.username ?? getFallbackGreeting(dashboardRole);
+  const greetingName = user?.fullName ?? user?.username;
+  const greetingText = greetingName ? `Chào mừng trở lại, ${greetingName}` : 'Chào mừng trở lại';
 
   return (
     <main className="mx-auto max-w-7xl space-y-6">
@@ -135,7 +140,7 @@ export default function DashboardPage() {
         <p className="text-sm font-medium text-rose-600">{configuration.title}</p>
 
         <h1 className="mt-1 text-2xl font-bold tracking-tight text-zinc-900 md:text-3xl dark:text-white">
-          Chào mừng trở lại, {greeting}
+          {greetingText}
         </h1>
 
         <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">

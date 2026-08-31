@@ -1,13 +1,14 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { PawPrint } from 'lucide-react';
+import { PawPrint, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { useMounted } from '@/hooks/use-mounted';
 import { APP } from '@/lib/constants';
 import { useAuthStore } from '@/stores/auth.store';
+import { useCartStore } from '@/stores/cart.store';
 
 const NAV_LINKS = [
   { label: 'Cửa hàng', href: '/shop' },
@@ -20,6 +21,9 @@ export function LandingHeader() {
   const mounted = useMounted();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const isHydrating = useAuthStore((s) => s.isHydrating);
+  const cartItems = useCartStore((s) => s.items);
+
+  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   const showAuthed = mounted && !isHydrating && isAuthenticated;
 
@@ -53,6 +57,16 @@ export function LandingHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <Button asChild variant="ghost" size="icon" className="relative h-10 w-10 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+            <Link href="/cart">
+              <ShoppingCart className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
+              {mounted && totalItems > 0 && (
+                <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-sm">
+                  {totalItems > 99 ? '99+' : totalItems}
+                </span>
+              )}
+            </Link>
+          </Button>
           {showAuthed ? (
             <Button
               asChild

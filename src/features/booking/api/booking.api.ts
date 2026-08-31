@@ -118,7 +118,8 @@ export async function getManagementAppointments(
   return unwrap<SpringPage<AppointmentDto>>(
     api.get('/api/clinic/appointments/management', {
       params: {
-        date: params.date,
+        startDate: params.startDate,
+        endDate: params.endDate,
         status: params.status || undefined,
         page: params.page ?? 0,
         size: params.size ?? 20,
@@ -135,6 +136,17 @@ export async function updateAppointmentStatus(
   const body: UpdateAppointmentStatusRequest = { status };
   return unwrap<AppointmentDto>(
     api.patch(`/api/clinic/appointments/${appointmentId}/status`, body)
+  );
+}
+
+export async function updateAppointmentCallStatus(
+  appointmentId: string,
+  isCalled: boolean
+): Promise<AppointmentDto> {
+  return unwrap<AppointmentDto>(
+    api.patch(`/api/clinic/appointments/${appointmentId}/call-status`, null, {
+      params: { isCalled },
+    })
   );
 }
 

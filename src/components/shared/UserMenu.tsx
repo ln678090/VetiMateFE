@@ -14,6 +14,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/use-auth';
+import { getAuthoritiesFromToken } from '@/lib/auth-roles';
+import { useAuthStore } from '@/stores/auth.store';
 
 export function UserMenu() {
   const { user, logout } = useAuth();
@@ -28,8 +30,12 @@ export function UserMenu() {
     }
   };
 
-  // Initials từ fullName hoặc username, fallback "U"
-  const displayName = user?.fullName || user?.username || 'User';
+  // Initials từ fullName hoặc username, fallback "S"
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const authorities = getAuthoritiesFromToken(accessToken);
+  const isCustomer = authorities.includes('ROLE_USER');
+  const fallbackName = isCustomer ? 'Khách hàng' : 'Nhân viên';
+  const displayName = user?.fullName || user?.username || fallbackName;
   const initials = displayName
     .split(' ')
     .map((s) => s[0])
@@ -65,15 +71,6 @@ export function UserMenu() {
             )}
           </div>
         </DropdownMenuLabel>
-
-        <DropdownMenuSeparator />
-
-        <DropdownMenuItem asChild>
-          <Link href="/profile" className="flex items-center gap-2">
-            <UserCircle2 className="h-4 w-4" strokeWidth={2} />
-            Hồ sơ của tôi
-          </Link>
-        </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 
