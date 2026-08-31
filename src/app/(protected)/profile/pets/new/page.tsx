@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { PetForm } from '@/features/profile/components/PetForm';
 import { useCreateOwnerPet } from '@/features/pets/hooks/use-pet-management';
 import { getApiErrorMessage } from '@/lib/axios';
+import { toOwnerPetRequest } from '@/schemas/pet.schema';
 
 export default function NewPetPage() {
   const router = useRouter();
@@ -35,7 +36,7 @@ export default function NewPetPage() {
           onCancel={() => router.push('/profile/pets')}
           onSubmit={async (request) => {
             try {
-              const pet = await createPet.mutateAsync(request);
+              const pet = await createPet.mutateAsync(toOwnerPetRequest(request));
 
               toast.success('Đã thêm thú cưng thành công');
 

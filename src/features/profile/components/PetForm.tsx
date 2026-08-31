@@ -13,54 +13,72 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RequiredLabel } from '@/components/shared/RequiredLabel';
 import { getApiErrorMessage } from '@/lib/axios';
-import { petFormSchema, type PetFormValues } from '@/schemas/pet.schema';
+import { EMPTY_PET_FORM_VALUES, petFormSchema, type PetFormValues } from '@/schemas/pet.schema';
 import { PET_GENDER_OPTIONS, PET_SPECIES_OPTIONS, type PetDto } from '@/types/clinic';
 
 interface PetFormProps {
-  mode: 'create' | 'edit';
+  // Props của Dung
+  mode?: 'create' | 'edit';
   pet?: PetDto;
-  customerId: string;
-  onSubmitPet: (values: PetFormValues) => Promise<void>;
+  customerId?: string;
+  onSubmitPet?: (values: PetFormValues) => Promise<void>;
+  
+  // Props của Lâm
+  initialValues?: PetFormValues;
+  isSubmitting?: boolean;
+  submitLabel?: string;
+  onCancel?: () => void;
+  onSubmit?: (values: PetFormValues) => Promise<void>;
 }
 
-export function PetForm({ mode, pet, customerId, onSubmitPet }: PetFormProps) {
+export function PetForm({ 
+  mode, 
+  pet, 
+  customerId, 
+  onSubmitPet,
+  initialValues,
+  isSubmitting: externalIsSubmitting,
+  submitLabel,
+  onCancel,
+  onSubmit 
+}: PetFormProps) {
   const router = useRouter();
 
   const form = useForm<PetFormValues>({
     resolver: zodResolver(petFormSchema),
-    defaultValues: {
-      name: '',
-      species: 'DOG',
-      breed: null,
-      gender: 'UNKNOWN',
-      birthDate: null,
-      weightKg: null,
-      note: null,
-    },
+    defaultValues: initialValues || EMPTY_PET_FORM_VALUES,
   });
 
   useEffect(() => {
-    if (!pet) return;
-
-    form.reset({
-      name: pet.name,
-      species: pet.species,
-      breed: pet.breed ?? null,
-      gender: pet.gender ?? 'UNKNOWN',
-      birthDate: pet.birthDate ?? null,
-      weightKg: pet.weightKg ?? null,
-      note: pet.note ?? null,
-    });
-  }, [pet, form]);
+    if (pet) {
+      form.reset({
+        name: pet.name,
+        species: pet.species,
+        breed: pet.breed ?? '',
+        gender: pet.gender ?? '',
+        birthDate: pet.birthDate ?? '',
+        weightKg: pet.weightKg === null ? '' : String(pet.weightKg),
+      });
+    } else if (initialValues) {
+      form.reset(initialValues);
+    }
+  }, [pet, initialValues, form]);
 
   const handleSubmit = form.handleSubmit(async (values) => {
+    // Nếu có onSubmit của Lâm truyền vào thì dùng luôn
+    if (onSubmit) {
+      await onSubmit(values);
+      return;
+    }
+
+    // Nếu không thì dùng logic cũ của Dung
     if (!customerId) {
       toast.error('Không tìm thấy thông tin khách hàng');
       return;
     }
 
     try {
-      await onSubmitPet(values);
+      if (onSubmitPet) await onSubmitPet(values);
       toast.success(mode === 'create' ? 'Đã thêm thú cưng' : 'Đã cập nhật thú cưng');
       router.push('/profile/pets');
     } catch (error) {
@@ -70,7 +88,8 @@ export function PetForm({ mode, pet, customerId, onSubmitPet }: PetFormProps) {
     }
   });
 
-  const isSubmitting = form.formState.isSubmitting;
+  const isSubmitting = externalIsSubmitting !== undefined ? externalIsSubmitting : form.formState.isSubmitting;
+  const finalSubmitLabel = submitLabel || (mode === 'create' ? 'Thêm' : 'Lưu');
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 rounded-2xl border bg-white p-6 shadow-sm">
@@ -134,28 +153,21 @@ export function PetForm({ mode, pet, customerId, onSubmitPet }: PetFormProps) {
             type="number"
             step="0.1"
             min="0"
-            {...form.register('weightKg', {
-              setValueAs: (v) => (v === '' ? null : Number(v)),
-            })}
+            {...form.register('weightKg')}
           />
           <p className="text-sm text-red-500">{form.formState.errors.weightKg?.message}</p>
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="note">Ghi chú</Label>
-        <Textarea id="note" rows={4} {...form.register('note')} />
-      </div>
-
       <div className="flex justify-between">
-        <Button type="button" variant="outline" onClick={() => router.back()}>
+        <Button type="button" variant="outline" onClick={onCancel || (() => router.back())}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Quay lại
         </Button>
 
         <Button type="submit" disabled={isSubmitting}>
           <Save className="mr-2 h-4 w-4" />
-          {isSubmitting ? 'Đang lưu...' : 'Lưu'}
+          {isSubmitting ? 'Đang xử lý...' : finalSubmitLabel}
         </Button>
       </div>
     </form>
