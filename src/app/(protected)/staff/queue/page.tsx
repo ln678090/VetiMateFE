@@ -1,27 +1,40 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+'use client';
 
-export default function Page() {
+import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { QueueType } from '@/types/queue';
+import { QueueBoard } from '@/features/staff/components/QueueBoard';
+
+export default function QueuePage() {
+  const [activeTab, setActiveTab] = useState<QueueType>('CLINIC');
+
   return (
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold tracking-tight text-zinc-900 md:text-3xl dark:text-white">
-          Hàng d?i di?n t?
+          Hàng đợi điện tử
         </h1>
         <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-          Giao di?n dang du?c xây d?ng...
+          Quản lý luồng khách hàng theo số thứ tự
         </p>
       </header>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>D? li?u</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/50">
-            <p className="text-sm text-zinc-500">Chua có d? li?u</p>
-          </div>
-        </CardContent>
-      </Card>
+
+      <Tabs 
+        value={activeTab} 
+        onValueChange={(val) => setActiveTab(val as QueueType)}
+        className="w-full"
+      >
+        <TabsList className="mb-4">
+          <TabsTrigger value="CLINIC">Khám bệnh (Clinic)</TabsTrigger>
+          <TabsTrigger value="SPA">Spa / Grooming</TabsTrigger>
+        </TabsList>
+        <TabsContent value="CLINIC" className="mt-0">
+          <QueueBoard type="CLINIC" />
+        </TabsContent>
+        <TabsContent value="SPA" className="mt-0">
+          <QueueBoard type="SPA" />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -62,7 +62,6 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     roles: [ROLE.USER],
     dashboardDescription: 'Chọn dịch vụ và khung giờ phù hợp.',
     gradient: 'from-rose-500 to-pink-500',
-    group: 'Dịch vụ Khách hàng',
   },
   {
     key: 'my-pets',
@@ -72,7 +71,6 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     roles: [ROLE.USER],
     dashboardDescription: 'Quản lý hồ sơ và thông tin thú cưng.',
     gradient: 'from-emerald-500 to-teal-500',
-    group: 'Dịch vụ Khách hàng',
   },
   {
     key: 'shop',
@@ -82,7 +80,6 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     roles: [ROLE.USER],
     dashboardDescription: 'Tìm thức ăn và phụ kiện chăm sóc.',
     gradient: 'from-amber-500 to-orange-500',
-    group: 'Dịch vụ Khách hàng',
   },
   {
     key: 'cart',
@@ -90,7 +87,6 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     href: '/cart',
     icon: ShoppingBag,
     roles: [ROLE.USER],
-    group: 'Dịch vụ Khách hàng',
   },
   {
     key: 'orders',
@@ -105,7 +101,6 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     href: '/profile',
     icon: UserRound,
     roles: [ROLE.USER],
-    group: 'Dịch vụ Khách hàng',
     exact: true,
   },
 

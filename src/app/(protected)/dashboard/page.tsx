@@ -99,30 +99,6 @@ function resolveDashboardRole(authorities: readonly string[]): DashboardRole {
   return 'USER';
 }
 
-function getFallbackGreeting(role: DashboardRole): string {
-  switch (role) {
-    case 'ADMIN':
-      return 'quản trị viên';
-
-    case 'MANAGER':
-      return 'quản lý';
-
-    case 'RECEPTIONIST':
-      return 'lễ tân';
-
-    case 'DOCTOR':
-      return 'bác sĩ';
-
-    case 'ACCOUNTANT':
-      return 'kế toán';
-
-    case 'SHOP_STAFF':
-      return 'nhân viên shop';
-
-    default:
-      return 'bạn';
-  }
-}
 
 export default function DashboardPage() {
   const user = useAuthStore((state) => state.user);
@@ -142,7 +118,8 @@ export default function DashboardPage() {
 
   const configuration = DASHBOARD_CONFIGURATIONS[dashboardRole];
 
-  const greeting = user?.fullName ?? user?.username ?? getFallbackGreeting(dashboardRole);
+  const greetingName = user?.fullName ?? user?.username;
+  const greetingText = greetingName ? `Chào mừng trở lại, ${greetingName}` : 'Chào mừng trở lại';
 
   return (
     <main className="mx-auto max-w-7xl space-y-6">
@@ -163,7 +140,7 @@ export default function DashboardPage() {
         <p className="text-sm font-medium text-rose-600">{configuration.title}</p>
 
         <h1 className="mt-1 text-2xl font-bold tracking-tight text-zinc-900 md:text-3xl dark:text-white">
-          Chào mừng trở lại, {greeting}
+          {greetingText}
         </h1>
 
         <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600 dark:text-zinc-400">

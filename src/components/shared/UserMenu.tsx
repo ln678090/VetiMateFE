@@ -14,6 +14,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/use-auth';
+import { getAuthoritiesFromToken } from '@/lib/auth-roles';
+import { useAuthStore } from '@/stores/auth.store';
 
 export function UserMenu() {
   const { user, logout } = useAuth();
@@ -29,7 +31,11 @@ export function UserMenu() {
   };
 
   // Initials từ fullName hoặc username, fallback "S"
-  const displayName = user?.fullName || user?.username || 'Staff';
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const authorities = getAuthoritiesFromToken(accessToken);
+  const isCustomer = authorities.includes('ROLE_USER');
+  const fallbackName = isCustomer ? 'Khách hàng' : 'Nhân viên';
+  const displayName = user?.fullName || user?.username || fallbackName;
   const initials = displayName
     .split(' ')
     .map((s) => s[0])
