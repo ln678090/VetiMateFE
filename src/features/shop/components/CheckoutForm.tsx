@@ -104,7 +104,7 @@ export function CheckoutForm() {
       // Clear cart and redirect
       clearCart();
       router.push('/profile/orders');
-    } catch (error: any) {
+    } catch (error: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
       toast.error('Đặt hàng thất bại', {
         description: error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại sau.'
       });

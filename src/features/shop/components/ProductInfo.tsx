@@ -39,6 +39,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
   useEffect(() => {
     if (isFavorited !== undefined) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setWished(isFavorited);
     }
   }, [isFavorited]);

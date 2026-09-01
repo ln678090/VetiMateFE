@@ -14,11 +14,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
+
 import { Banknote, CreditCard, Loader2, Landmark, Phone, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
+
 
 interface BillingSheetProps {
   open: boolean;

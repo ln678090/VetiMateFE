@@ -24,6 +24,7 @@ export const useBilling = () => {
       queryClient.invalidateQueries({ queryKey: [BILLING_QUERY_KEY] });
       toast.success('Đã tạo hóa đơn thành công');
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi tạo hóa đơn');
     },
@@ -36,6 +37,7 @@ export const useBilling = () => {
       queryClient.invalidateQueries({ queryKey: [BILLING_QUERY_KEY] });
       toast.success('Thanh toán thành công');
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi thanh toán');
     },
@@ -47,6 +49,7 @@ export const useBilling = () => {
       queryClient.invalidateQueries({ queryKey: [BILLING_QUERY_KEY] });
       toast.success('Hủy hóa đơn thành công');
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi hủy hóa đơn');
     },

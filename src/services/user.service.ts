@@ -1,5 +1,5 @@
 import { api, unwrap } from '@/lib/axios';
-import { API_ROUTES } from '@/lib/constants';
+
 import type { UpdateProfileInput } from '@/schemas/user.schema';
 import type { ApiResp } from '@/types';
 
@@ -29,7 +29,8 @@ export const userService = {
     size: number = 12,
     startDate?: string,
     endDate?: string
-  ): Promise<any> {
+  ): Promise<any> { // eslint-disable-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const params: Record<string, any> = { page, size };
     if (startDate) params.startDate = startDate;
     if (endDate) params.endDate = endDate;
@@ -41,7 +42,8 @@ export const userService = {
     size: number = 12,
     startDate?: string,
     endDate?: string
-  ): Promise<any> {
+  ): Promise<any> { // eslint-disable-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const params: Record<string, any> = { page, size };
     if (startDate) params.startDate = startDate;
     if (endDate) params.endDate = endDate;

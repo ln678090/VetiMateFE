@@ -1,6 +1,6 @@
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
-import { Package, Truck, Calendar, MapPin, Phone, User, CreditCard, Receipt } from 'lucide-react';
+import { Package, Calendar, MapPin, Phone, User, CreditCard, Receipt } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 

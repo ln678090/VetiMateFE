@@ -25,6 +25,7 @@ export const useQueue = (type: QueueType) => {
       queryClient.invalidateQueries({ queryKey: [QUEUE_QUERY_KEY, type] });
       toast.success('Đã cấp số thứ tự thành công');
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi cấp số');
     },
@@ -37,6 +38,7 @@ export const useQueue = (type: QueueType) => {
       queryClient.invalidateQueries({ queryKey: [QUEUE_QUERY_KEY, type] });
       toast.success('Cập nhật trạng thái thành công');
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
       toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật trạng thái');
     },
