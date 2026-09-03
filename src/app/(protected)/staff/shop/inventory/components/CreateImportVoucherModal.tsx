@@ -1,17 +1,12 @@
 import { useEffect } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { Plus, Trash2 } from 'lucide-react';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -23,7 +18,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { inventoryApi } from '@/features/shop/api/inventory.api';
 import { productApi } from '@/features/shop/api/product.api';
 import { CreateImportVoucherReq } from '@/features/shop/types/inventory.types';
@@ -51,7 +52,7 @@ interface CreateImportVoucherModalProps {
 
 export function CreateImportVoucherModal({ isOpen, onClose }: CreateImportVoucherModalProps) {
   const queryClient = useQueryClient();
-  
+
   const { data: productsData } = useQuery({
     queryKey: ['products'],
     queryFn: () => productApi.getProducts(),
@@ -63,37 +64,41 @@ export function CreateImportVoucherModal({ isOpen, onClose }: CreateImportVouche
   });
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema) as any,
+    resolver: zodResolver(formSchema) as unknown as Resolver<FormValues>,
     defaultValues: {
       note: '',
-      items: [{
-        productId: '',
-        supplierId: '',
-        batchCode: '',
-        quantity: 1,
-        importPrice: 0,
-        expiryDate: '',
-      }],
-    },
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "items",
-  });
-
-  useEffect(() => {
-    if (isOpen) {
-      form.reset({
-        note: '',
-        items: [{
+      items: [
+        {
           productId: '',
           supplierId: '',
           batchCode: '',
           quantity: 1,
           importPrice: 0,
           expiryDate: '',
-        }],
+        },
+      ],
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: 'items',
+  });
+
+  useEffect(() => {
+    if (isOpen) {
+      form.reset({
+        note: '',
+        items: [
+          {
+            productId: '',
+            supplierId: '',
+            batchCode: '',
+            quantity: 1,
+            importPrice: 0,
+            expiryDate: '',
+          },
+        ],
       });
     }
   }, [isOpen, form]);
@@ -105,14 +110,15 @@ export function CreateImportVoucherModal({ isOpen, onClose }: CreateImportVouche
       queryClient.invalidateQueries({ queryKey: ['vouchers'] });
       onClose();
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra');
+    onError: (error: unknown) => {
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(apiError?.response?.data?.message || 'Có lỗi xảy ra');
     },
   });
 
   const onSubmit = (values: FormValues) => {
     // Clean up empty strings to undefined
-    const cleanItems = values.items.map(item => ({
+    const cleanItems = values.items.map((item) => ({
       ...item,
       batchCode: item.batchCode || undefined,
       expiryDate: item.expiryDate || undefined,
@@ -130,18 +136,26 @@ export function CreateImportVoucherModal({ isOpen, onClose }: CreateImportVouche
         <DialogHeader>
           <DialogTitle>Tạo Phiếu Nhập Kho</DialogTitle>
         </DialogHeader>
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium">Danh sách sản phẩm nhập</h3>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => append({ productId: '', supplierId: '', batchCode: '', quantity: 1, importPrice: 0, expiryDate: '' })}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    append({
+                      productId: '',
+                      supplierId: '',
+                      batchCode: '',
+                      quantity: 1,
+                      importPrice: 0,
+                      expiryDate: '',
+                    })
+                  }
                   className="gap-2"
                 >
                   <Plus className="h-4 w-4" />
@@ -150,7 +164,10 @@ export function CreateImportVoucherModal({ isOpen, onClose }: CreateImportVouche
               </div>
 
               {fields.map((field, index) => (
-                <div key={field.id} className="p-4 border rounded-lg relative space-y-4 bg-zinc-50/50">
+                <div
+                  key={field.id}
+                  className="p-4 border rounded-lg relative space-y-4 bg-zinc-50/50"
+                >
                   {fields.length > 1 && (
                     <Button
                       type="button"
@@ -162,14 +179,16 @@ export function CreateImportVoucherModal({ isOpen, onClose }: CreateImportVouche
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   )}
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name={`items.${index}.productId`}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Sản phẩm <span className="text-red-500">*</span></FormLabel>
+                          <FormLabel>
+                            Sản phẩm <span className="text-red-500">*</span>
+                          </FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -177,8 +196,10 @@ export function CreateImportVoucherModal({ isOpen, onClose }: CreateImportVouche
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {products.map(p => (
-                                <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                              {products.map((p) => (
+                                <SelectItem key={p.id} value={p.id}>
+                                  {p.name}
+                                </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -192,7 +213,9 @@ export function CreateImportVoucherModal({ isOpen, onClose }: CreateImportVouche
                       name={`items.${index}.supplierId`}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nhà cung cấp <span className="text-red-500">*</span></FormLabel>
+                          <FormLabel>
+                            Nhà cung cấp <span className="text-red-500">*</span>
+                          </FormLabel>
                           <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                               <SelectTrigger>
@@ -200,8 +223,10 @@ export function CreateImportVoucherModal({ isOpen, onClose }: CreateImportVouche
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {suppliers.map(s => (
-                                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                              {suppliers.map((s) => (
+                                <SelectItem key={s.id} value={s.id}>
+                                  {s.name}
+                                </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -209,13 +234,15 @@ export function CreateImportVoucherModal({ isOpen, onClose }: CreateImportVouche
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name={`items.${index}.quantity`}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Số lượng <span className="text-red-500">*</span></FormLabel>
+                          <FormLabel>
+                            Số lượng <span className="text-red-500">*</span>
+                          </FormLabel>
                           <FormControl>
                             <Input type="number" min="1" {...field} />
                           </FormControl>
@@ -229,7 +256,9 @@ export function CreateImportVoucherModal({ isOpen, onClose }: CreateImportVouche
                       name={`items.${index}.importPrice`}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Giá nhập (VNĐ) <span className="text-red-500">*</span></FormLabel>
+                          <FormLabel>
+                            Giá nhập (VNĐ) <span className="text-red-500">*</span>
+                          </FormLabel>
                           <FormControl>
                             <Input type="number" min="0" {...field} />
                           </FormControl>
@@ -268,7 +297,7 @@ export function CreateImportVoucherModal({ isOpen, onClose }: CreateImportVouche
                   </div>
                 </div>
               ))}
-              
+
               {form.formState.errors.items?.root && (
                 <p className="text-[0.8rem] font-medium text-destructive">
                   {form.formState.errors.items.root.message}
@@ -283,10 +312,10 @@ export function CreateImportVoucherModal({ isOpen, onClose }: CreateImportVouche
                 <FormItem>
                   <FormLabel>Ghi chú phiếu nhập</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Nhập ghi chú (nếu có)..." 
-                      className="resize-none h-20" 
-                      {...field} 
+                    <Textarea
+                      placeholder="Nhập ghi chú (nếu có)..."
+                      className="resize-none h-20"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />

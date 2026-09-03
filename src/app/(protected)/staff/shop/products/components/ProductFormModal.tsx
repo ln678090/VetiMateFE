@@ -1,16 +1,11 @@
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { Resolver, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -22,7 +17,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Product } from '@/features/shop/types/product.types';
 import { ProductReq, productApi } from '@/features/shop/api/product.api';
 import { catalogApi } from '@/features/shop/api/catalog.api';
@@ -52,7 +53,7 @@ interface ProductFormModalProps {
 
 export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductFormModalProps) {
   const queryClient = useQueryClient();
-  
+
   const { data: categoriesData } = useQuery({
     queryKey: ['categories'],
     queryFn: catalogApi.getAllCategories,
@@ -64,7 +65,7 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
   });
 
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema) as any,
+    resolver: zodResolver(formSchema) as unknown as Resolver<FormValues>, // Sửa ở đây
     defaultValues: {
       name: '',
       description: '',
@@ -122,32 +123,38 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
       queryClient.invalidateQueries({ queryKey: ['products'] });
       onClose();
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi thêm sản phẩm');
+    onError: (error: unknown) => {
+      // Sửa thành unknown
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(apiError.response?.data?.message || 'Có lỗi xảy ra khi thêm sản phẩm');
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: ProductReq }) => productApi.updateProduct(id, data),
+    mutationFn: ({ id, data }: { id: string; data: ProductReq }) =>
+      productApi.updateProduct(id, data),
     onSuccess: () => {
       toast.success('Cập nhật sản phẩm thành công');
       queryClient.invalidateQueries({ queryKey: ['products'] });
       onClose();
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật sản phẩm');
+    onError: (error: unknown) => {
+      // Sửa thành unknown
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(apiError.response?.data?.message || 'Có lỗi xảy ra khi cập nhật sản phẩm');
     },
   });
 
   const onSubmit = (values: FormValues) => {
     if (productToEdit) {
-      updateMutation.mutate({ id: productToEdit.id, data: values });
+      updateMutation.mutate({ id: productToEdit.id, data: values as unknown as ProductReq });
     } else {
-      createMutation.mutate(values);
+      createMutation.mutate(values as unknown as ProductReq);
     }
   };
 
-  const onInvalid = (errors: any) => {
+  const onInvalid = (errors: Record<string, unknown>) => {
+    // Sửa thành Record<string, unknown>
     console.error('Form validation failed:', Object.keys(errors), errors);
     toast.error('Vui lòng kiểm tra lại thông tin nhập!');
   };
@@ -162,7 +169,7 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
         <DialogHeader>
           <DialogTitle>{productToEdit ? 'Sửa sản phẩm' : 'Thêm sản phẩm mới'}</DialogTitle>
         </DialogHeader>
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -171,7 +178,9 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
                 name="name"
                 render={({ field }) => (
                   <FormItem className="col-span-2">
-                    <FormLabel>Tên sản phẩm <span className="text-red-500">*</span></FormLabel>
+                    <FormLabel>
+                      Tên sản phẩm <span className="text-red-500">*</span>
+                    </FormLabel>
                     <FormControl>
                       <Input placeholder="Nhập tên sản phẩm..." {...field} />
                     </FormControl>
@@ -179,13 +188,15 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
                   </FormItem>
                 )}
               />
-              
+
               <FormField
                 control={form.control}
                 name="categoryId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Danh mục <span className="text-red-500">*</span></FormLabel>
+                    <FormLabel>
+                      Danh mục <span className="text-red-500">*</span>
+                    </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -193,8 +204,10 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {categories.map(c => (
-                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        {categories.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.name}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -208,7 +221,9 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
                 name="brandId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Thương hiệu <span className="text-red-500">*</span></FormLabel>
+                    <FormLabel>
+                      Thương hiệu <span className="text-red-500">*</span>
+                    </FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
@@ -216,8 +231,10 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {brands.map(b => (
-                          <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
+                        {brands.map((b) => (
+                          <SelectItem key={b.id} value={b.id}>
+                            {b.name}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -231,7 +248,9 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Giá bán (VNĐ) <span className="text-red-500">*</span></FormLabel>
+                    <FormLabel>
+                      Giá bán (VNĐ) <span className="text-red-500">*</span>
+                    </FormLabel>
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
@@ -245,7 +264,9 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
                 name="stockQuantity"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Số lượng tồn kho <span className="text-red-500">*</span></FormLabel>
+                    <FormLabel>
+                      Số lượng tồn kho <span className="text-red-500">*</span>
+                    </FormLabel>
                     <FormControl>
                       <Input type="number" {...field} />
                     </FormControl>
@@ -282,7 +303,9 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
                 name="imageUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>URL Ảnh đại diện <span className="text-red-500">*</span></FormLabel>
+                    <FormLabel>
+                      URL Ảnh đại diện <span className="text-red-500">*</span>
+                    </FormLabel>
                     <FormControl>
                       <Input placeholder="https://example.com/image.png" {...field} />
                     </FormControl>
@@ -299,10 +322,10 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
                 <FormItem>
                   <FormLabel>Mô tả chi tiết</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Nhập mô tả sản phẩm..." 
-                      className="resize-none h-24" 
-                      {...field} 
+                    <Textarea
+                      placeholder="Nhập mô tả sản phẩm..."
+                      className="resize-none h-24"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -315,7 +338,7 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
                 Hủy
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? 'Đang lưu...' : (productToEdit ? 'Lưu thay đổi' : 'Thêm mới')}
+                {isPending ? 'Đang lưu...' : productToEdit ? 'Lưu thay đổi' : 'Thêm mới'}
               </Button>
             </div>
           </form>

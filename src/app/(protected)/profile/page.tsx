@@ -3,7 +3,15 @@
 import { useEffect } from 'react';
 
 import Link from 'next/link';
-import { Mail, UserRound, ShieldCheck, Package, PawPrint, CalendarDays, ChevronRight } from 'lucide-react';
+import {
+  Mail,
+  UserRound,
+  ShieldCheck,
+  Package,
+  PawPrint,
+  CalendarDays,
+  ChevronRight,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,6 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthStore } from '@/stores/auth.store';
 import { ChangePasswordForm } from '@/features/profile/components/change-password-form';
 import { ProductCard } from '@/features/shop/components/ProductCard';
+import { Product } from '@/types/shop';
 
 type ProfileUser = {
   id?: string;
@@ -43,11 +52,15 @@ function getInitials(name?: string, email?: string) {
 export default function ProfilePage() {
   const queryClient = useQueryClient();
   const { data: customer, isLoading: loadingCustomer, isError: customerError } = useMyCustomer();
-  const { data: profile, isLoading: loadingProfile, isError: profileError } = useQuery({
+  const {
+    data: profile,
+    isLoading: loadingProfile,
+    isError: profileError,
+  } = useQuery({
     queryKey: ['my-profile'],
     queryFn: () => userService.getMyProfile(),
   });
-  
+
   const { data: favoritesData, isLoading: loadingFavorites } = useQuery({
     queryKey: ['my-favorites'],
     queryFn: () => userService.getFavorites(),
@@ -90,8 +103,10 @@ export default function ProfilePage() {
       await userService.updateProfile(data);
       toast.success('Cập nhật hồ sơ thành công');
       queryClient.invalidateQueries({ queryKey: ['my-profile'] });
-    } catch (error: any) {
-      toast.error(error.message || 'Cập nhật thất bại');
+    } catch (error: unknown) {
+      // Đổi thành unknown
+      const apiError = error as Error; // Ép kiểu sang Error chuẩn
+      toast.error(apiError.message || 'Cập nhật thất bại');
     }
   };
 
@@ -116,8 +131,7 @@ export default function ProfilePage() {
     );
   }
 
-  const displayName =
-    profile?.fullName || customer?.fullName || profile?.username || 'Người dùng';
+  const displayName = profile?.fullName || customer?.fullName || profile?.username || 'Người dùng';
 
   return (
     <div className="space-y-6">
@@ -154,22 +168,36 @@ export default function ProfilePage() {
           </CardHeader>
 
           <CardContent className="flex-1 flex flex-col">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 text-sm flex-1 flex flex-col">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="space-y-4 text-sm flex-1 flex flex-col"
+            >
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-muted-foreground">Email</Label>
-                <Input id="email" value={profile?.email || 'Chưa có'} disabled className="bg-muted/50" />
+                <Label htmlFor="email" className="text-muted-foreground">
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  value={profile?.email || 'Chưa có'}
+                  disabled
+                  className="bg-muted/50"
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="fullName">Họ tên</Label>
                 <Input id="fullName" {...register('fullName')} />
-                {errors.fullName && <p className="text-xs text-red-500">{errors.fullName.message}</p>}
+                {errors.fullName && (
+                  <p className="text-xs text-red-500">{errors.fullName.message}</p>
+                )}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="username">Username</Label>
                 <Input id="username" {...register('username')} />
-                {errors.username && <p className="text-xs text-red-500">{errors.username.message}</p>}
+                {errors.username && (
+                  <p className="text-xs text-red-500">{errors.username.message}</p>
+                )}
               </div>
 
               <Button type="submit" disabled={isSubmitting} className="w-full mt-auto">
@@ -189,9 +217,9 @@ export default function ProfilePage() {
           </CardHeader>
 
           <CardContent className="flex-1 flex flex-col">
-             <div className="mt-2 flex-1 flex flex-col">
-               <ChangePasswordForm />
-             </div>
+            <div className="mt-2 flex-1 flex flex-col">
+              <ChangePasswordForm />
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -201,54 +229,72 @@ export default function ProfilePage() {
         <Tabs defaultValue="favorites" className="w-full">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <TabsList className="bg-muted/50 rounded-2xl p-1">
-              <TabsTrigger value="favorites" className="rounded-xl px-6">Sản phẩm đã thích</TabsTrigger>
-              <TabsTrigger value="viewed" className="rounded-xl px-6">Đã xem gần đây</TabsTrigger>
+              <TabsTrigger value="favorites" className="rounded-xl px-6">
+                Sản phẩm đã thích
+              </TabsTrigger>
+              <TabsTrigger value="viewed" className="rounded-xl px-6">
+                Đã xem gần đây
+              </TabsTrigger>
             </TabsList>
-            <Button variant="ghost" className="text-sm font-medium text-rose-600 hover:text-rose-700" asChild>
+            <Button
+              variant="ghost"
+              className="text-sm font-medium text-rose-600 hover:text-rose-700"
+              asChild
+            >
               <Link href="/profile/interactions">Xem tất cả</Link>
             </Button>
           </CardHeader>
-          
+
           <CardContent>
             <TabsContent value="favorites" className="mt-0">
               {loadingFavorites ? (
-                 <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
-                   {Array.from({ length: 5 }).map((_, i) => (
-                     <Skeleton key={i} className="h-64 rounded-2xl" />
-                   ))}
-                 </div>
-              ) : favoritesData?.content?.length ? (
-                 <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
-                   {favoritesData.content.slice(0, 5).map((product: any) => (
-                     <ProductCard key={product.id} product={product} />
-                   ))}
-                 </div>
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-64 rounded-2xl" />
+                  ))}
+                </div>
+              ) : (favoritesData as unknown as { content?: unknown[] })?.content?.length ? (
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
+                  {(favoritesData as unknown as { content: unknown[] }).content
+                    .slice(0, 5)
+                    .map((product) => (
+                      <ProductCard
+                        key={String((product as { id?: string })?.id)}
+                        product={product as unknown as Product}
+                      />
+                    ))}
+                </div>
               ) : (
-                 <div className="flex flex-col items-center justify-center py-12 text-center bg-muted/30 rounded-2xl border border-dashed">
-                   <Package className="size-12 text-muted-foreground/50 mb-4" />
-                   <p className="text-muted-foreground">Bạn chưa có sản phẩm yêu thích nào.</p>
-                 </div>
+                <div className="flex flex-col items-center justify-center py-12 text-center bg-muted/30 rounded-2xl border border-dashed">
+                  <Package className="size-12 text-muted-foreground/50 mb-4" />
+                  <p className="text-muted-foreground">Bạn chưa có sản phẩm yêu thích nào.</p>
+                </div>
               )}
             </TabsContent>
 
             <TabsContent value="viewed" className="mt-0">
               {loadingViewed ? (
-                 <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
-                   {Array.from({ length: 5 }).map((_, i) => (
-                     <Skeleton key={i} className="h-64 rounded-2xl" />
-                   ))}
-                 </div>
-              ) : viewedData?.content?.length ? (
-                 <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
-                   {viewedData.content.slice(0, 5).map((product: any) => (
-                     <ProductCard key={product.id} product={product} />
-                   ))}
-                 </div>
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-64 rounded-2xl" />
+                  ))}
+                </div>
+              ) : (viewedData as unknown as { content?: unknown[] })?.content?.length ? (
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
+                  {(viewedData as unknown as { content: unknown[] }).content
+                    .slice(0, 5)
+                    .map((product) => (
+                      <ProductCard
+                        key={String((product as { id?: string })?.id)}
+                        product={product as unknown as Product}
+                      />
+                    ))}
+                </div>
               ) : (
-                 <div className="flex flex-col items-center justify-center py-12 text-center bg-muted/30 rounded-2xl border border-dashed">
-                   <Package className="size-12 text-muted-foreground/50 mb-4" />
-                   <p className="text-muted-foreground">Chưa có sản phẩm nào được xem gần đây.</p>
-                 </div>
+                <div className="flex flex-col items-center justify-center py-12 text-center bg-muted/30 rounded-2xl border border-dashed">
+                  <Package className="size-12 text-muted-foreground/50 mb-4" />
+                  <p className="text-muted-foreground">Chưa có sản phẩm nào được xem gần đây.</p>
+                </div>
               )}
             </TabsContent>
           </CardContent>

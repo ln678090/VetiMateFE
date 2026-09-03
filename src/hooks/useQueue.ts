@@ -25,8 +25,9 @@ export const useQueue = (type: QueueType) => {
       queryClient.invalidateQueries({ queryKey: [QUEUE_QUERY_KEY, type] });
       toast.success('Đã cấp số thứ tự thành công');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi cấp số');
+    onError: (error: unknown) => {
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(apiError.response?.data?.message || 'Có lỗi xảy ra khi cấp số');
     },
   });
 
@@ -37,8 +38,9 @@ export const useQueue = (type: QueueType) => {
       queryClient.invalidateQueries({ queryKey: [QUEUE_QUERY_KEY, type] });
       toast.success('Cập nhật trạng thái thành công');
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật trạng thái');
+    onError: (error: unknown) => {
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(apiError.response?.data?.message || 'Có lỗi xảy ra khi cập nhật trạng thái');
     },
   });
 
