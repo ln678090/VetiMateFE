@@ -1,11 +1,15 @@
 'use client';
 
+import { ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
 
-import { APP_NAVIGATION_ITEMS, canAccessNavigationItem } from '@/config/app-navigation';
+import {
+  APP_NAVIGATION_ITEMS,
+  canShowNavigationItemInSidebar,
+  type AppNavigationItem,
+} from '@/config/app-navigation';
 import { getAuthoritiesFromToken } from '@/lib/auth-roles';
 import { useAuthStore } from '@/stores/auth.store';
 
@@ -16,15 +20,16 @@ function getRoutePath(href: string): string {
 function isActiveRoute(pathname: string, href: string, exact?: boolean): boolean {
   const routePath = getRoutePath(href);
 
-  if (exact) {
-    return pathname === routePath;
-  }
-
-  if (routePath === '/dashboard') {
+  if (exact || routePath === '/dashboard') {
     return pathname === routePath;
   }
 
   return pathname === routePath || pathname.startsWith(`${routePath}/`);
+}
+
+interface GroupedNavigationItems {
+  groups: Record<string, AppNavigationItem[]>;
+  ungrouped: AppNavigationItem[];
 }
 
 export function AppSidebar() {
@@ -38,36 +43,72 @@ export function AppSidebar() {
 
   const authorities = useMemo(() => getAuthoritiesFromToken(accessToken), [accessToken]);
 
-  const groupedItems = useMemo(() => {
-    const visible = APP_NAVIGATION_ITEMS.filter(
-      (item) => item.showInSidebar !== false && canAccessNavigationItem(item, authorities)
+  const groupedItems = useMemo<GroupedNavigationItems>(() => {
+    const visibleItems = APP_NAVIGATION_ITEMS.filter((item) =>
+      canShowNavigationItemInSidebar(item, authorities)
     );
 
-    const groups: Record<string, typeof visible> = {};
-    const ungrouped: typeof visible = [];
+    const groups: Record<string, AppNavigationItem[]> = {};
 
-    visible.forEach((item) => {
-      if (item.group) {
-        if (!groups[item.group]) groups[item.group] = [];
-        groups[item.group].push(item);
-      } else {
+    const ungrouped: AppNavigationItem[] = [];
+
+    for (const item of visibleItems) {
+      if (!item.group) {
         ungrouped.push(item);
+        continue;
       }
-    });
 
-    return { groups, ungrouped };
+      const groupItems = groups[item.group] ?? [];
+      groupItems.push(item);
+      groups[item.group] = groupItems;
+    }
+
+    return {
+      groups,
+      ungrouped,
+    };
   }, [authorities]);
 
   const displayName = user?.fullName ?? user?.username ?? 'Tài khoản';
 
   const avatarLetter = displayName.trim().charAt(0).toUpperCase() || 'U';
 
-  function closeMobileSidebar() {
+  function closeMobileSidebar(): void {
     setMobileOpen(false);
   }
 
-  function toggleDesktopSidebar() {
+  function toggleDesktopSidebar(): void {
     setCollapsed((current) => !current);
+  }
+
+  function renderNavigationItem(item: AppNavigationItem) {
+    const Icon = item.icon;
+
+    const active = isActiveRoute(pathname, item.href, item.exact);
+
+    return (
+      <Link
+        key={item.key}
+        href={item.href}
+        title={collapsed ? item.label : undefined}
+        onClick={closeMobileSidebar}
+        aria-current={active ? 'page' : undefined}
+        className={[
+          'flex h-11 items-center rounded-xl transition-all',
+          collapsed ? 'justify-center px-2' : 'gap-3 px-3',
+          active
+            ? 'bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-sm'
+            : [
+                'text-zinc-600 hover:bg-rose-50 hover:text-rose-600',
+                'dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-rose-400',
+              ].join(' '),
+        ].join(' ')}
+      >
+        <Icon className="size-5 shrink-0" strokeWidth={2} />
+
+        {!collapsed && <span className="truncate text-sm font-medium">{item.label}</span>}
+      </Link>
+    );
   }
 
   const sidebarContent = (
@@ -102,96 +143,48 @@ export function AppSidebar() {
 
       <nav aria-label="Điều hướng chính" className="flex-1 space-y-4 overflow-y-auto p-3">
         {groupedItems.ungrouped.length > 0 && (
-          <div className="space-y-1">
-            {groupedItems.ungrouped.map((item) => {
-              const Icon = item.icon;
-              const active = isActiveRoute(pathname, item.href, item.exact);
-
-              return (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  title={collapsed ? item.label : undefined}
-                  onClick={closeMobileSidebar}
-                  aria-current={active ? 'page' : undefined}
-                  className={[
-                    'flex h-11 items-center rounded-xl transition-all',
-                    collapsed ? 'justify-center px-2' : 'gap-3 px-3',
-                    active
-                      ? 'bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-sm'
-                      : 'text-zinc-600 hover:bg-rose-50 hover:text-rose-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-rose-400',
-                  ].join(' ')}
-                >
-                  <Icon className="size-5 shrink-0" strokeWidth={2} />
-                  {!collapsed && <span className="truncate text-sm font-medium">{item.label}</span>}
-                </Link>
-              );
-            })}
-          </div>
+          <div className="space-y-1">{groupedItems.ungrouped.map(renderNavigationItem)}</div>
         )}
 
         {Object.entries(groupedItems.groups).map(([groupName, items]) => (
-          <div key={groupName} className="space-y-1">
+          <section key={groupName} className="space-y-1">
             {!collapsed ? (
-              <h3 className="mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              <h2 className="mb-2 mt-4 px-3 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 {groupName}
-              </h3>
+              </h2>
             ) : (
-              <div className="my-4 h-px w-full bg-zinc-200 dark:bg-zinc-800" />
+              <div className="my-4 h-px w-full bg-zinc-200 dark:bg-zinc-800" aria-hidden="true" />
             )}
 
-            {items.map((item) => {
-              const Icon = item.icon;
-              const active = isActiveRoute(pathname, item.href, item.exact);
-
-              return (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  title={collapsed ? item.label : undefined}
-                  onClick={closeMobileSidebar}
-                  aria-current={active ? 'page' : undefined}
-                  className={[
-                    'flex h-11 items-center rounded-xl transition-all',
-                    collapsed ? 'justify-center px-2' : 'gap-3 px-3',
-                    active
-                      ? 'bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-sm'
-                      : 'text-zinc-600 hover:bg-rose-50 hover:text-rose-600 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-rose-400',
-                  ].join(' ')}
-                >
-                  <Icon className="size-5 shrink-0" strokeWidth={2} />
-                  {!collapsed && <span className="truncate text-sm font-medium">{item.label}</span>}
-                </Link>
-              );
-            })}
-          </div>
+            {items.map(renderNavigationItem)}
+          </section>
         ))}
       </nav>
 
-      <div className="border-t border-zinc-200 p-3 dark:border-zinc-800">
-        <div
-          className={[
-            'flex items-center rounded-xl bg-zinc-50 p-3 dark:bg-zinc-900',
-            collapsed ? 'justify-center' : 'gap-3',
-          ].join(' ')}
-        >
-          <div className="grid size-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-rose-500 to-amber-500 text-sm font-semibold text-white">
-            {avatarLetter}
-          </div>
-
-          {!collapsed && (
-            <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-zinc-900 dark:text-white">
-                {displayName}
-              </p>
-
-              <p className="truncate text-xs text-zinc-500 dark:text-zinc-400">
-                {authorities.join(', ') || 'Đang xác thực'}
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
+      {/* <div className="border-t border-zinc-200 p-3 dark:border-zinc-800"> */}
+      {/*   <div */}
+      {/*     className={[ */}
+      {/*       'flex items-center rounded-xl bg-zinc-50 p-3 dark:bg-zinc-900', */}
+      {/*       collapsed ? 'justify-center' : 'gap-3', */}
+      {/*     ].join(' ')} */}
+      {/*   > */}
+      {/*     <div className="grid size-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-rose-500 to-amber-500 text-sm font-semibold text-white"> */}
+      {/*       {avatarLetter} */}
+      {/*     </div> */}
+      {/**/}
+      {/*     {!collapsed && ( */}
+      {/*       <div className="min-w-0"> */}
+      {/*         <p className="truncate text-sm font-medium text-zinc-900 dark:text-white"> */}
+      {/*           {displayName} */}
+      {/*         </p> */}
+      {/**/}
+      {/*         <p className="truncate text-xs text-zinc-500 dark:text-zinc-400"> */}
+      {/*           {authorities.join(', ') || 'Đang xác thực'} */}
+      {/*         </p> */}
+      {/*       </div> */}
+      {/*     )} */}
+      {/*   </div> */}
+      {/* </div> */}
     </>
   );
 
@@ -203,6 +196,7 @@ export function AppSidebar() {
         className="fixed left-4 top-4 z-40 rounded-lg border border-zinc-200 bg-white p-2 text-zinc-700 shadow-sm lg:hidden dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-200"
         aria-label="Mở menu"
         aria-expanded={mobileOpen}
+        aria-controls="application-sidebar"
       >
         <Menu className="size-5" />
       </button>
@@ -217,9 +211,10 @@ export function AppSidebar() {
       )}
 
       <aside
+        id="application-sidebar"
         className={[
           'fixed inset-y-0 left-0 z-50 flex bg-white transition-all duration-300 dark:bg-zinc-950',
-          'lg:sticky lg:top-0 lg:h-screen lg:z-auto',
+          'lg:sticky lg:top-0 lg:z-auto lg:h-screen',
           collapsed ? 'lg:w-20' : 'lg:w-72',
           mobileOpen ? 'w-72 translate-x-0' : 'w-72 -translate-x-full lg:translate-x-0',
         ].join(' ')}
