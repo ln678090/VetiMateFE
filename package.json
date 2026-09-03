@@ -9,7 +9,7 @@
     "lint": "eslint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check-all": "tsc --noEmit && eslint ."
+    "check-all": "tsc --noEmit && eslint . && prettier --check ."
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.21",
