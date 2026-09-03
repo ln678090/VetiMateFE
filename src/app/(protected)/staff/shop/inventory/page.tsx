@@ -19,9 +19,9 @@ export default function InventoryPage() {
   });
 
   const products = productsData?.data?.items || [];
-  
+
   // Client-side filter for simplicity
-  const filteredProducts = products.filter(p => 
+  const filteredProducts = products.filter((p) =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -55,7 +55,7 @@ export default function InventoryPage() {
           />
         </div>
       </div>
-      
+
       <Card>
         <CardContent className="p-0">
           <InventoryTable products={filteredProducts} isLoading={isLoading} />

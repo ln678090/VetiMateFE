@@ -41,11 +41,12 @@ export function CancelOrderRequestModal({
     if (!selectedReason) return;
     const finalReason = selectedReason === 'Khác' ? otherReason : selectedReason;
     if (selectedReason === 'Khác' && !otherReason.trim()) return;
-    
+
     onSubmit(finalReason);
   };
 
-  const isFormValid = selectedReason && (selectedReason !== 'Khác' || otherReason.trim().length > 0);
+  const isFormValid =
+    selectedReason && (selectedReason !== 'Khác' || otherReason.trim().length > 0);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -53,7 +54,8 @@ export function CancelOrderRequestModal({
         <DialogHeader>
           <DialogTitle>Lý do hủy đơn hàng</DialogTitle>
           <DialogDescription>
-            Vui lòng cho chúng tôi biết lý do bạn muốn hủy đơn hàng này. Yêu cầu của bạn sẽ được gửi đến cửa hàng để xử lý.
+            Vui lòng cho chúng tôi biết lý do bạn muốn hủy đơn hàng này. Yêu cầu của bạn sẽ được gửi
+            đến cửa hàng để xử lý.
           </DialogDescription>
         </DialogHeader>
 
@@ -86,9 +88,9 @@ export function CancelOrderRequestModal({
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
             Không, giữ lại đơn
           </Button>
-          <Button 
-            variant="destructive" 
-            onClick={handleSubmit} 
+          <Button
+            variant="destructive"
+            onClick={handleSubmit}
             disabled={!isFormValid || isSubmitting}
           >
             {isSubmitting ? 'Đang gửi...' : 'Gửi yêu cầu hủy'}

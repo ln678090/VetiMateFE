@@ -3,7 +3,9 @@ import { CheckoutInput } from '@/schemas/checkout.schema';
 import { api } from '@/lib/axios';
 
 export const orderService = {
-  checkout: async (data: CheckoutInput & { items: { productId: string; quantity: number }[] }): Promise<Order> => {
+  checkout: async (
+    data: CheckoutInput & { items: { productId: string; quantity: number }[] }
+  ): Promise<Order> => {
     const response = await api.post<Order>('/api/orders/checkout', data);
     return response.data;
   },
@@ -12,7 +14,7 @@ export const orderService = {
     const response = await api.get<Order[]>('/api/orders/my-orders');
     return response.data; // or response.data.data
   },
-  
+
   getOrderById: async (id: string): Promise<Order> => {
     const response = await api.get<Order>(`/api/orders/${id}`);
     return response.data; // or response.data.data
@@ -36,5 +38,5 @@ export const orderService = {
   processCancelRequest: async ({ id, accept }: { id: string; accept: boolean }): Promise<Order> => {
     const response = await api.post<Order>(`/api/orders/${id}/process-cancel-request`, { accept });
     return response.data;
-  }
+  },
 };

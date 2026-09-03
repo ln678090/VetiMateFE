@@ -8,23 +8,20 @@ import { formatVND, formatDateTime } from '@/lib/utils';
 export default function BookingPage() {
   // customerId lấy từ user đã đăng nhập (map user -> clinic customer ở BE)
   const user = useAuthStore((s) => s.user);
-  const { data: customer, isLoading: loadingCustomer, isError } =
-    useMyCustomer();
+  const { data: customer, isLoading: loadingCustomer, isError } = useMyCustomer();
   const customerId = customer?.id ?? '';
 
   const { data: appointments } = useMyAppointments(customerId);
-if(!customerId){
-  console.log('customerId null');
-}
+  if (!customerId) {
+    console.log('customerId null');
+  }
   return (
     <div className="mx-auto max-w-3xl space-y-8 py-8">
       <div>
         <h1 className="bg-gradient-to-r from-rose-500 to-amber-500 bg-clip-text text-3xl font-bold text-transparent">
           Đặt lịch khám thú y
         </h1>
-        <p className="text-muted-foreground">
-          Chọn thú cưng, dịch vụ và thời gian phù hợp.
-        </p>
+        <p className="text-muted-foreground">Chọn thú cưng, dịch vụ và thời gian phù hợp.</p>
       </div>
 
       <BookingForm customerId={customerId} />
@@ -47,12 +44,8 @@ if(!customerId){
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-semibold text-rose-600">
-                  {formatVND(a.priceSnapshot)}
-                </p>
-                <span className="text-xs uppercase text-amber-600">
-                  {a.status}
-                </span>
+                <p className="font-semibold text-rose-600">{formatVND(a.priceSnapshot)}</p>
+                <span className="text-xs uppercase text-amber-600">{a.status}</span>
               </div>
             </div>
           ))}

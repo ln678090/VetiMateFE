@@ -33,7 +33,7 @@ export default function OrdersPage() {
   const [timeRange, setTimeRange] = useState<string>('ALL');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
-  
+
   const queryClient = useQueryClient();
   const { data: orders = [] } = useQuery({
     queryKey: ['my-orders'],
@@ -48,11 +48,11 @@ export default function OrdersPage() {
       order.items.some((item) =>
         item.productName.toLowerCase().includes(searchQuery.toLowerCase())
       );
-      
+
     let matchesDate = true;
     const orderDate = new Date(order.createdAt);
     orderDate.setHours(0, 0, 0, 0);
-    
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -105,7 +105,12 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-8">
-      <Tabs defaultValue="ALL" value={activeTab} onValueChange={(v) => setActiveTab(v as OrderStatus | 'ALL')} className="w-full">
+      <Tabs
+        defaultValue="ALL"
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as OrderStatus | 'ALL')}
+        className="w-full"
+      >
         {/* Scrollable TabsList for mobile support */}
         <div className="overflow-x-auto pb-2">
           <TabsList className="flex h-auto w-max min-w-full justify-start rounded-xl border border-zinc-200 bg-white p-1 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
@@ -127,28 +132,28 @@ export default function OrdersPage() {
             <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">Đơn Hàng Của Tôi</h1>
             <p className="mt-2 text-zinc-500">Quản lý và theo dõi trạng thái đơn hàng của bạn</p>
           </div>
-          
+
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
             {timeRange === 'CUSTOM' && (
               <div className="flex items-center gap-2">
-                <Input 
-                  type="date" 
-                  value={startDate} 
+                <Input
+                  type="date"
+                  value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   className="h-12 w-[130px] rounded-xl border-zinc-200 bg-white text-sm shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
                   title="Từ ngày"
                 />
                 <span className="text-zinc-400">-</span>
-                <Input 
-                  type="date" 
-                  value={endDate} 
+                <Input
+                  type="date"
+                  value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   className="h-12 w-[130px] rounded-xl border-zinc-200 bg-white text-sm shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
                   title="Đến ngày"
                 />
               </div>
             )}
-            
+
             <Select value={timeRange} onValueChange={setTimeRange}>
               <SelectTrigger className="!h-12 w-full lg:w-[160px] rounded-xl border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
                 <SelectValue placeholder="Thời gian" />

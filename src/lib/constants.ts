@@ -27,7 +27,15 @@ export const API_ROUTES = {
 } as const;
 
 /** Routes cần đăng nhập */
-export const PROTECTED_ROUTES = ['/dashboard', '/booking', '/cart', '/profile', '/management', '/doctor', '/staff'] as const;
+export const PROTECTED_ROUTES = [
+  '/dashboard',
+  '/booking',
+  '/cart',
+  '/profile',
+  '/management',
+  '/doctor',
+  '/staff',
+] as const;
 
 /** Routes auth (không cho user đã login truy cập) */
 export const AUTH_ROUTES = ['/login', '/register'] as const;

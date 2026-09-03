@@ -11,7 +11,14 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { PasswordInput } from '@/components/ui/password-input';
 import { RequiredLabel } from '@/components/ui/required-label';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 import { changePasswordSchema, type ChangePasswordInput } from '@/schemas/auth.schema';
 import { authService } from '@/services/auth.service';

@@ -11,7 +11,17 @@ import { Badge } from '@/components/ui/badge';
 
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
-import { MapPin, Phone, User, Calendar, CreditCard, Receipt, AlertCircle, Check, X } from 'lucide-react';
+import {
+  MapPin,
+  Phone,
+  User,
+  Calendar,
+  CreditCard,
+  Receipt,
+  AlertCircle,
+  Check,
+  X,
+} from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 
@@ -30,19 +40,26 @@ const STATUS_MAP = {
   CANCELLED: { label: 'Đã hủy', className: 'bg-rose-50 text-rose-700 border-rose-200' },
 };
 
-export function OrderDetailsModal({ order, isOpen, onClose, onProcessCancel }: OrderDetailsModalProps) {
+export function OrderDetailsModal({
+  order,
+  isOpen,
+  onClose,
+  onProcessCancel,
+}: OrderDetailsModalProps) {
   const [isItemsExpanded, setIsItemsExpanded] = useState(false);
 
   if (!order) return null;
 
   const statusConfig = STATUS_MAP[order.status] || STATUS_MAP.PENDING;
   let parsedNote = order.note && order.note !== 'null' ? order.note : '';
-  let parsedAddress = order.shippingAddress && order.shippingAddress !== 'null' ? order.shippingAddress : '';
-  let parsedPhone = order.customerPhone && order.customerPhone !== 'null' ? order.customerPhone : '';
+  let parsedAddress =
+    order.shippingAddress && order.shippingAddress !== 'null' ? order.shippingAddress : '';
+  let parsedPhone =
+    order.customerPhone && order.customerPhone !== 'null' ? order.customerPhone : '';
 
   if (parsedNote.includes('Shipping Address:')) {
     const parts = parsedNote.split('|');
-    parts.forEach(part => {
+    parts.forEach((part) => {
       const p = part.trim();
       if (p.startsWith('Shipping Address:')) {
         parsedAddress = p.replace('Shipping Address:', '').trim();
@@ -60,7 +77,8 @@ export function OrderDetailsModal({ order, isOpen, onClose, onProcessCancel }: O
     parsedNote = parsedNote.replace(/\| \[CANCEL_REQUEST\]:.*$/, '').trim();
   }
 
-  const customerName = order.customerName && order.customerName !== 'null' ? order.customerName : 'Khách vãng lai';
+  const customerName =
+    order.customerName && order.customerName !== 'null' ? order.customerName : 'Khách vãng lai';
   const customerPhoneToDisplay = parsedPhone || 'Không có SĐT';
   const displayAddress = parsedAddress || 'Không có địa chỉ (Mua tại quầy)';
 
@@ -94,13 +112,14 @@ export function OrderDetailsModal({ order, isOpen, onClose, onProcessCancel }: O
 
         <div className="overflow-y-auto max-h-[70vh]">
           <div className="p-6 space-y-6">
-
             {cancelReason && order.status !== 'CANCELLED' && (
               <div className="bg-rose-50 border border-rose-200 rounded-lg p-4 mb-4">
                 <div className="flex items-start gap-3">
                   <AlertCircle className="h-5 w-5 text-rose-600 mt-0.5" />
                   <div className="flex-1">
-                    <h4 className="text-sm font-bold text-rose-900">Khách hàng yêu cầu hủy đơn này</h4>
+                    <h4 className="text-sm font-bold text-rose-900">
+                      Khách hàng yêu cầu hủy đơn này
+                    </h4>
                     <p className="text-sm text-rose-700 mt-1">
                       <span className="font-semibold">Lý do:</span> {cancelReason}
                     </p>
@@ -152,9 +171,7 @@ export function OrderDetailsModal({ order, isOpen, onClose, onProcessCancel }: O
                 <div className="space-y-2 text-sm">
                   <div className="flex items-start gap-2 text-zinc-600">
                     <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
-                    <span className="leading-tight">
-                      {displayAddress}
-                    </span>
+                    <span className="leading-tight">{displayAddress}</span>
                   </div>
                 </div>
               </div>
@@ -163,39 +180,43 @@ export function OrderDetailsModal({ order, isOpen, onClose, onProcessCancel }: O
             <Separator />
 
             <div className="space-y-3">
-              <h3 className="font-semibold text-sm text-zinc-900">Sản phẩm ({order.items?.length || 0})</h3>
+              <h3 className="font-semibold text-sm text-zinc-900">
+                Sản phẩm ({order.items?.length || 0})
+              </h3>
               <div className="rounded-md border divide-y">
-                {(isItemsExpanded ? (order.items || []) : (order.items || []).slice(0, 2)).map((item) => (
-                  <div key={item.id} className="flex items-center gap-4 p-3">
-                    <div className="h-12 w-12 rounded-md bg-zinc-100 overflow-hidden relative shrink-0">
-                      {item.productImage && item.productImage !== 'null' ? (
-                        <Image
-                          src={item.productImage}
-                          alt={item.productName}
-                          fill
-                          className="object-cover"
-                          unoptimized 
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-zinc-100 text-zinc-400 text-xs">
-                          No img
-                        </div>
-                      )}
+                {(isItemsExpanded ? order.items || [] : (order.items || []).slice(0, 2)).map(
+                  (item) => (
+                    <div key={item.id} className="flex items-center gap-4 p-3">
+                      <div className="h-12 w-12 rounded-md bg-zinc-100 overflow-hidden relative shrink-0">
+                        {item.productImage && item.productImage !== 'null' ? (
+                          <Image
+                            src={item.productImage}
+                            alt={item.productName}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-zinc-100 text-zinc-400 text-xs">
+                            No img
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-zinc-900 truncate">
+                          {item.productName}
+                        </p>
+                        <p className="text-sm text-zinc-500">
+                          {formatCurrency(item.price)} x {item.quantity}
+                        </p>
+                      </div>
+                      <div className="text-sm font-medium">
+                        {formatCurrency(item.price * item.quantity)}
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-zinc-900 truncate">
-                        {item.productName}
-                      </p>
-                      <p className="text-sm text-zinc-500">
-                        {formatCurrency(item.price)} x {item.quantity}
-                      </p>
-                    </div>
-                    <div className="text-sm font-medium">
-                      {formatCurrency(item.price * item.quantity)}
-                    </div>
-                  </div>
-                ))}
-                
+                  )
+                )}
+
                 {(order.items?.length || 0) > 2 && (
                   <div className="flex justify-center border-t border-zinc-100 py-2 bg-zinc-50/50">
                     <button
@@ -203,7 +224,9 @@ export function OrderDetailsModal({ order, isOpen, onClose, onProcessCancel }: O
                       onClick={() => setIsItemsExpanded(!isItemsExpanded)}
                       className="flex items-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-blue-600 transition-colors"
                     >
-                      {isItemsExpanded ? 'Thu gọn' : `Xem thêm ${(order.items?.length || 0) - 2} sản phẩm`}
+                      {isItemsExpanded
+                        ? 'Thu gọn'
+                        : `Xem thêm ${(order.items?.length || 0) - 2} sản phẩm`}
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"

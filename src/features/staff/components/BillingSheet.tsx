@@ -30,7 +30,7 @@ export const BillingSheet = ({ open, onOpenChange, invoice }: BillingSheetProps)
   const { payInvoice, cancelInvoice, isPaying, isCanceling } = useBilling();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CASH');
 
-  const formatCurrency = (amount: number) => 
+  const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 
   const handlePay = () => {
@@ -39,15 +39,19 @@ export const BillingSheet = ({ open, onOpenChange, invoice }: BillingSheetProps)
       {
         onSuccess: () => {
           onOpenChange(false);
-        }
+        },
       }
     );
   };
 
   const handleCancel = () => {
-    if (confirm('Bạn có chắc chắn muốn hủy hóa đơn này không? Các sản phẩm/thuốc sẽ được hoàn lại kho.')) {
+    if (
+      confirm(
+        'Bạn có chắc chắn muốn hủy hóa đơn này không? Các sản phẩm/thuốc sẽ được hoàn lại kho.'
+      )
+    ) {
       cancelInvoice(invoice.id, {
-        onSuccess: () => onOpenChange(false)
+        onSuccess: () => onOpenChange(false),
       });
     }
   };
@@ -58,7 +62,9 @@ export const BillingSheet = ({ open, onOpenChange, invoice }: BillingSheetProps)
         <SheetHeader className="mb-6">
           <div className="flex justify-between items-start">
             <div>
-              <SheetTitle className="text-xl text-indigo-700">Hóa đơn {invoice.invoiceCode}</SheetTitle>
+              <SheetTitle className="text-xl text-indigo-700">
+                Hóa đơn {invoice.invoiceCode}
+              </SheetTitle>
               <SheetDescription>
                 Tạo lúc {format(new Date(invoice.createdAt), 'HH:mm dd/MM/yyyy')}
               </SheetDescription>
@@ -103,15 +109,13 @@ export const BillingSheet = ({ open, onOpenChange, invoice }: BillingSheetProps)
                       {formatCurrency(item.unitPrice)} x {item.quantity}
                     </div>
                   </div>
-                  <div className="font-semibold text-slate-900">
-                    {formatCurrency(item.total)}
-                  </div>
+                  <div className="font-semibold text-slate-900">{formatCurrency(item.total)}</div>
                 </div>
               ))}
             </div>
-            
+
             <Separator className="my-4" />
-            
+
             <div className="space-y-2 text-sm">
               <div className="flex justify-between text-slate-500">
                 <span>Tạm tính</span>
@@ -123,7 +127,9 @@ export const BillingSheet = ({ open, onOpenChange, invoice }: BillingSheetProps)
               </div>
               <div className="flex justify-between items-center mt-2 pt-2 border-t border-dashed">
                 <span className="font-semibold text-slate-700">Tổng cộng</span>
-                <span className="text-xl font-bold text-indigo-700">{formatCurrency(invoice.totalAmount)}</span>
+                <span className="text-xl font-bold text-indigo-700">
+                  {formatCurrency(invoice.totalAmount)}
+                </span>
               </div>
             </div>
           </div>
@@ -134,7 +140,10 @@ export const BillingSheet = ({ open, onOpenChange, invoice }: BillingSheetProps)
               <div className="grid grid-cols-3 gap-2">
                 <Button
                   variant={paymentMethod === 'CASH' ? 'default' : 'outline'}
-                  className={cn("w-full h-auto py-3 flex-col gap-2", paymentMethod === 'CASH' && "bg-indigo-600 hover:bg-indigo-700")}
+                  className={cn(
+                    'w-full h-auto py-3 flex-col gap-2',
+                    paymentMethod === 'CASH' && 'bg-indigo-600 hover:bg-indigo-700'
+                  )}
                   onClick={() => setPaymentMethod('CASH')}
                 >
                   <Banknote className="h-5 w-5" />
@@ -142,7 +151,10 @@ export const BillingSheet = ({ open, onOpenChange, invoice }: BillingSheetProps)
                 </Button>
                 <Button
                   variant={paymentMethod === 'BANK_TRANSFER' ? 'default' : 'outline'}
-                  className={cn("w-full h-auto py-3 flex-col gap-2", paymentMethod === 'BANK_TRANSFER' && "bg-indigo-600 hover:bg-indigo-700")}
+                  className={cn(
+                    'w-full h-auto py-3 flex-col gap-2',
+                    paymentMethod === 'BANK_TRANSFER' && 'bg-indigo-600 hover:bg-indigo-700'
+                  )}
                   onClick={() => setPaymentMethod('BANK_TRANSFER')}
                 >
                   <Landmark className="h-5 w-5" />
@@ -150,7 +162,10 @@ export const BillingSheet = ({ open, onOpenChange, invoice }: BillingSheetProps)
                 </Button>
                 <Button
                   variant={paymentMethod === 'CARD' ? 'default' : 'outline'}
-                  className={cn("w-full h-auto py-3 flex-col gap-2", paymentMethod === 'CARD' && "bg-indigo-600 hover:bg-indigo-700")}
+                  className={cn(
+                    'w-full h-auto py-3 flex-col gap-2',
+                    paymentMethod === 'CARD' && 'bg-indigo-600 hover:bg-indigo-700'
+                  )}
                   onClick={() => setPaymentMethod('CARD')}
                 >
                   <CreditCard className="h-5 w-5" />
@@ -167,8 +182,11 @@ export const BillingSheet = ({ open, onOpenChange, invoice }: BillingSheetProps)
                 <span className="font-medium">Đã thanh toán</span>
               </div>
               <div className="text-sm font-medium text-green-800">
-                {invoice.paymentMethod === 'CASH' ? 'Tiền mặt' : 
-                 invoice.paymentMethod === 'CARD' ? 'Quẹt thẻ' : 'Chuyển khoản'}
+                {invoice.paymentMethod === 'CASH'
+                  ? 'Tiền mặt'
+                  : invoice.paymentMethod === 'CARD'
+                    ? 'Quẹt thẻ'
+                    : 'Chuyển khoản'}
               </div>
             </div>
           )}
@@ -177,15 +195,15 @@ export const BillingSheet = ({ open, onOpenChange, invoice }: BillingSheetProps)
         <SheetFooter className="mt-8 flex-row justify-between sm:justify-between w-full">
           {invoice.status === 'PENDING' ? (
             <>
-              <Button 
-                variant="destructive" 
+              <Button
+                variant="destructive"
                 onClick={handleCancel}
                 disabled={isCanceling || isPaying}
               >
                 {isCanceling ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Hủy HĐ'}
               </Button>
-              <Button 
-                onClick={handlePay} 
+              <Button
+                onClick={handlePay}
                 disabled={isPaying || isCanceling}
                 className="bg-indigo-600 hover:bg-indigo-700"
               >

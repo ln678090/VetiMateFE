@@ -25,7 +25,10 @@ export default function CartPage() {
 
   const selectedItems = cartItems.filter((item) => selectedIds.includes(item.product.id));
   const totalItems = selectedItems.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = selectedItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const totalPrice = selectedItems.reduce(
+    (sum, item) => sum + item.product.price * item.quantity,
+    0
+  );
 
   if (!mounted) {
     return (
@@ -38,22 +41,30 @@ export default function CartPage() {
   if (cartItems.length === 0) {
     return (
       <main className="mx-auto flex min-h-[70vh] flex-col items-center justify-center px-4 py-24 md:px-6">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="flex flex-col items-center justify-center text-center"
         >
           <div className="relative mb-8 flex h-40 w-40 items-center justify-center rounded-full bg-gradient-to-tr from-rose-100 to-amber-50 shadow-inner dark:from-rose-500/10 dark:to-amber-500/10">
-            <ShoppingCart className="h-20 w-20 text-rose-400 dark:text-rose-500" strokeWidth={1.5} />
+            <ShoppingCart
+              className="h-20 w-20 text-rose-400 dark:text-rose-500"
+              strokeWidth={1.5}
+            />
             <div className="absolute -bottom-2 -right-2 h-12 w-12 rounded-full bg-white shadow-xl dark:bg-zinc-900" />
           </div>
           <h2 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white">
             Giỏ hàng trống
           </h2>
           <p className="mt-4 max-w-md text-lg text-zinc-500 dark:text-zinc-400">
-            Có vẻ như bạn chưa chọn sản phẩm nào. Hãy khám phá các sản phẩm tuyệt vời dành cho thú cưng của bạn nhé!
+            Có vẻ như bạn chưa chọn sản phẩm nào. Hãy khám phá các sản phẩm tuyệt vời dành cho thú
+            cưng của bạn nhé!
           </p>
-          <Button asChild size="lg" className="mt-10 h-14 rounded-full bg-zinc-900 px-8 text-base font-semibold hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100">
+          <Button
+            asChild
+            size="lg"
+            className="mt-10 h-14 rounded-full bg-zinc-900 px-8 text-base font-semibold hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
+          >
             <Link href="/shop">
               Bắt đầu mua sắm <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
@@ -67,9 +78,13 @@ export default function CartPage() {
     <main className="min-h-screen bg-zinc-50/50 pb-24 pt-8 dark:bg-zinc-950/50">
       <div className="mx-auto max-w-7xl px-4 md:px-6">
         <div className="mb-10">
-          <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white">Giỏ Hàng</h1>
+          <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white">
+            Giỏ Hàng
+          </h1>
           <p className="mt-2 text-zinc-500 dark:text-zinc-400">
-            Bạn đang có <strong className="text-zinc-900 dark:text-white">{cartItems.length}</strong> sản phẩm trong giỏ hàng
+            Bạn đang có{' '}
+            <strong className="text-zinc-900 dark:text-white">{cartItems.length}</strong> sản phẩm
+            trong giỏ hàng
           </p>
         </div>
 
@@ -116,13 +131,17 @@ export default function CartPage() {
                           className="data-[state=checked]:bg-rose-500 data-[state=checked]:border-rose-500"
                         />
                       </div>
-                      <Link href={`/shop/${item.product.slug}`} className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border border-zinc-200/80 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900">
+                      <Link
+                        href={`/shop/${item.product.slug}`}
+                        className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-xl border border-zinc-200/80 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900"
+                      >
                         <Image
                           src={item.product.image}
                           alt={item.product.name}
                           fill
                           className="object-cover transition-transform duration-500 group-hover:scale-110"
-                          unoptimized />
+                          unoptimized
+                        />
                       </Link>
                       <div className="flex flex-1 flex-col py-1">
                         <Link
@@ -193,7 +212,9 @@ export default function CartPage() {
             <div className="sticky top-24 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
               {/* Header */}
               <div className="border-b border-zinc-100 bg-zinc-50/50 p-5 dark:border-zinc-800/50 dark:bg-zinc-900/50">
-                <h3 className="text-xl font-bold text-zinc-900 dark:text-white">Tóm tắt đơn hàng</h3>
+                <h3 className="text-xl font-bold text-zinc-900 dark:text-white">
+                  Tóm tắt đơn hàng
+                </h3>
               </div>
 
               {/* Content */}
@@ -215,43 +236,45 @@ export default function CartPage() {
 
                 <div className="mb-6 flex items-end justify-between">
                   <div>
-                    <span className="text-lg font-bold text-zinc-900 dark:text-zinc-100">Tổng cộng</span>
+                    <span className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+                      Tổng cộng
+                    </span>
                     <p className="mt-1 text-xs text-zinc-500">Đã bao gồm VAT nếu có</p>
                   </div>
                   <span className="text-3xl font-black text-rose-600 dark:text-rose-400">
                     {formatVND(totalPrice)}
                   </span>
                 </div>
-              <Button
-                onClick={(e) => {
-                  if (selectedIds.length === 0) {
-                    e.preventDefault();
-                    toast.error('Vui lòng chọn ít nhất 1 sản phẩm để thanh toán!');
-                    return;
-                  }
+                <Button
+                  onClick={(e) => {
+                    if (selectedIds.length === 0) {
+                      e.preventDefault();
+                      toast.error('Vui lòng chọn ít nhất 1 sản phẩm để thanh toán!');
+                      return;
+                    }
 
-                  const outOfStockItems = selectedItems.filter(
-                    (item) => item.quantity > item.product.stockQuantity
-                  );
-                  if (outOfStockItems.length > 0) {
-                    e.preventDefault();
-                    const names = outOfStockItems.map((i) => i.product.name).join(', ');
-                    toast.error(
-                      `Sản phẩm "${names}" hiện không đủ số lượng trong kho. Vui lòng giảm số lượng!`
+                    const outOfStockItems = selectedItems.filter(
+                      (item) => item.quantity > item.product.stockQuantity
                     );
-                  }
-                }}
-                asChild
-                size="lg"
-                className="h-14 w-full rounded-2xl bg-gradient-to-r from-rose-500 to-amber-500 text-lg font-bold text-white shadow-lg shadow-rose-500/25 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-rose-500/40"
-              >
-                <Link href={selectedIds.length === 0 ? '#' : '/checkout'}>
-                  Mua hàng
-                  <ChevronRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
+                    if (outOfStockItems.length > 0) {
+                      e.preventDefault();
+                      const names = outOfStockItems.map((i) => i.product.name).join(', ');
+                      toast.error(
+                        `Sản phẩm "${names}" hiện không đủ số lượng trong kho. Vui lòng giảm số lượng!`
+                      );
+                    }
+                  }}
+                  asChild
+                  size="lg"
+                  className="h-14 w-full rounded-2xl bg-gradient-to-r from-rose-500 to-amber-500 text-lg font-bold text-white shadow-lg shadow-rose-500/25 transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-rose-500/40"
+                >
+                  <Link href={selectedIds.length === 0 ? '#' : '/checkout'}>
+                    Mua hàng
+                    <ChevronRight className="ml-2 h-5 w-5" />
+                  </Link>
+                </Button>
+              </div>
             </div>
-          </div>
           </div>
         </motion.div>
       </div>

@@ -7,7 +7,7 @@ export const inventoryApi = {
     const res = await api.get<ApiResp<StockVoucherResp[]>>('/api/inventory/vouchers');
     return res.data;
   },
-  
+
   createImportVoucher: async (data: CreateImportVoucherReq) => {
     const res = await api.post<ApiResp<StockVoucherResp>>('/api/inventory/vouchers/import', data);
     return res.data;

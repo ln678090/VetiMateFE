@@ -4,12 +4,7 @@ import { Package, Truck, Calendar, MapPin, Phone, User, CreditCard, Receipt } fr
 import Image from 'next/image';
 import { useState } from 'react';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
@@ -55,8 +50,9 @@ export function CustomerOrderDetailsModal({
     noteText = order.note.replace(/\| \[CANCEL_REQUEST\]:.*$/, '').trim();
   } else if (order.note) {
     const parts = order.note.split(' | ');
-    parts.forEach(p => {
-      if (p.startsWith('Shipping Address:')) addressText = p.replace('Shipping Address:', '').trim();
+    parts.forEach((p) => {
+      if (p.startsWith('Shipping Address:'))
+        addressText = p.replace('Shipping Address:', '').trim();
       if (p.startsWith('Phone:')) phoneText = p.replace('Phone:', '').trim();
       if (p.startsWith('Note:')) noteText = p.replace('Note:', '').trim();
     });
@@ -78,9 +74,9 @@ export function CustomerOrderDetailsModal({
   const isCancelled = order.status === 'CANCELLED';
   const currentSteps = isCancelled
     ? [
-      { id: 'PENDING', label: 'Chờ xác nhận' },
-      { id: 'CANCELLED', label: 'Đã hủy' },
-    ]
+        { id: 'PENDING', label: 'Chờ xác nhận' },
+        { id: 'CANCELLED', label: 'Đã hủy' },
+      ]
     : STEPS;
 
   const currentStepIndex = currentSteps.findIndex((s) => s.id === order.status);
@@ -97,18 +93,20 @@ export function CustomerOrderDetailsModal({
               <div>
                 <DialogTitle className="text-xl">Chi Tiết Đơn Hàng</DialogTitle>
                 <div className="text-sm font-medium text-zinc-500 mt-1 flex items-center gap-2">
-                  <span className="text-zinc-900 dark:text-zinc-100 font-bold">{order.code}</span>
-                  •
+                  <span className="text-zinc-900 dark:text-zinc-100 font-bold">{order.code}</span>•
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5" />
-                    Tạo: {format(new Date(order.createdAt), "HH:mm - dd/MM/yyyy", { locale: vi })}
+                    Tạo: {format(new Date(order.createdAt), 'HH:mm - dd/MM/yyyy', { locale: vi })}
                   </span>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col items-end gap-2">
-              <Badge variant="outline" className={`px-3 py-1 font-bold tracking-wider border-0 ${statusInfo.colorClass}`}>
+              <Badge
+                variant="outline"
+                className={`px-3 py-1 font-bold tracking-wider border-0 ${statusInfo.colorClass}`}
+              >
                 {statusInfo.label}
               </Badge>
               {hasCancelRequest && order.status !== 'CANCELLED' && (
@@ -127,10 +125,13 @@ export function CustomerOrderDetailsModal({
               <div className="relative flex justify-between">
                 <div className="absolute top-3 left-0 w-full h-1 bg-zinc-200 -translate-y-1/2 rounded-full dark:bg-zinc-800" />
                 <div
-                  className={cn("absolute top-3 left-0 h-1 -translate-y-1/2 rounded-full transition-all duration-500",
-                    isCancelled ? "bg-rose-500" : "bg-emerald-500"
+                  className={cn(
+                    'absolute top-3 left-0 h-1 -translate-y-1/2 rounded-full transition-all duration-500',
+                    isCancelled ? 'bg-rose-500' : 'bg-emerald-500'
                   )}
-                  style={{ width: `${(Math.max(0, currentStepIndex) / (currentSteps.length - 1)) * 100}%` }}
+                  style={{
+                    width: `${(Math.max(0, currentStepIndex) / (currentSteps.length - 1)) * 100}%`,
+                  }}
                 />
                 {currentSteps.map((step, index) => {
                   const isCompleted = index <= currentStepIndex;
@@ -149,19 +150,28 @@ export function CustomerOrderDetailsModal({
                         className={cn(
                           'w-6 h-6 rounded-full border-4 flex items-center justify-center bg-white dark:bg-zinc-950',
                           isCompleted
-                            ? isCancelled ? 'border-rose-500' : 'border-emerald-500'
+                            ? isCancelled
+                              ? 'border-rose-500'
+                              : 'border-emerald-500'
                             : 'border-zinc-200 dark:border-zinc-800'
                         )}
                       >
                         {isCompleted && (
-                          <div className={cn("w-2 h-2 rounded-full", isCancelled ? "bg-rose-500" : "bg-emerald-500")} />
+                          <div
+                            className={cn(
+                              'w-2 h-2 rounded-full',
+                              isCancelled ? 'bg-rose-500' : 'bg-emerald-500'
+                            )}
+                          />
                         )}
                       </div>
                       <span
                         className={cn(
                           'text-xs font-semibold whitespace-nowrap absolute top-8',
                           isCurrent
-                            ? isCancelled ? 'text-rose-600 dark:text-rose-500' : 'text-emerald-600 dark:text-emerald-500'
+                            ? isCancelled
+                              ? 'text-rose-600 dark:text-rose-500'
+                              : 'text-emerald-600 dark:text-emerald-500'
                             : isCompleted
                               ? 'text-zinc-900 dark:text-zinc-100'
                               : 'text-zinc-400'
@@ -193,7 +203,9 @@ export function CustomerOrderDetailsModal({
                     <User className="h-4 w-4 mt-0.5 text-zinc-400 shrink-0" />
                     <div>
                       <p className="text-xs font-medium text-zinc-500">Tên người nhận</p>
-                      <p className="text-sm font-semibold text-zinc-900 dark:text-white mt-0.5">{order.customerName || 'Không có tên'}</p>
+                      <p className="text-sm font-semibold text-zinc-900 dark:text-white mt-0.5">
+                        {order.customerName || 'Không có tên'}
+                      </p>
                     </div>
                   </div>
 
@@ -217,7 +229,9 @@ export function CustomerOrderDetailsModal({
                     <Phone className="h-4 w-4 mt-0.5 text-zinc-400 shrink-0" />
                     <div>
                       <p className="text-xs font-medium text-zinc-500">Số điện thoại</p>
-                      <p className="text-sm font-semibold text-zinc-900 dark:text-white mt-0.5">{phoneText || order.customerPhone || 'Không có sđt'}</p>
+                      <p className="text-sm font-semibold text-zinc-900 dark:text-white mt-0.5">
+                        {phoneText || order.customerPhone || 'Không có sđt'}
+                      </p>
                     </div>
                   </div>
 
@@ -226,7 +240,9 @@ export function CustomerOrderDetailsModal({
                     <div>
                       <p className="text-xs font-medium text-zinc-500">Phương thức thanh toán</p>
                       <p className="text-sm font-semibold text-zinc-900 dark:text-white mt-0.5">
-                        {order.paymentMethod === 'COD' ? 'Thanh toán khi nhận hàng (COD)' : 'Thanh toán qua cổng (Online)'}
+                        {order.paymentMethod === 'COD'
+                          ? 'Thanh toán khi nhận hàng (COD)'
+                          : 'Thanh toán qua cổng (Online)'}
                       </p>
                     </div>
                   </div>
@@ -236,7 +252,9 @@ export function CustomerOrderDetailsModal({
 
             {hasCancelRequest && order.status !== 'CANCELLED' && (
               <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 dark:border-rose-900/50 dark:bg-rose-950/20">
-                <h4 className="font-bold text-rose-700 dark:text-rose-400 mb-1">Bạn đã yêu cầu hủy đơn này</h4>
+                <h4 className="font-bold text-rose-700 dark:text-rose-400 mb-1">
+                  Bạn đã yêu cầu hủy đơn này
+                </h4>
                 <p className="text-sm text-rose-600 dark:text-rose-300">
                   <span className="font-medium">Lý do:</span> {cancelReason}
                 </p>
@@ -245,7 +263,9 @@ export function CustomerOrderDetailsModal({
 
             {order.status === 'CANCELLED' && hasCancelRequest && (
               <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-                <h4 className="font-bold text-zinc-900 dark:text-white mb-1">Đơn hàng đã được hủy</h4>
+                <h4 className="font-bold text-zinc-900 dark:text-white mb-1">
+                  Đơn hàng đã được hủy
+                </h4>
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">
                   <span className="font-medium">Lý do bạn yêu cầu:</span> {cancelReason}
                 </p>
@@ -268,21 +288,26 @@ export function CustomerOrderDetailsModal({
                           alt={item.productName}
                           fill
                           className="object-cover"
-                          unoptimized />
+                          unoptimized
+                        />
                       </div>
                       <div className="flex flex-1 flex-col justify-center">
                         <h4 className="line-clamp-1 text-sm font-bold text-zinc-900 dark:text-white">
                           {item.productName}
                         </h4>
                         <div className="mt-1 flex items-center justify-between">
-                          <span className="text-xs font-medium text-zinc-500">x{item.quantity}</span>
-                          <span className="text-sm font-bold text-rose-500">{formatVND(item.price)}</span>
+                          <span className="text-xs font-medium text-zinc-500">
+                            x{item.quantity}
+                          </span>
+                          <span className="text-sm font-bold text-rose-500">
+                            {formatVND(item.price)}
+                          </span>
                         </div>
                       </div>
                     </li>
                   ))}
                 </ul>
-                
+
                 {order.items.length > 2 && (
                   <div className="flex justify-center border-t border-zinc-100 py-3 dark:border-zinc-800/50 bg-white dark:bg-zinc-950">
                     <button
@@ -299,7 +324,10 @@ export function CustomerOrderDetailsModal({
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        className={cn('h-4 w-4 transition-transform duration-200', isItemsExpanded && 'rotate-180')}
+                        className={cn(
+                          'h-4 w-4 transition-transform duration-200',
+                          isItemsExpanded && 'rotate-180'
+                        )}
                       >
                         <path d="m6 9 6 6 6-6" />
                       </svg>
@@ -309,7 +337,9 @@ export function CustomerOrderDetailsModal({
 
                 <div className="bg-zinc-50 p-4 border-t border-zinc-100 dark:bg-zinc-900/50 dark:border-zinc-800/50">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-zinc-600 dark:text-zinc-400">Tổng thanh toán:</span>
+                    <span className="text-sm font-semibold text-zinc-600 dark:text-zinc-400">
+                      Tổng thanh toán:
+                    </span>
                     <span className="text-lg font-black text-rose-600 dark:text-rose-400">
                       {formatVND(order.finalAmount)}
                     </span>
@@ -321,26 +351,31 @@ export function CustomerOrderDetailsModal({
             {/* Ghi chú */}
             {noteText && noteText !== 'Không có ghi chú' && (
               <div className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
-                <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Ghi chú của bạn</h4>
+                <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">
+                  Ghi chú của bạn
+                </h4>
                 <p className="text-sm text-zinc-700 dark:text-zinc-300">{noteText}</p>
               </div>
             )}
 
             {/* Action buttons */}
-            {!isCancelled && order.status !== 'DELIVERED' && !hasCancelRequest && onOpenCancelDialog && (
-              <div className="flex justify-end pt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    onOpenCancelDialog();
-                  }}
-                  className="rounded-xl border border-zinc-200 px-6 py-2.5 font-bold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
-                >
-                  Hủy Đơn Hàng
-                </button>
-              </div>
-            )}
+            {!isCancelled &&
+              order.status !== 'DELIVERED' &&
+              !hasCancelRequest &&
+              onOpenCancelDialog && (
+                <div className="flex justify-end pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onOpenCancelDialog();
+                    }}
+                    className="rounded-xl border border-zinc-200 px-6 py-2.5 font-bold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                  >
+                    Hủy Đơn Hàng
+                  </button>
+                </div>
+              )}
           </div>
         </ScrollArea>
       </DialogContent>
