@@ -5,6 +5,8 @@ export type ApplicationRole =
   | 'ROLE_MANAGER'
   | 'ROLE_RECEPTIONIST'
   | 'ROLE_DOCTOR'
+  | 'ROLE_ACCOUNTANT'
+  | 'ROLE_SHOP_STAFF'
   | 'ROLE_USER';
 
 function normalizeAuthority(value: unknown): string | null {

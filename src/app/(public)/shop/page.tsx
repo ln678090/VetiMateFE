@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 
+import { Button } from '@/components/ui/button';
 import { CategoryTree } from '@/features/shop/components/CategoryTree';
 import { ProductFilters } from '@/features/shop/components/ProductFilters';
 import { ProductGrid } from '@/features/shop/components/ProductGrid';
@@ -89,6 +90,35 @@ export default function ShopPage() {
           </div>
 
           <ProductGrid products={data?.items} isLoading={isLoading} />
+
+          {/* Pagination Controls */}
+          {!isLoading && data && (data.totalPages ?? 0) > 1 && (
+            <div className="mt-8 flex items-center justify-center gap-4">
+              <Button
+                variant="outline"
+                disabled={(data.page ?? 0) === 0}
+                onClick={() => {
+                  setFilters((f) => ({ ...f, page: Math.max(0, (f.page ?? 0) - 1) }));
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              >
+                Trước
+              </Button>
+              <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+                Trang {(data.page ?? 0) + 1} / {data.totalPages ?? 0}
+              </span>
+              <Button
+                variant="outline"
+                disabled={(data.page ?? 0) >= (data.totalPages ?? 0) - 1}
+                onClick={() => {
+                  setFilters((f) => ({ ...f, page: (f.page ?? 0) + 1 }));
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              >
+                Trang sau
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

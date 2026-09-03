@@ -2,15 +2,18 @@
 
 import { motion } from 'framer-motion';
 import { Heart, RotateCcw, Share2, ShieldCheck, ShoppingCart, Star, Truck } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn, formatVND } from '@/lib/utils';
+import { useCartStore } from '@/stores/cart.store';
 import type { Product } from '@/types/shop';
 import { QuantityStepper } from './QuantityStepper';
+import { userService } from '@/services/user.service';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 
 interface ProductInfoProps {
   product: Product;
@@ -24,18 +27,58 @@ const TRUST_BADGES = [
 
 export function ProductInfo({ product }: ProductInfoProps) {
   const [quantity, setQuantity] = useState(1);
+  const queryClient = useQueryClient();
+
+  const { data: isFavorited } = useQuery({
+    queryKey: ['favorite-status', product?.id],
+    queryFn: () => userService.checkFavorite(product.id),
+    enabled: !!product?.id,
+  });
+
   const [wished, setWished] = useState(false);
+
+  useEffect(() => {
+    if (isFavorited !== undefined) {
+      setWished(isFavorited);
+    }
+  }, [isFavorited]);
 
   const hasDiscount = product.originalPrice && product.originalPrice > product.price;
   const discountPct = hasDiscount
     ? Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100)
     : 0;
 
+  useEffect(() => {
+    // Record view in the background
+    if (product?.id) {
+      userService.recordView(product.id).catch(() => {});
+    }
+  }, [product?.id]);
+
+  const addItem = useCartStore((s) => s.addItem);
   const handleAddToCart = () => {
-    // Phase 3.1 sẽ wire vào Zustand cart store
-    toast.success(`Đã thêm ${quantity} × ${product.name} vào giỏ`, {
-      description: 'Cart store sẽ hoạt động ở Phase 3.1',
-    });
+    addItem(
+      {
+        ...product,
+        image: product.imageUrl,
+        brand: product.brandName,
+        category: product.categorySlug,
+      },
+      quantity
+    );
+    toast.success(`Đã thêm ${quantity} × ${product.name} vào giỏ`);
+  };
+
+  const handleToggleFavorite = async () => {
+    try {
+      await userService.toggleFavorite(product.id);
+      setWished((w) => !w);
+      queryClient.invalidateQueries({ queryKey: ['favorite-status', product.id] });
+      queryClient.invalidateQueries({ queryKey: ['my-favorites'] });
+      toast.success(wished ? 'Đã bỏ yêu thích' : 'Đã thêm vào danh sách yêu thích');
+    } catch (error) {
+      toast.error('Vui lòng đăng nhập để yêu thích sản phẩm');
+    }
   };
 
   const handleShare = async () => {
@@ -148,9 +191,9 @@ export function ProductInfo({ product }: ProductInfoProps) {
       <div className="flex flex-wrap items-center gap-3">
         <div>
           <p className="mb-2 text-xs font-semibold tracking-wider text-zinc-700 uppercase dark:text-zinc-300">
-            Số lượng
+            Số lượng <span className="ml-1 text-zinc-500 font-normal normal-case">(Còn {product.stockQuantity} sản phẩm)</span>
           </p>
-          <QuantityStepper value={quantity} onChange={setQuantity} />
+          <QuantityStepper value={quantity} onChange={setQuantity} max={product.stockQuantity} />
         </div>
       </div>
 
@@ -167,7 +210,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
         <Button
           size="lg"
           variant="outline"
-          onClick={() => setWished((w) => !w)}
+          onClick={handleToggleFavorite}
           className={cn(
             'h-12 transition',
             wished

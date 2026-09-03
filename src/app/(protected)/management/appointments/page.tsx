@@ -15,17 +15,19 @@ type StatusFilter = AppointmentStatus | 'ALL';
 const STATUS_LABELS: Record<AppointmentStatus, string> = {
   SCHEDULED: 'Chờ xác nhận',
   CONFIRMED: 'Đã xác nhận',
+  ARRIVED: 'Đã đến',
   DONE: 'Hoàn thành',
   CANCELLED: 'Đã hủy',
   NO_SHOW: 'Không đến',
 };
 
 const STATUS_STYLES: Record<AppointmentStatus, string> = {
-  SCHEDULED: 'bg-amber-100 text-amber-700',
-  CONFIRMED: 'bg-blue-100 text-blue-700',
-  DONE: 'bg-emerald-100 text-emerald-700',
-  CANCELLED: 'bg-red-100 text-red-700',
-  NO_SHOW: 'bg-slate-100 text-slate-700',
+  SCHEDULED: 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300',
+  CONFIRMED: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300',
+  ARRIVED: 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300',
+  DONE: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
+  CANCELLED: 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300',
+  NO_SHOW: 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300',
 };
 
 function getLocalDate(): string {
@@ -44,7 +46,8 @@ export default function ManagementAppointmentsPage() {
   const [page, setPage] = useState(0);
 
   const appointmentsQuery = useManagementAppointments({
-    date,
+    startDate: date,
+    endDate: date,
     status: status === 'ALL' ? undefined : status,
     page,
     size: 20,

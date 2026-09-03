@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PetForm } from '@/features/profile/components/PetForm';
 import { useOwnerPet, useUpdateOwnerPet } from '@/features/pets/hooks/use-pet-management';
 import { getApiErrorMessage } from '@/lib/axios';
-import { ownerPetToFormValues } from '@/schemas/pet.schema';
+import { ownerPetToFormValues, toOwnerPetRequest } from '@/schemas/pet.schema';
 
 export default function EditPetPage() {
   const params = useParams<{ id: string }>();
@@ -65,7 +65,7 @@ export default function EditPetPage() {
             try {
               await updatePet.mutateAsync({
                 petId,
-                request,
+                request: toOwnerPetRequest(request),
               });
 
               toast.success('Đã cập nhật thú cưng');

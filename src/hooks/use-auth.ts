@@ -9,6 +9,7 @@ import { getApiErrorMessage } from '@/lib/axios';
 import type { LoginInput, RegisterInput } from '@/schemas/auth.schema';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/stores/auth.store';
+import { useCartStore } from '@/stores/cart.store';
 
 export function useAuth() {
   const router = useRouter();
@@ -60,6 +61,7 @@ export function useAuth() {
       // Vẫn clear state dù API fail
     } finally {
       clear();
+      useCartStore.getState().clearCart();
       toast.success('Đăng xuất thành công');
       router.push('/login');
       router.refresh();

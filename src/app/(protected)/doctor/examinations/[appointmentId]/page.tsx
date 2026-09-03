@@ -1,13 +1,14 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft, LoaderCircle, Plus, Save, Stethoscope, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { ArrowLeft, LoaderCircle, Plus, Save, Stethoscope, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { examinationApi } from '@/features/examination/api/examination.api';
+import { ServiceIndicationPanel } from '@/features/examination/components/ServiceIndicationPanel';
 import {
   EXAMINATION_QUERY_KEYS,
   useCompleteExamination,
@@ -15,7 +16,7 @@ import {
   useReplacePrescriptions,
   useSaveExamination,
 } from '@/features/examination/hooks/use-examination';
-
+import { api } from '@/lib/axios';
 import type {
   MedicalRecordResponse,
   PetHealthStatus,
@@ -34,6 +35,19 @@ interface PrescriptionDraft {
 
 interface ExaminationFormProps {
   initialRecord: MedicalRecordResponse;
+}
+
+interface ClinicServiceOption {
+  id: string;
+  name: string;
+}
+
+interface SpringPage<T> {
+  content: T[];
+}
+
+interface ApiResponse<T> {
+  data: T;
 }
 
 const HEALTH_OPTIONS: Array<{
@@ -106,6 +120,29 @@ function ExaminationForm({ initialRecord }: ExaminationFormProps) {
   );
 
   const medicinesQuery = useMedicines();
+
+  const servicesQuery = useQuery({
+    queryKey: ['clinic-services', 'active', 'indications'],
+
+    queryFn: async (): Promise<ClinicServiceOption[]> => {
+      const response = await api.get<ApiResponse<SpringPage<ClinicServiceOption>>>(
+        '/api/clinic/services',
+        {
+          params: {
+            activeOnly: true,
+            page: 0,
+            size: 100,
+            sort: 'name,asc',
+          },
+        }
+      );
+
+      return response.data.data.content;
+    },
+
+    staleTime: 5 * 60 * 1000,
+  });
+
   const saveMutation = useSaveExamination();
 
   const replaceMutation = useReplacePrescriptions();
@@ -163,9 +200,7 @@ function ExaminationForm({ initialRecord }: ExaminationFormProps) {
   }
 
   async function handleSave(): Promise<void> {
-    if (isReadOnly) {
-      return;
-    }
+    if (isReadOnly) return;
 
     try {
       await saveMutation.mutateAsync({
@@ -180,9 +215,7 @@ function ExaminationForm({ initialRecord }: ExaminationFormProps) {
   }
 
   async function handleComplete(): Promise<void> {
-    if (isReadOnly) {
-      return;
-    }
+    if (isReadOnly) return;
 
     if (!diagnosis.trim()) {
       toast.error('Phải nhập chẩn đoán trước khi hoàn tất.');
@@ -253,7 +286,7 @@ function ExaminationForm({ initialRecord }: ExaminationFormProps) {
         </div>
 
         <p className="mt-2 text-muted-foreground">
-          Ghi nhận tình trạng sức khỏe, chẩn đoán và đơn thuốc.
+          Ghi nhận tình trạng sức khỏe, chỉ định dịch vụ, chẩn đoán và đơn thuốc.
         </p>
       </header>
 
@@ -361,6 +394,18 @@ function ExaminationForm({ initialRecord }: ExaminationFormProps) {
           />
         </label>
       </section>
+
+      {servicesQuery.isError && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          Không tải được danh sách dịch vụ: {servicesQuery.error.message}
+        </div>
+      )}
+
+      <ServiceIndicationPanel
+        medicalRecordId={initialRecord.id}
+        services={servicesQuery.data ?? []}
+        editable={!isReadOnly && !servicesQuery.isLoading && !servicesQuery.isError}
+      />
 
       <section className="rounded-2xl border bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -557,11 +602,6 @@ export default function DoctorExaminationPage() {
     },
 
     enabled: Boolean(appointmentId),
-
-    /*
-     * openExamination là idempotent theo appointment.
-     * Query cache tránh POST trùng trong Strict Mode.
-     */
     staleTime: Number.POSITIVE_INFINITY,
     gcTime: 10 * 60 * 1000,
     retry: false,
