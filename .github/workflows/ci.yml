@@ -1,6 +1,5 @@
 name: VetiMate FE CI
 
-# Tự động chạy khi có sự kiện Push hoặc Pull Request vào nhánh main
 on:
   push:
     branches: [main]
@@ -11,32 +10,32 @@ jobs:
   check-and-build:
     runs-on: ubuntu-latest
 
+    # Thêm các biến môi trường giả lập tại đây để qua vòng check của Zod khi build
+    env:
+      NEXT_PUBLIC_API_URL: 'https://mock.local'
+      NEXT_PUBLIC_APP_NAME: 'VetiMate FE'
+      NEXT_TELEMETRY_DISABLED: 1 # Tắt luôn thông báo Telemetry của Next.js cho sạch log CI
+
     steps:
-      # Bước 1: Clone mã nguồn từ GitHub về máy ảo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Bước 2: Tự động cài đặt phiên bản pnpm MỚI NHẤT hiện tại
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: latest # Lệnh tự động lấy version mới nhất
+          version: latest
 
-      # Bước 3: Cài đặt Node.js v22 (tự động lấy bản vá mới nhất của v22)
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'pnpm' # Tự động bật bộ nhớ đệm (cache) để tăng tốc độ cài đặt
+          cache: 'pnpm'
 
-      # Bước 4: Cài đặt các thư viện (dependencies)
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Bước 5: Chạy lệnh kiểm tra TypeScript và ESLint của bạn
       - name: Run TypeScript & ESLint check
         run: pnpm check-all
 
-      # Bước 6: Chạy lệnh Build thử dự án Next.js
       - name: Build Next.js project
         run: pnpm build
