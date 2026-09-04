@@ -135,7 +135,13 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
       ...values,
       name: values.code,
       discountType: values.discountType as 'PERCENT' | 'FIXED',
-      requiredTier: values.requiredTier as 'STANDARD' | 'BRONZE' | 'SILVER' | 'GOLD' | 'DIAMOND' | undefined,
+      requiredTier: values.requiredTier as
+        | 'STANDARD'
+        | 'BRONZE'
+        | 'SILVER'
+        | 'GOLD'
+        | 'DIAMOND'
+        | undefined,
       maxUsage: values.maxUsage === 0 ? undefined : values.maxUsage,
       maxDiscount: values.maxDiscount === 0 ? undefined : values.maxDiscount,
       startDate: values.startDate ? new Date(values.startDate).toISOString() : '',

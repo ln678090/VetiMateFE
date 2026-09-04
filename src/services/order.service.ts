@@ -40,9 +40,14 @@ export const orderService = {
     return response.data;
   },
 
-  reviewOrder: async ({ id, reviews }: { id: string; reviews: { productId: string; rating: number; comment?: string }[] }): Promise<Order> => {
+  reviewOrder: async ({
+    id,
+    reviews,
+  }: {
+    id: string;
+    reviews: { productId: string; rating: number; comment?: string }[];
+  }): Promise<Order> => {
     const response = await api.post<Order>(`/api/orders/${id}/review`, { reviews });
     return response.data;
-  }
-
+  },
 };

@@ -64,7 +64,8 @@ export function CheckoutForm() {
     queryFn: getMyVouchers,
   });
 
-  const availableVouchers = myVouchers?.filter(uv => !uv.isUsed && uv.voucher.minOrderAmount <= totalPrice) || [];
+  const availableVouchers =
+    myVouchers?.filter((uv) => !uv.isUsed && uv.voucher.minOrderAmount <= totalPrice) || [];
 
   const form = useForm<CheckoutInput>({
     resolver: zodResolver(checkoutSchema),
@@ -96,9 +97,10 @@ export function CheckoutForm() {
   }, [selectedCityName, form]);
 
   const selectedVoucherId = form.watch('userVoucherId');
-  const selectedVoucher = selectedVoucherId && selectedVoucherId !== 'none' 
-    ? availableVouchers.find(uv => uv.id === selectedVoucherId)?.voucher 
-    : undefined;
+  const selectedVoucher =
+    selectedVoucherId && selectedVoucherId !== 'none'
+      ? availableVouchers.find((uv) => uv.id === selectedVoucherId)?.voucher
+      : undefined;
 
   let discount = 0;
   if (selectedVoucher) {
@@ -124,7 +126,8 @@ export function CheckoutForm() {
           productId: item.product.id,
           quantity: item.quantity,
         })),
-        userVoucherId: (data.userVoucherId && data.userVoucherId !== 'none') ? data.userVoucherId : undefined
+        userVoucherId:
+          data.userVoucherId && data.userVoucherId !== 'none' ? data.userVoucherId : undefined,
       };
 
       await orderService.checkout(payload);
@@ -302,26 +305,35 @@ export function CheckoutForm() {
               </div>
             </div>
           </div>
-          
+
           {/* Voucher Section */}
           <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8 dark:border-zinc-800 dark:bg-zinc-950">
-            <h2 className="mb-8 text-xl font-bold text-zinc-900 dark:text-white">Mã Giảm Giá / Voucher</h2>
-            
+            <h2 className="mb-8 text-xl font-bold text-zinc-900 dark:text-white">
+              Mã Giảm Giá / Voucher
+            </h2>
+
             <FormField
               control={form.control}
               name="userVoucherId"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      value={field.value}
+                    >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Chọn Voucher của bạn" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="none">Không sử dụng voucher</SelectItem>
-                        {availableVouchers.map(uv => (
+                        {availableVouchers.map((uv) => (
                           <SelectItem key={uv.id} value={uv.id}>
-                            {uv.voucher.code} - Giảm {uv.voucher.discountType === 'FIXED' ? formatVND(uv.voucher.discountValue) : `${uv.voucher.discountValue}%`}
+                            {uv.voucher.code} - Giảm{' '}
+                            {uv.voucher.discountType === 'FIXED'
+                              ? formatVND(uv.voucher.discountValue)
+                              : `${uv.voucher.discountValue}%`}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -331,9 +343,11 @@ export function CheckoutForm() {
                 </FormItem>
               )}
             />
-            
+
             {availableVouchers.length === 0 && (
-              <p className="mt-2 text-sm text-zinc-500">Bạn không có voucher nào phù hợp cho đơn hàng này.</p>
+              <p className="mt-2 text-sm text-zinc-500">
+                Bạn không có voucher nào phù hợp cho đơn hàng này.
+              </p>
             )}
           </div>
 

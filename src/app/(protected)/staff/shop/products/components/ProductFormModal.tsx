@@ -255,7 +255,6 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
                 )}
               />
 
-
               <FormField
                 control={form.control}
                 name="petType"

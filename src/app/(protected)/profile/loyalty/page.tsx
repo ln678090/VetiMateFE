@@ -162,7 +162,9 @@ export default function LoyaltyPage() {
                       ? 'Bạc'
                       : points?.tier === 'BRONZE'
                         ? 'Đồng'
-                        : points?.tier === 'STANDARD' ? 'Tiêu chuẩn' : 'Tiêu chuẩn'}
+                        : points?.tier === 'STANDARD'
+                          ? 'Tiêu chuẩn'
+                          : 'Tiêu chuẩn'}
             </div>
             <p className="text-indigo-100 text-sm mt-2">
               Chi tiêu: {loadingPoints ? '...' : formatVND(points?.totalSpending || 0)}
@@ -367,7 +369,8 @@ export default function LoyaltyPage() {
                         <div className="mt-2 text-xs text-slate-500">
                           <div>
                             Đã dùng:{' '}
-                            {uv.usedAt && format(new Date(uv.usedAt), 'HH:mm dd/MM/yyyy', { locale: vi })}
+                            {uv.usedAt &&
+                              format(new Date(uv.usedAt), 'HH:mm dd/MM/yyyy', { locale: vi })}
                           </div>
                           {uv.voucher.endDate && !uv.isUsed && (
                             <div className="text-red-500 font-medium mt-1">

@@ -19,7 +19,11 @@ const TYPE_LABELS: Record<VoucherType, { label: string; color: string }> = {
 };
 
 const STATUS_LABELS: Record<VoucherStatus, { label: string; color: string }> = {
-  PENDING: { label: 'Chờ duyệt', color: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-400' },
+  PENDING: {
+    label: 'Chờ duyệt',
+    color:
+      'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-400',
+  },
   APPROVED: {
     label: 'Đã duyệt',
     color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',

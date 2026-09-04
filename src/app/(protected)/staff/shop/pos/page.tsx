@@ -1,7 +1,17 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import { ShoppingCart, Search, Plus, Minus, Trash2, History, Clock, ArrowLeft, Printer } from 'lucide-react';
+import {
+  ShoppingCart,
+  Search,
+  Plus,
+  Minus,
+  Trash2,
+  History,
+  Clock,
+  ArrowLeft,
+  Printer,
+} from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,7 +60,7 @@ const formatDate = (dateStr: string, includeYear = true) => {
 
 const formatFullDate = (dateStr: string) => {
   const d = new Date(dateStr);
-  const pad = (n: number) => n < 10 ? '0' + n : n;
+  const pad = (n: number) => (n < 10 ? '0' + n : n);
   return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 };
 
@@ -74,7 +84,9 @@ function PrintReceipt({ order, note }: { order: OrderResponse | null; note?: str
     >
       {/* Header */}
       <div style={{ textAlign: 'center', marginBottom: '8px' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 2px' }}>PetCare Vet Shop</h2>
+        <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 2px' }}>
+          PetCare Vet Shop
+        </h2>
         <p style={{ margin: '0', fontSize: '11px' }}>Phòng khám thú y &amp; Shop thú cưng</p>
         <p style={{ margin: '2px 0 0', fontSize: '11px' }}>Hotline: 0123 456 789</p>
       </div>
@@ -105,16 +117,37 @@ function PrintReceipt({ order, note }: { order: OrderResponse | null; note?: str
 
       {/* Items list */}
       <div style={{ fontSize: '12px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #000', padding: '2px 0', fontWeight: 'bold' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            borderBottom: '1px solid #000',
+            padding: '2px 0',
+            fontWeight: 'bold',
+          }}
+        >
           <span>Sản phẩm</span>
           <span>T.Tiền</span>
         </div>
         {order.items.map((item, idx) => (
           <div key={item.id} style={{ borderBottom: '1px dotted #ccc', padding: '4px 0' }}>
-            <div style={{ fontWeight: 500 }}>{idx + 1}. {item.productName}</div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginTop: '1px' }}>
-              <span style={{ color: '#555' }}>{item.quantity} x {item.price.toLocaleString('vi-VN')}</span>
-              <span style={{ fontWeight: 'bold' }}>{(item.price * item.quantity).toLocaleString('vi-VN')}</span>
+            <div style={{ fontWeight: 500 }}>
+              {idx + 1}. {item.productName}
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: '11px',
+                marginTop: '1px',
+              }}
+            >
+              <span style={{ color: '#555' }}>
+                {item.quantity} x {item.price.toLocaleString('vi-VN')}
+              </span>
+              <span style={{ fontWeight: 'bold' }}>
+                {(item.price * item.quantity).toLocaleString('vi-VN')}
+              </span>
             </div>
           </div>
         ))}
@@ -134,7 +167,17 @@ function PrintReceipt({ order, note }: { order: OrderResponse | null; note?: str
             <span>{order.shippingFee.toLocaleString('vi-VN')} ₫</span>
           </div>
         )}
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '14px', marginTop: '4px', borderTop: '1px solid #000', paddingTop: '4px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontWeight: 'bold',
+            fontSize: '14px',
+            marginTop: '4px',
+            borderTop: '1px solid #000',
+            paddingTop: '4px',
+          }}
+        >
           <span>TỔNG CỘNG:</span>
           <span>{(order.finalAmount || order.totalAmount).toLocaleString('vi-VN')} ₫</span>
         </div>
@@ -254,28 +297,29 @@ export default function POSPage() {
   });
 
   // Print function
-  const handlePrint = useCallback((orderToPrint?: OrderResponse, noteToPrint?: string) => {
-    const order = orderToPrint || lastOrder;
-    if (!order) {
-      toast.error('Không có hóa đơn để in!');
-      return;
-    }
+  const handlePrint = useCallback(
+    (orderToPrint?: OrderResponse, noteToPrint?: string) => {
+      const order = orderToPrint || lastOrder;
+      if (!order) {
+        toast.error('Không có hóa đơn để in!');
+        return;
+      }
 
-    ensurePrintStyles();
+      ensurePrintStyles();
 
-    // Create a portal element for printing
-    let portal = document.getElementById('print-receipt-portal');
-    if (!portal) {
-      portal = document.createElement('div');
-      portal.id = 'print-receipt-portal';
-      portal.style.display = 'none';
-      document.body.appendChild(portal);
-    }
+      // Create a portal element for printing
+      let portal = document.getElementById('print-receipt-portal');
+      if (!portal) {
+        portal = document.createElement('div');
+        portal.id = 'print-receipt-portal';
+        portal.style.display = 'none';
+        document.body.appendChild(portal);
+      }
 
-    const printNote = noteToPrint ?? lastNote;
+      const printNote = noteToPrint ?? lastNote;
 
-    // Build receipt HTML
-    portal.innerHTML = `
+      // Build receipt HTML
+      portal.innerHTML = `
       <div id="print-receipt" style="font-family: 'Courier New', Courier, monospace; font-size: 13px; width: 80mm; padding: 8mm 5mm; color: #000; background: #fff;">
         <div style="text-align: center; margin-bottom: 8px;">
           <h2 style="font-size: 18px; font-weight: bold; margin: 0 0 2px;">PetCare Vet Shop</h2>
@@ -297,7 +341,9 @@ export default function POSPage() {
             <span>Sản phẩm</span>
             <span>T.Tiền</span>
           </div>
-          ${order.items.map((item, idx) => `
+          ${order.items
+            .map(
+              (item, idx) => `
             <div style="border-bottom: 1px dotted #ccc; padding: 4px 0;">
               <div style="font-weight: 500;">${idx + 1}. ${item.productName}</div>
               <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 1px;">
@@ -305,7 +351,9 @@ export default function POSPage() {
                 <span style="font-weight: bold;">${(item.price * item.quantity).toLocaleString('vi-VN')}</span>
               </div>
             </div>
-          `).join('')}
+          `
+            )
+            .join('')}
         </div>
         <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
         <div style="font-size: 12px;">
@@ -317,10 +365,14 @@ export default function POSPage() {
             <span>TỔNG CỘNG:</span><span>${(order.finalAmount || order.totalAmount).toLocaleString('vi-VN')} ₫</span>
           </div>
         </div>
-        ${(printNote || order.note) ? `
+        ${
+          printNote || order.note
+            ? `
           <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
           <div style="font-size: 11px;"><span style="font-weight: bold;">Ghi chú: </span><span>${printNote || order.note}</span></div>
-        ` : ''}
+        `
+            : ''
+        }
         <div style="border-top: 1px dashed #000; margin: 8px 0;"></div>
         <div style="text-align: center; font-size: 11px;">
           <p style="margin: 0 0 2px;">Cảm ơn quý khách đã mua hàng!</p>
@@ -329,16 +381,21 @@ export default function POSPage() {
       </div>
     `;
 
-    // Trigger print
-    setTimeout(() => {
-      window.print();
-    }, 100);
-  }, [lastOrder, lastNote]);
+      // Trigger print
+      setTimeout(() => {
+        window.print();
+      }, 100);
+    },
+    [lastOrder, lastNote]
+  );
 
   // Print from history
-  const handlePrintHistoryOrder = useCallback((order: OrderResponse) => {
-    handlePrint(order, order.note);
-  }, [handlePrint]);
+  const handlePrintHistoryOrder = useCallback(
+    (order: OrderResponse) => {
+      handlePrint(order, order.note);
+    },
+    [handlePrint]
+  );
 
   const addToCart = (product: Product) => {
     if (product.stockQuantity <= 0) {
@@ -548,10 +605,12 @@ export default function POSPage() {
                         </div>
                       ))
                     )}
-                </div>
+                  </div>
                   {/* Note section */}
                   <div className="px-4 pb-2 pt-2 border-t">
-                    <label className="text-sm font-semibold text-zinc-700 mb-1.5 block">Ghi chú</label>
+                    <label className="text-sm font-semibold text-zinc-700 mb-1.5 block">
+                      Ghi chú
+                    </label>
                     <Textarea
                       placeholder="Nhập ghi chú đơn hàng"
                       value={note}

@@ -103,8 +103,13 @@ export default function OrdersPage() {
   });
 
   const reviewMutation = useMutation({
-    mutationFn: ({ id, reviews }: { id: string; reviews: { productId: string; rating: number; comment: string }[] }) => 
-      orderService.reviewOrder({ id, reviews }),
+    mutationFn: ({
+      id,
+      reviews,
+    }: {
+      id: string;
+      reviews: { productId: string; rating: number; comment: string }[];
+    }) => orderService.reviewOrder({ id, reviews }),
     onSuccess: () => {
       toast.success('Đánh giá thành công!', {
         description: 'Bạn đã nhận được 50 điểm thưởng.',
@@ -132,13 +137,15 @@ export default function OrdersPage() {
     setIsReviewModalOpen(true);
   };
 
-  const handleSubmitReview = (reviews: { productId: string; rating: number; comment: string }[]) => {
+  const handleSubmitReview = (
+    reviews: { productId: string; rating: number; comment: string }[]
+  ) => {
     if (reviewOrderId) {
       reviewMutation.mutate({ id: reviewOrderId, reviews });
     }
   };
 
-  const reviewOrder = orders.find(o => o.id === reviewOrderId);
+  const reviewOrder = orders.find((o) => o.id === reviewOrderId);
 
   return (
     <div className="space-y-8">
@@ -227,7 +234,12 @@ export default function OrdersPage() {
                 className="space-y-4"
               >
                 {filteredOrders.map((order) => (
-                  <OrderCard key={order.id} order={order} onCancelOrder={handleCancelOrder} onReviewOrder={handleReviewOrder} />
+                  <OrderCard
+                    key={order.id}
+                    order={order}
+                    onCancelOrder={handleCancelOrder}
+                    onReviewOrder={handleReviewOrder}
+                  />
                 ))}
               </motion.div>
             ) : (

@@ -102,7 +102,11 @@ export function ProductTabs({ product }: ProductTabsProps) {
       </TabsContent>
 
       <TabsContent value="reviews" className="mt-6">
-        <ProductReviews slug={product.slug} rating={product.rating} totalReviews={product.reviewCount} />
+        <ProductReviews
+          slug={product.slug}
+          rating={product.rating}
+          totalReviews={product.reviewCount}
+        />
       </TabsContent>
     </Tabs>
   );

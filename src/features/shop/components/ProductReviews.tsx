@@ -52,13 +52,12 @@ export function ProductReviews({ slug, rating, totalReviews }: ProductReviewsPro
   );
 
   const actualTotal = reviews.length;
-  const actualRating = actualTotal > 0 
-    ? reviews.reduce((acc, curr) => acc + curr.rating, 0) / actualTotal 
-    : rating;
+  const actualRating =
+    actualTotal > 0 ? reviews.reduce((acc, curr) => acc + curr.rating, 0) / actualTotal : rating;
 
   // Tính phân bố star
-  const distribution = [5, 4, 3, 2, 1].map(star => {
-    const count = reviews.filter(r => r.rating === star).length;
+  const distribution = [5, 4, 3, 2, 1].map((star) => {
+    const count = reviews.filter((r) => r.rating === star).length;
     const pct = actualTotal > 0 ? Math.round((count / actualTotal) * 100) : 0;
     return { star, pct };
   });
@@ -184,7 +183,7 @@ export function ProductReviews({ slug, rating, totalReviews }: ProductReviewsPro
             </motion.article>
           ))
         )}
-        
+
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-3 pt-6 pb-2">
             <Button

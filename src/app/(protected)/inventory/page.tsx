@@ -27,7 +27,9 @@ export default function InventoryDashboardPage() {
 
   const totalItems = dashboard?.totalMedicines || 0; // Simplified for mockup
   const totalAlerts =
-    (nearExpiryBatches?.length || 0) + (expiredBatches?.length || 0) + (dashboard?.lowStockCount || 0);
+    (nearExpiryBatches?.length || 0) +
+    (expiredBatches?.length || 0) +
+    (dashboard?.lowStockCount || 0);
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-[48px] bg-m3-background h-full">
@@ -294,48 +296,50 @@ export default function InventoryDashboardPage() {
                 </Link>
               </div>
             ) : (
-              [...(expiredBatches || []), ...(nearExpiryBatches || [])].slice(0, 4).map((batch, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between p-4 border-b border-m3-surface-container-high hover:bg-m3-surface-container-low transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-m3-surface-container flex items-center justify-center border border-m3-outline-variant">
-                      <Syringe className="w-5 h-5 text-m3-on-surface-variant" />
-                    </div>
-                    <div>
-                      <h4 className="font-label-md text-[14px] font-semibold text-m3-on-surface">
-                        {batch.medicineName || batch.productName}
-                      </h4>
-                      <p className="font-label-sm text-[12px] text-m3-on-surface-variant">
-                        Lô: {batch.batchCode}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-6">
-                    <div className="w-32 hidden sm:block">
-                      <div className="w-full bg-m3-surface-container h-1.5 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full ${batch.isExpired ? 'bg-m3-error' : 'bg-m3-tertiary-container'}`}
-                          style={{ width: '25%' }}
-                        ></div>
+              [...(expiredBatches || []), ...(nearExpiryBatches || [])]
+                .slice(0, 4)
+                .map((batch, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-4 border-b border-m3-surface-container-high hover:bg-m3-surface-container-low transition-colors"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-m3-surface-container flex items-center justify-center border border-m3-outline-variant">
+                        <Syringe className="w-5 h-5 text-m3-on-surface-variant" />
                       </div>
-                      <p className="font-label-sm text-[12px] text-m3-on-surface-variant mt-1 text-right">
-                        Tồn: {batch.remainingQty}
-                      </p>
+                      <div>
+                        <h4 className="font-label-md text-[14px] font-semibold text-m3-on-surface">
+                          {batch.medicineName || batch.productName}
+                        </h4>
+                        <p className="font-label-sm text-[12px] text-m3-on-surface-variant">
+                          Lô: {batch.batchCode}
+                        </p>
+                      </div>
                     </div>
-                    <span
-                      className={`px-3 py-1 rounded-full font-label-sm text-[12px] font-medium ${
-                        batch.isExpired
-                          ? 'bg-m3-error-container text-m3-error'
-                          : 'bg-m3-tertiary-fixed text-m3-on-tertiary-fixed'
-                      }`}
-                    >
-                      {batch.isExpired ? 'Đã hết hạn' : 'Sắp hết hạn'}
-                    </span>
+                    <div className="flex items-center gap-6">
+                      <div className="w-32 hidden sm:block">
+                        <div className="w-full bg-m3-surface-container h-1.5 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${batch.isExpired ? 'bg-m3-error' : 'bg-m3-tertiary-container'}`}
+                            style={{ width: '25%' }}
+                          ></div>
+                        </div>
+                        <p className="font-label-sm text-[12px] text-m3-on-surface-variant mt-1 text-right">
+                          Tồn: {batch.remainingQty}
+                        </p>
+                      </div>
+                      <span
+                        className={`px-3 py-1 rounded-full font-label-sm text-[12px] font-medium ${
+                          batch.isExpired
+                            ? 'bg-m3-error-container text-m3-error'
+                            : 'bg-m3-tertiary-fixed text-m3-on-tertiary-fixed'
+                        }`}
+                      >
+                        {batch.isExpired ? 'Đã hết hạn' : 'Sắp hết hạn'}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))
+                ))
             )}
           </div>
         </div>
