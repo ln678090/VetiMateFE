@@ -31,6 +31,12 @@ interface OrderDetail {
   code: string;
   createdAt: string;
   totalAmount: number;
+  status: string;
+  shippingFee: number;
+  finalAmount: number;
+  paymentMethod: string;
+  shippingAddress?: string;
+  note?: string;
   items: OrderItem[];
 }
 const formatDate = (dateStr: string, includeYear = true) => {

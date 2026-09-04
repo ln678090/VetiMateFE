@@ -79,6 +79,13 @@ export const shopService = {
     const data = await unwrap<Product[]>(publicApi.get(`${BASE}/featured`, { params: { limit } }));
     return data.map(toCardCompat);
   },
+
+  async getProductReviews(slug: string): Promise<{ id: string; rating: number; comment: string; userName: string; helpful: number; createdAt: string }[]> {
+    const data = await unwrap<{ id: string; rating: number; comment: string; userName: string; helpful: number; createdAt: string }[]>(
+      publicApi.get(`${BASE}/${slug}/reviews`)
+    );
+    return data;
+  },
 };
 
 export type ShopService = typeof shopService;

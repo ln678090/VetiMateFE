@@ -20,8 +20,17 @@ interface ProductReviewsProps {
   totalReviews: number;
 }
 
+interface Review {
+  id: string;
+  rating: number;
+  comment: string;
+  userName: string;
+  helpful: number;
+  createdAt: string;
+}
+
 export function ProductReviews({ slug, rating, totalReviews }: ProductReviewsProps) {
-  const { data: reviews = [], isLoading } = useQuery({
+  const { data: reviews = [], isLoading } = useQuery<Review[]>({
     queryKey: ['product-reviews', slug],
     queryFn: () => shopService.getProductReviews(slug),
   });
