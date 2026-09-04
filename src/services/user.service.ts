@@ -29,7 +29,8 @@ export const userService = {
     size: number = 12,
     startDate?: string,
     endDate?: string
-  ): Promise<any> { // eslint-disable-line @typescript-eslint/no-explicit-any
+  ): Promise<any> {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const params: Record<string, any> = { page, size };
     if (startDate) params.startDate = startDate;
@@ -42,7 +43,8 @@ export const userService = {
     size: number = 12,
     startDate?: string,
     endDate?: string
-  ): Promise<any> { // eslint-disable-line @typescript-eslint/no-explicit-any
+  ): Promise<any> {
+    // eslint-disable-line @typescript-eslint/no-explicit-any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const params: Record<string, any> = { page, size };
     if (startDate) params.startDate = startDate;

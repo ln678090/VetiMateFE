@@ -35,6 +35,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
     enabled: !!product?.id,
   });
 
+<<<<<<< Updated upstream
   const [wished, setWished] = useState(false);
 
   useEffect(() => {
@@ -43,10 +44,18 @@ export function ProductInfo({ product }: ProductInfoProps) {
       setWished(isFavorited);
     }
   }, [isFavorited]);
+=======
+  const originalPrice = product.originalPrice;
+  const hasDiscount = originalPrice != null && originalPrice > product.price;
+>>>>>>> Stashed changes
 
   const hasDiscount = product.originalPrice && product.originalPrice > product.price;
   const discountPct = hasDiscount
+<<<<<<< Updated upstream
     ? Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100)
+=======
+    ? Math.round(((originalPrice! - product.price) / originalPrice!) * 100)
+>>>>>>> Stashed changes
     : 0;
 
   useEffect(() => {
@@ -153,7 +162,12 @@ export function ProductInfo({ product }: ProductInfoProps) {
         <span className="text-3xl font-bold text-rose-600 md:text-4xl dark:text-rose-400">
           {formatVND(product.price)}
         </span>
+<<<<<<< Updated upstream
         {hasDiscount && (
+=======
+
+        {hasDiscount && originalPrice != null && (
+>>>>>>> Stashed changes
           <>
             <span className="text-lg text-zinc-400 line-through dark:text-zinc-600">
               {formatVND(product.originalPrice!)}

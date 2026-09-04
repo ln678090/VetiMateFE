@@ -53,7 +53,18 @@ export function CheckoutForm() {
   const totalItems = selectedItems.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = selectedItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const shippingFee = totalPrice >= 500000 ? 0 : 30000;
+<<<<<<< Updated upstream
   const finalPrice = totalPrice + shippingFee;
+=======
+
+  const { data: myVouchers } = useQuery({
+    queryKey: ['loyalty', 'myVouchers'],
+    queryFn: getMyVouchers,
+  });
+
+  const availableVouchers =
+    myVouchers?.filter((uv) => !uv.isUsed && uv.voucher.minOrderAmount <= totalPrice) || [];
+>>>>>>> Stashed changes
 
   const form = useForm<CheckoutInput>({
     resolver: zodResolver(checkoutSchema),
@@ -83,6 +94,33 @@ export function CheckoutForm() {
     }
   }, [selectedCityName, form]);
 
+<<<<<<< Updated upstream
+=======
+  const selectedVoucherId = form.watch('userVoucherId');
+  const selectedVoucher =
+    selectedVoucherId && selectedVoucherId !== 'none'
+      ? availableVouchers.find((uv) => uv.id === selectedVoucherId)?.voucher
+      : undefined;
+
+  let discount = 0;
+  if (selectedVoucher) {
+    if (selectedVoucher.discountType === 'FIXED') {
+      discount = selectedVoucher.discountValue;
+    } else {
+      discount = (totalPrice * selectedVoucher.discountValue) / 100;
+      if (
+        selectedVoucher.maxDiscount != null &&
+        selectedVoucher.maxDiscount > 0 &&
+        discount > selectedVoucher.maxDiscount
+      ) {
+        discount = selectedVoucher.maxDiscount;
+      }
+    }
+  }
+
+  const finalPrice = Math.max(0, totalPrice - discount) + shippingFee;
+
+>>>>>>> Stashed changes
   const onSubmit = async (data: CheckoutInput) => {
     setIsSubmitting(true);
     
@@ -91,8 +129,15 @@ export function CheckoutForm() {
         ...data,
         items: selectedItems.map(item => ({
           productId: item.product.id,
+<<<<<<< Updated upstream
           quantity: item.quantity
         }))
+=======
+          quantity: item.quantity,
+        })),
+        userVoucherId:
+          data.userVoucherId && data.userVoucherId !== 'none' ? data.userVoucherId : undefined,
+>>>>>>> Stashed changes
       };
 
       await orderService.checkout(payload);
@@ -106,7 +151,11 @@ export function CheckoutForm() {
       router.push('/profile/orders');
     } catch (error: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
       toast.error('Đặt hàng thất bại', {
+<<<<<<< Updated upstream
         description: error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại sau.'
+=======
+        description: error.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại sau.',
+>>>>>>> Stashed changes
       });
     } finally {
       setIsSubmitting(false);
@@ -240,6 +289,54 @@ export function CheckoutForm() {
               </div>
             </div>
           </div>
+<<<<<<< Updated upstream
+=======
+
+          {/* Voucher Section */}
+          <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8 dark:border-zinc-800 dark:bg-zinc-950">
+            <h2 className="mb-8 text-xl font-bold text-zinc-900 dark:text-white">
+              Mã Giảm Giá / Voucher
+            </h2>
+
+            <FormField
+              control={form.control}
+              name="userVoucherId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      value={field.value}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Chọn Voucher của bạn" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Không sử dụng voucher</SelectItem>
+                        {availableVouchers.map((uv) => (
+                          <SelectItem key={uv.id} value={uv.id}>
+                            {uv.voucher.code} - Giảm{' '}
+                            {uv.voucher.discountType === 'FIXED'
+                              ? formatVND(uv.voucher.discountValue)
+                              : `${uv.voucher.discountValue}%`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {availableVouchers.length === 0 && (
+              <p className="mt-2 text-sm text-zinc-500">
+                Bạn không có voucher nào phù hợp cho đơn hàng này.
+              </p>
+            )}
+          </div>
+>>>>>>> Stashed changes
 
           {/* Payment Method Section */}
           <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8 dark:border-zinc-800 dark:bg-zinc-950">

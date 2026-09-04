@@ -93,7 +93,15 @@ export function ProductTabs({ product }: ProductTabsProps) {
       </TabsContent>
 
       <TabsContent value="reviews" className="mt-6">
+<<<<<<< Updated upstream
         <ProductReviews rating={product.rating} totalReviews={product.reviewCount} />
+=======
+        <ProductReviews
+          slug={product.slug}
+          rating={product.rating}
+          totalReviews={product.reviewCount}
+        />
+>>>>>>> Stashed changes
       </TabsContent>
     </Tabs>
   );

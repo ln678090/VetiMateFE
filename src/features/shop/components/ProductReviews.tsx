@@ -48,6 +48,7 @@ interface ProductReviewsProps {
   totalReviews: number;
 }
 
+<<<<<<< Updated upstream
 export function ProductReviews({ rating, totalReviews }: ProductReviewsProps) {
   // Tính phân bố star (mock)
   const distribution = [
@@ -57,6 +58,38 @@ export function ProductReviews({ rating, totalReviews }: ProductReviewsProps) {
     { star: 2, pct: 2 },
     { star: 1, pct: 2 },
   ];
+=======
+export function ProductReviews({ slug, rating, totalReviews }: ProductReviewsProps) {
+  const { data: reviews = [], isLoading } = useQuery({
+    queryKey: ['product-reviews', slug],
+    queryFn: () => shopService.getProductReviews(slug),
+  });
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  const sortedReviews = [...reviews].sort((a, b) => {
+    if (b.helpful !== a.helpful) return b.helpful - a.helpful;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  const totalPages = Math.ceil(sortedReviews.length / itemsPerPage);
+  const paginatedReviews = sortedReviews.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const actualTotal = reviews.length;
+  const actualRating =
+    actualTotal > 0 ? reviews.reduce((acc, curr) => acc + curr.rating, 0) / actualTotal : rating;
+
+  // Tính phân bố star
+  const distribution = [5, 4, 3, 2, 1].map((star) => {
+    const count = reviews.filter((r) => r.rating === star).length;
+    const pct = actualTotal > 0 ? Math.round((count / actualTotal) * 100) : 0;
+    return { star, pct };
+  });
+>>>>>>> Stashed changes
 
   return (
     <div className="grid grid-cols-1 gap-8 md:grid-cols-[280px_1fr]">
@@ -168,9 +201,41 @@ export function ProductReviews({ rating, totalReviews }: ProductReviewsProps) {
                   Hữu ích ({review.helpful})
                 </Button>
               </div>
+<<<<<<< Updated upstream
             </div>
           </motion.article>
         ))}
+=======
+            </motion.article>
+          ))
+        )}
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-3 pt-6 pb-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="border-zinc-200 dark:border-zinc-800 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            >
+              Trước đó
+            </Button>
+            <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+              Trang {currentPage} / {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="border-zinc-200 dark:border-zinc-800 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            >
+              Tiếp theo
+            </Button>
+          </div>
+        )}
+>>>>>>> Stashed changes
       </div>
     </div>
   );

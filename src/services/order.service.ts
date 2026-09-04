@@ -36,5 +36,20 @@ export const orderService = {
   processCancelRequest: async ({ id, accept }: { id: string; accept: boolean }): Promise<Order> => {
     const response = await api.post<Order>(`/api/orders/${id}/process-cancel-request`, { accept });
     return response.data;
+<<<<<<< Updated upstream
   }
+=======
+  },
+
+  reviewOrder: async ({
+    id,
+    reviews,
+  }: {
+    id: string;
+    reviews: { productId: string; rating: number; comment?: string }[];
+  }): Promise<Order> => {
+    const response = await api.post<Order>(`/api/orders/${id}/review`, { reviews });
+    return response.data;
+  },
+>>>>>>> Stashed changes
 };

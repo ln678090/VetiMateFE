@@ -19,7 +19,6 @@ import { Banknote, CreditCard, Loader2, Landmark, Phone, Calendar } from 'lucide
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 
-
 interface BillingSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;

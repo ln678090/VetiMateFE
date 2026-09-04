@@ -240,6 +240,7 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
                 )}
               />
 
+<<<<<<< Updated upstream
               <FormField
                 control={form.control}
                 name="stockQuantity"
@@ -254,6 +255,8 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
                 )}
               />
 
+=======
+>>>>>>> Stashed changes
               <FormField
                 control={form.control}
                 name="petType"
