@@ -49,7 +49,7 @@ export default function VouchersPage() {
       </div>
 
       <VoucherTable
-        data={pageData?.content}
+        data={pageData?.items || []}
         isLoading={isLoading}
         typeFilter={typeFilter}
         statusFilter={statusFilter}

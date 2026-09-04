@@ -20,6 +20,7 @@ interface CartItem {
 
 interface OrderItem {
   id: string;
+  productId: string;
   productImage?: string;
   productName: string;
   quantity: number;

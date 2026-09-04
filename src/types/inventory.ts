@@ -21,38 +21,41 @@ export interface SupplierRequest {
 export interface MedicineResp {
   id: string;
   name: string;
+  sku?: string;
   unit: string;
-  description?: string;
-  supplierId: string;
-  supplierName?: string;
-  stockQuantity: number;
-  minStockLevel: number;
+  minStock: number;
+  importPrice: number;
+  sellPrice: number;
   isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
+  totalStock: number;
 }
 
 export interface MedicineRequest {
   name: string;
+  sku?: string;
   unit: string;
-  description?: string;
-  supplierId: string;
-  minStockLevel?: number;
+  minStock: number;
+  importPrice: number;
+  sellPrice: number;
 }
 
 // ===== Stock Batch =====
 export interface StockBatchResp {
   id: string;
+  batchCode: string;
+  quantity: number;
+  remainingQty: number;
+  importPrice: number;
+  expiryDate: string;
+  receivedAt: string;
   medicineId?: string;
   medicineName?: string;
   productId?: string;
   productName?: string;
-  batchNumber: string;
-  quantity: number;
-  remainingQuantity: number;
-  expiryDate: string;
-  importDate: string;
-  createdAt: string;
+  supplierId?: string;
+  supplierName?: string;
+  isExpired: boolean;
+  isNearExpiry: boolean;
 }
 
 // ===== Voucher =====
@@ -61,46 +64,46 @@ export type VoucherStatus = 'PENDING' | 'APPROVED' | 'CANCELLED';
 
 export interface VoucherItem {
   id?: string;
-  medicineId: string;
+  medicineId?: string;
   medicineName?: string;
+  productId?: string;
   productName?: string;
+  batchCode?: string;
   quantity: number;
   unitPrice: number;
-  batchNumber?: string;
-  batchCode?: string;
-  expiryDate?: string;
   note?: string;
 }
 
 export interface StockVoucherResp {
   id: string;
-  code: string;
   type: VoucherType;
   status: VoucherStatus;
-  supplierId?: string;
-  supplierName?: string;
-  note?: string;
-  totalAmount: number;
-  items: VoucherItem[];
   createdBy?: string;
   approvedBy?: string;
+  approvedAt?: string;
+  note?: string;
+  items: VoucherItem[];
   createdAt: string;
   updatedAt: string;
+  itemCount: number;
 }
 
-export interface CreateVoucherItem {
-  medicineId: string;
+export interface VoucherItemRequest {
+  medicineId?: string;
+  productId?: string;
+  batchId?: string;
   quantity: number;
-  unitPrice: number;
-  batchNumber?: string;
+  unitPrice?: number;
+  note?: string;
+  batchCode?: string;
   expiryDate?: string;
+  supplierId?: string;
 }
 
 export interface CreateVoucherRequest {
   type: VoucherType;
-  supplierId?: string;
   note?: string;
-  items: CreateVoucherItem[];
+  items: VoucherItemRequest[];
 }
 
 // ===== Pagination =====

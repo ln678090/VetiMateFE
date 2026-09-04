@@ -22,9 +22,11 @@ interface ProductReviewsProps {
 
 interface Review {
   id: string;
+  user: string;
+  avatar?: string;
   rating: number;
-  comment: string;
-  userName: string;
+  title?: string;
+  content: string;
   helpful: number;
   createdAt: string;
 }

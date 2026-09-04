@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createVoucher, updateVoucher } from '@/features/loyalty/api/loyalty.api';
-import { Voucher, CreateVoucherReq, DiscountType } from '@/features/loyalty/types/loyalty.types';
+import { Voucher, CreateVoucherReq } from '@/features/loyalty/types/loyalty.types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Form,
@@ -30,12 +30,12 @@ import { toast } from 'sonner';
 const schema = z.object({
   code: z.string().min(1, 'Mã voucher là bắt buộc'),
   description: z.string().optional(),
-  discountType: z.enum(['PERCENTAGE', 'FIXED']),
+  discountType: z.enum(['PERCENT', 'FIXED']),
   discountValue: z.coerce.number().min(0, 'Phải lớn hơn hoặc bằng 0'),
   minOrderAmount: z.coerce.number().min(0).optional(),
-  maxDiscount: z.coerce.number().min(0).optional(),
-  pointsRequired: z.coerce.number().min(0, 'Phải lớn hơn hoặc bằng 0'),
-  usageLimit: z.coerce.number().min(1).optional().or(z.literal(0)),
+  maxDiscount: z.coerce.number().min(0, 'Giảm giá tối đa phải >= 0').optional(),
+  pointCost: z.coerce.number().min(0, 'Điểm yêu cầu phải >= 0'),
+  maxUsage: z.coerce.number().min(0, 'Giới hạn số lần sử dụng phải >= 0'),
   requiredTier: z.string().optional(),
   startDate: z.string().optional().or(z.literal('')),
   endDate: z.string().optional().or(z.literal('')),
@@ -59,13 +59,13 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
     defaultValues: {
       code: '',
       description: '',
-      discountType: 'PERCENTAGE',
+      discountType: 'PERCENT',
       discountValue: 0,
       minOrderAmount: 0,
       maxDiscount: 0,
-      pointsRequired: 0,
-      requiredTier: 'ALL',
-      usageLimit: 0,
+      pointCost: 0,
+      requiredTier: 'STANDARD',
+      maxUsage: 0,
       startDate: '',
       endDate: '',
       isActive: true,
@@ -81,9 +81,9 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
         discountValue: initialData.discountValue,
         minOrderAmount: initialData.minOrderAmount,
         maxDiscount: initialData.maxDiscount || 0,
-        pointsRequired: initialData.pointsRequired,
-        requiredTier: initialData.requiredTier || 'ALL',
-        usageLimit: initialData.usageLimit || 0,
+        pointCost: initialData.pointCost,
+        requiredTier: initialData.requiredTier || 'STANDARD',
+        maxUsage: initialData.maxUsage || 0,
         startDate: initialData.startDate ? initialData.startDate.substring(0, 16) : '',
         endDate: initialData.endDate ? initialData.endDate.substring(0, 16) : '',
         isActive: initialData.isActive,
@@ -92,13 +92,13 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
       form.reset({
         code: '',
         description: '',
-        discountType: 'PERCENTAGE',
+        discountType: 'PERCENT',
         discountValue: 0,
         minOrderAmount: 0,
         maxDiscount: 0,
-        pointsRequired: 0,
-        requiredTier: 'ALL',
-        usageLimit: 0,
+        pointCost: 0,
+        requiredTier: 'STANDARD',
+        maxUsage: 0,
         startDate: '',
         endDate: '',
         isActive: true,
@@ -133,19 +133,13 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
   const onSubmit = (values: FormValues) => {
     const req: CreateVoucherReq = {
       ...values,
-      requiredTier: values.requiredTier === 'ALL' ? undefined : values.requiredTier,
-      usageLimit: values.usageLimit === 0 ? undefined : values.usageLimit,
+      name: values.code,
+      discountType: values.discountType as 'PERCENT' | 'FIXED',
+      requiredTier: values.requiredTier as 'STANDARD' | 'BRONZE' | 'SILVER' | 'GOLD' | 'DIAMOND' | undefined,
+      maxUsage: values.maxUsage === 0 ? undefined : values.maxUsage,
       maxDiscount: values.maxDiscount === 0 ? undefined : values.maxDiscount,
-      startDate: values.startDate
-        ? values.startDate.length === 16
-          ? values.startDate + ':00'
-          : values.startDate
-        : undefined,
-      endDate: values.endDate
-        ? values.endDate.length === 16
-          ? values.endDate + ':00'
-          : values.endDate
-        : undefined,
+      startDate: values.startDate ? new Date(values.startDate).toISOString() : '',
+      endDate: values.endDate ? new Date(values.endDate).toISOString() : '',
     };
 
     if (initialData) {
@@ -205,7 +199,7 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="PERCENTAGE">Theo phần trăm (%)</SelectItem>
+                        <SelectItem value="PERCENT">Phần trăm (%)</SelectItem>
                         <SelectItem value="FIXED">Số tiền cố định (VND)</SelectItem>
                       </SelectContent>
                     </Select>
@@ -264,7 +258,7 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
               name="requiredTier"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Hạng yêu cầu (để trống nếu dành cho mọi hạng)</FormLabel>
+                  <FormLabel>Hạng yêu cầu</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -276,12 +270,11 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="ALL">-- Dành cho mọi hạng --</SelectItem>
-                      <SelectItem value="MEMBER">Tiêu chuẩn (MEMBER)</SelectItem>
-                      <SelectItem value="BRONZE">Hạng Đồng (BRONZE)</SelectItem>
-                      <SelectItem value="SILVER">Hạng Bạc (SILVER)</SelectItem>
-                      <SelectItem value="GOLD">Hạng Vàng (GOLD)</SelectItem>
-                      <SelectItem value="DIAMOND">Hạng Kim Cương (DIAMOND)</SelectItem>
+                      <SelectItem value="STANDARD">Tiêu chuẩn</SelectItem>
+                      <SelectItem value="BRONZE">Đồng</SelectItem>
+                      <SelectItem value="SILVER">Bạc</SelectItem>
+                      <SelectItem value="GOLD">Vàng</SelectItem>
+                      <SelectItem value="DIAMOND">Kim Cương</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -322,7 +315,7 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control as any}
-                name="pointsRequired"
+                name="pointCost"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Điểm cần đổi (0 = Miễn phí)</FormLabel>
@@ -336,7 +329,7 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
 
               <FormField
                 control={form.control as any}
-                name="usageLimit"
+                name="maxUsage"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Số lượng mã (0 = Không giới hạn)</FormLabel>

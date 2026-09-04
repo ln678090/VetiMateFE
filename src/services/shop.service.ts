@@ -80,8 +80,8 @@ export const shopService = {
     return data.map(toCardCompat);
   },
 
-  async getProductReviews(slug: string): Promise<{ id: string; rating: number; comment: string; userName: string; helpful: number; createdAt: string }[]> {
-    const data = await unwrap<{ id: string; rating: number; comment: string; userName: string; helpful: number; createdAt: string }[]>(
+  async getProductReviews(slug: string): Promise<{ id: string; user: string; avatar?: string; rating: number; title?: string; content: string; helpful: number; createdAt: string }[]> {
+    const data = await unwrap<{ id: string; user: string; avatar?: string; rating: number; title?: string; content: string; helpful: number; createdAt: string }[]>(
       publicApi.get(`${BASE}/${slug}/reviews`)
     );
     return data;

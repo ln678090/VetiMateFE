@@ -102,9 +102,9 @@ export function VoucherTable({ data, isLoading, onEdit }: VoucherTableProps) {
                     <span className="text-xs text-muted-foreground">Tất cả</span>
                   )}
                 </TableCell>
-                <TableCell>{item.pointsRequired}</TableCell>
+                <TableCell>{item.pointCost}</TableCell>
                 <TableCell>
-                  {item.usedCount} / {item.usageLimit || '∞'}
+                  {item.usedCount} / {item.maxUsage || '∞'}
                 </TableCell>
                 <TableCell>
                   {item.isActive ? (

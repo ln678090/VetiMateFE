@@ -1,6 +1,8 @@
 export interface PointsResponse {
   totalPoints: number;
   availablePoints: number;
+  tier?: 'STANDARD' | 'BRONZE' | 'SILVER' | 'GOLD' | 'DIAMOND' | 'MEMBER';
+  totalSpending?: number;
 }
 
 export interface PointTransaction {
@@ -23,6 +25,7 @@ export interface Voucher {
   maxUsage: number;
   usedCount: number;
   pointCost: number;
+  requiredTier?: 'STANDARD' | 'BRONZE' | 'SILVER' | 'GOLD' | 'DIAMOND';
   startDate: string;
   endDate: string;
   isActive: boolean;
@@ -48,6 +51,7 @@ export interface CreateVoucherReq {
   minOrderAmount?: number;
   maxUsage?: number;
   pointCost: number;
+  requiredTier?: 'STANDARD' | 'BRONZE' | 'SILVER' | 'GOLD' | 'DIAMOND';
   startDate: string;
   endDate: string;
   isActive?: boolean;

@@ -15,19 +15,19 @@ import {
 } from 'lucide-react';
 import {
   useInventoryDashboard,
-  useNearExpiryBatches,
-  useExpiredBatches,
+  useNearExpiryAlerts,
+  useExpiredAlerts,
 } from '@/features/inventory/hooks/use-inventory';
 import Link from 'next/link';
 
 export default function InventoryDashboardPage() {
   const { data: dashboard, isLoading: dashLoading } = useInventoryDashboard();
-  const { data: nearExpiry, isLoading: nearLoading } = useNearExpiryBatches();
-  const { data: expired, isLoading: expiredLoading } = useExpiredBatches();
+  const { data: nearExpiryBatches = [], isLoading: nearLoading } = useNearExpiryAlerts();
+  const { data: expiredBatches = [], isLoading: expiredLoading } = useExpiredAlerts();
 
   const totalItems = dashboard?.totalMedicines || 0; // Simplified for mockup
   const totalAlerts =
-    (nearExpiry?.length || 0) + (expired?.length || 0) + (dashboard?.lowStockCount || 0);
+    (nearExpiryBatches?.length || 0) + (expiredBatches?.length || 0) + (dashboard?.lowStockCount || 0);
 
   return (
     <div className="flex-1 overflow-y-auto p-4 md:p-[48px] bg-m3-background h-full">
@@ -274,7 +274,7 @@ export default function InventoryDashboardPage() {
           <div className="flex flex-col">
             {nearLoading || expiredLoading ? (
               <div className="p-8 text-center text-m3-on-surface-variant text-sm">Đang tải...</div>
-            ) : [...(expired || []), ...(nearExpiry || [])].length === 0 ? (
+            ) : [...(expiredBatches || []), ...(nearExpiryBatches || [])].length === 0 ? (
               <div className="flex flex-col items-center justify-center p-8 text-center">
                 <div className="w-16 h-16 bg-m3-primary/10 rounded-full flex items-center justify-center mb-4 text-m3-primary">
                   <Package className="w-8 h-8" />
@@ -294,7 +294,7 @@ export default function InventoryDashboardPage() {
                 </Link>
               </div>
             ) : (
-              [...(expired || []), ...(nearExpiry || [])].slice(0, 4).map((batch, idx) => (
+              [...(expiredBatches || []), ...(nearExpiryBatches || [])].slice(0, 4).map((batch, idx) => (
                 <div
                   key={idx}
                   className="flex items-center justify-between p-4 border-b border-m3-surface-container-high hover:bg-m3-surface-container-low transition-colors"

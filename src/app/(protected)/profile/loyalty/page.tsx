@@ -106,7 +106,7 @@ export default function LoyaltyPage() {
     availableVouchers?.filter((v) => {
       if (v.endDate && new Date(v.endDate) < now) return false; // Tự động ẩn nếu đã hết hạn theo thời gian thực (client-side)
       if (!v.requiredTier) return true; // Dành cho mọi hạng (null/undefined)
-      if (v.requiredTier === 'MEMBER') return true; // Hạng tiêu chuẩn thì ai cũng dùng được
+      if (v.requiredTier === 'STANDARD') return true; // Hạng tiêu chuẩn thì ai cũng dùng được
       return v.requiredTier === points?.tier; // Các hạng khác phải match chính xác
     }) || [];
 
@@ -162,7 +162,7 @@ export default function LoyaltyPage() {
                       ? 'Bạc'
                       : points?.tier === 'BRONZE'
                         ? 'Đồng'
-                        : 'Tiêu chuẩn'}
+                        : points?.tier === 'STANDARD' ? 'Tiêu chuẩn' : 'Tiêu chuẩn'}
             </div>
             <p className="text-indigo-100 text-sm mt-2">
               Chi tiêu: {loadingPoints ? '...' : formatVND(points?.totalSpending || 0)}
@@ -266,7 +266,7 @@ export default function LoyaltyPage() {
                           variant="secondary"
                           className="bg-yellow-300 text-yellow-900 border-none shadow-sm"
                         >
-                          {voucher.pointsRequired} điểm
+                          {voucher.pointCost} điểm
                         </Badge>
                       </div>
                       <CardContent className="p-4 flex-1 flex flex-col">
@@ -299,11 +299,11 @@ export default function LoyaltyPage() {
                           className="w-full mt-auto font-medium"
                           disabled={
                             redeemMutation.isPending ||
-                            (points?.availablePoints || 0) < voucher.pointsRequired
+                            (points?.availablePoints || 0) < voucher.pointCost
                           }
                           onClick={() => handleRedeem(voucher.id)}
                         >
-                          {(points?.availablePoints || 0) < voucher.pointsRequired
+                          {(points?.availablePoints || 0) < voucher.pointCost
                             ? 'Chưa đủ điểm'
                             : 'Đổi ngay'}
                         </Button>
@@ -366,8 +366,8 @@ export default function LoyaltyPage() {
                         </div>
                         <div className="mt-2 text-xs text-slate-500">
                           <div>
-                            Đã đổi lúc:{' '}
-                            {format(new Date(uv.redeemedAt), 'HH:mm dd/MM/yyyy', { locale: vi })}
+                            Đã dùng:{' '}
+                            {uv.usedAt && format(new Date(uv.usedAt), 'HH:mm dd/MM/yyyy', { locale: vi })}
                           </div>
                           {uv.voucher.endDate && !uv.isUsed && (
                             <div className="text-red-500 font-medium mt-1">
