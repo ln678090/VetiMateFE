@@ -1,5 +1,5 @@
 import { api, unwrap } from '@/lib/axios';
-import { API_ROUTES } from '@/lib/constants';
+
 import type { UpdateProfileInput } from '@/schemas/user.schema';
 import type { ApiResp } from '@/types';
 

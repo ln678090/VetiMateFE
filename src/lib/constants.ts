@@ -24,6 +24,14 @@ export const API_ROUTES = {
     me: '/api/users/me',
     profile: '/api/users/me/profile',
   },
+  inventory: {
+    suppliers: '/api/inventory/suppliers',
+    medicines: '/api/inventory/medicines',
+    vouchers: '/api/inventory/vouchers',
+    batches: '/api/inventory/batches',
+    dashboard: '/api/inventory/dashboard',
+    alerts: '/api/inventory/alerts',
+  },
 } as const;
 
 /** Routes cần đăng nhập */
@@ -32,6 +40,7 @@ export const PROTECTED_ROUTES = [
   '/booking',
   '/cart',
   '/profile',
+  '/inventory',
   '/management',
   '/doctor',
   '/staff',

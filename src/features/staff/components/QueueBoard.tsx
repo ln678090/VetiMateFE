@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { vi } from 'date-fns/locale';
+
 import { Loader2, Plus, ArrowRight, Check } from 'lucide-react';
 
 interface QueueBoardProps {

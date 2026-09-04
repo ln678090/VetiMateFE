@@ -3,7 +3,6 @@
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { toast } from 'sonner';
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
@@ -84,7 +83,7 @@ export function StaffPetFormDialog({
   }, [open, initialData, form]);
 
   const onSubmit = (values: z.input<typeof petFormSchema>) => {
-    const submitValues = values;
+    const submitValues = values as any;
     if (isEditing) {
       updateMutation.mutate(
         { id: initialData.id, data: submitValues },

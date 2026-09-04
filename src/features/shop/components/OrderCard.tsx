@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Store, Truck } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
+
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -36,9 +36,10 @@ const STATUS_MAP: Record<OrderStatus, { label: string; colorClass: string }> = {
 interface OrderCardProps {
   order: Order;
   onCancelOrder?: (orderId: string, reason: string) => void;
+  onReviewOrder?: (orderId: string) => void;
 }
 
-export function OrderCard({ order, onCancelOrder }: OrderCardProps) {
+export function OrderCard({ order, onCancelOrder, onReviewOrder }: OrderCardProps) {
   const router = useRouter();
   const addItem = useCartStore((s) => s.addItem);
   const statusInfo = STATUS_MAP[order.status];

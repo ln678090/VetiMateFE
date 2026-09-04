@@ -11,6 +11,7 @@ export const checkoutSchema = z.object({
   specificAddress: z.string().min(5, 'Vui lòng nhập địa chỉ chi tiết (ít nhất 5 ký tự)'),
   note: z.string().optional(),
   paymentMethod: z.enum(['COD', 'BANK_TRANSFER', 'VNPAY', 'MOMO']),
+  userVoucherId: z.string().optional(),
 });
 
 export type CheckoutInput = z.infer<typeof checkoutSchema>;

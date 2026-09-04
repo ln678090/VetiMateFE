@@ -3,12 +3,21 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Product } from '@/types/shop';
 import { ProductReviews } from './ProductReviews';
+import { useQuery } from '@tanstack/react-query';
+import { shopService } from '@/services/shop.service';
 
 interface ProductTabsProps {
   product: Product;
 }
 
 export function ProductTabs({ product }: ProductTabsProps) {
+  const { data: reviews = [] } = useQuery({
+    queryKey: ['product-reviews', product.slug],
+    queryFn: () => shopService.getProductReviews(product.slug),
+  });
+
+  const actualReviewCount = reviews.length > 0 ? reviews.length : 0;
+
   return (
     <Tabs defaultValue="description" className="w-full">
       <TabsList className="h-auto w-full justify-start rounded-none border-b border-zinc-200/70 bg-transparent p-0 dark:border-zinc-800/60">
@@ -28,7 +37,7 @@ export function ProductTabs({ product }: ProductTabsProps) {
           value="reviews"
           className="rounded-none border-b-2 border-transparent px-4 py-3 text-sm font-semibold data-[state=active]:border-rose-500 data-[state=active]:text-rose-600 data-[state=active]:shadow-none dark:data-[state=active]:text-rose-400"
         >
-          Đánh giá ({product.reviewCount})
+          Đánh giá ({actualReviewCount})
         </TabsTrigger>
       </TabsList>
 
@@ -93,7 +102,11 @@ export function ProductTabs({ product }: ProductTabsProps) {
       </TabsContent>
 
       <TabsContent value="reviews" className="mt-6">
-        <ProductReviews rating={product.rating} totalReviews={product.reviewCount} />
+        <ProductReviews
+          slug={product.slug}
+          rating={product.rating}
+          totalReviews={product.reviewCount}
+        />
       </TabsContent>
     </Tabs>
   );

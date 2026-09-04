@@ -1,14 +1,25 @@
 'use client';
 
-import { useState } from 'react';
-import { ShoppingCart, Search, Plus, Minus, Trash2, History, Clock, ArrowLeft } from 'lucide-react';
+import { useState, useRef, useCallback } from 'react';
+import {
+  ShoppingCart,
+  Search,
+  Plus,
+  Minus,
+  Trash2,
+  History,
+  Clock,
+  ArrowLeft,
+  Printer,
+} from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { productApi } from '@/features/shop/api/product.api';
-import { orderApi } from '@/features/shop/api/order.api';
+import { orderApi, OrderResponse } from '@/features/shop/api/order.api';
 import { Product } from '@/features/shop/types/product.types';
 import { toast } from 'sonner';
 
@@ -19,6 +30,7 @@ interface CartItem {
 
 interface OrderItem {
   id: string;
+  productId: string;
   productImage?: string;
   productName: string;
   quantity: number;
@@ -30,6 +42,12 @@ interface OrderDetail {
   code: string;
   createdAt: string;
   totalAmount: number;
+  status: string;
+  shippingFee: number;
+  finalAmount: number;
+  paymentMethod: string;
+  shippingAddress?: string;
+  note?: string;
   items: OrderItem[];
 }
 const formatDate = (dateStr: string, includeYear = true) => {
@@ -40,10 +58,188 @@ const formatDate = (dateStr: string, includeYear = true) => {
   return includeYear ? `${time} - ${date}/${d.getFullYear()}` : `${time} - ${date}`;
 };
 
+const formatFullDate = (dateStr: string) => {
+  const d = new Date(dateStr);
+  const pad = (n: number) => (n < 10 ? '0' + n : n);
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+};
+
+// ============================================================
+// Print Receipt Component (hidden on screen, visible on print)
+// ============================================================
+function PrintReceipt({ order, note }: { order: OrderResponse | null; note?: string }) {
+  if (!order) return null;
+  return (
+    <div
+      id="print-receipt"
+      style={{
+        display: 'none',
+        fontFamily: "'Courier New', Courier, monospace",
+        fontSize: '13px',
+        width: '80mm',
+        padding: '8mm 5mm',
+        color: '#000',
+        background: '#fff',
+      }}
+    >
+      {/* Header */}
+      <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 2px' }}>
+          PetCare Vet Shop
+        </h2>
+        <p style={{ margin: '0', fontSize: '11px' }}>Phòng khám thú y &amp; Shop thú cưng</p>
+        <p style={{ margin: '2px 0 0', fontSize: '11px' }}>Hotline: 0123 456 789</p>
+      </div>
+
+      <div style={{ borderTop: '1px dashed #000', margin: '6px 0' }} />
+
+      <div style={{ textAlign: 'center', marginBottom: '6px' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0 }}>HÓA ĐƠN BÁN HÀNG</h3>
+      </div>
+
+      {/* Order info */}
+      <div style={{ marginBottom: '6px', fontSize: '12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span>Mã HĐ:</span>
+          <span style={{ fontWeight: 'bold' }}>{order.code}</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span>Ngày:</span>
+          <span>{formatFullDate(order.createdAt)}</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span>Thanh toán:</span>
+          <span>{order.paymentMethod === 'CASH' ? 'Tiền mặt' : order.paymentMethod}</span>
+        </div>
+      </div>
+
+      <div style={{ borderTop: '1px dashed #000', margin: '6px 0' }} />
+
+      {/* Items list */}
+      <div style={{ fontSize: '12px' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            borderBottom: '1px solid #000',
+            padding: '2px 0',
+            fontWeight: 'bold',
+          }}
+        >
+          <span>Sản phẩm</span>
+          <span>T.Tiền</span>
+        </div>
+        {order.items.map((item, idx) => (
+          <div key={item.id} style={{ borderBottom: '1px dotted #ccc', padding: '4px 0' }}>
+            <div style={{ fontWeight: 500 }}>
+              {idx + 1}. {item.productName}
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: '11px',
+                marginTop: '1px',
+              }}
+            >
+              <span style={{ color: '#555' }}>
+                {item.quantity} x {item.price.toLocaleString('vi-VN')}
+              </span>
+              <span style={{ fontWeight: 'bold' }}>
+                {(item.price * item.quantity).toLocaleString('vi-VN')}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ borderTop: '1px dashed #000', margin: '6px 0' }} />
+
+      {/* Totals */}
+      <div style={{ fontSize: '12px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+          <span>Tạm tính:</span>
+          <span>{order.totalAmount.toLocaleString('vi-VN')} ₫</span>
+        </div>
+        {order.shippingFee > 0 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+            <span>Phí vận chuyển:</span>
+            <span>{order.shippingFee.toLocaleString('vi-VN')} ₫</span>
+          </div>
+        )}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            fontWeight: 'bold',
+            fontSize: '14px',
+            marginTop: '4px',
+            borderTop: '1px solid #000',
+            paddingTop: '4px',
+          }}
+        >
+          <span>TỔNG CỘNG:</span>
+          <span>{(order.finalAmount || order.totalAmount).toLocaleString('vi-VN')} ₫</span>
+        </div>
+      </div>
+
+      {/* Note */}
+      {(note || order.note) && (
+        <>
+          <div style={{ borderTop: '1px dashed #000', margin: '6px 0' }} />
+          <div style={{ fontSize: '11px' }}>
+            <span style={{ fontWeight: 'bold' }}>Ghi chú: </span>
+            <span>{note || order.note}</span>
+          </div>
+        </>
+      )}
+
+      <div style={{ borderTop: '1px dashed #000', margin: '8px 0' }} />
+
+      {/* Footer */}
+      <div style={{ textAlign: 'center', fontSize: '11px' }}>
+        <p style={{ margin: '0 0 2px' }}>Cảm ơn quý khách đã mua hàng!</p>
+        <p style={{ margin: 0, fontStyle: 'italic' }}>Hẹn gặp lại ❤</p>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// Print CSS (injected into <head> once)
+// ============================================================
+const PRINT_STYLE_ID = 'pos-print-style';
+function ensurePrintStyles() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById(PRINT_STYLE_ID)) return;
+
+  const style = document.createElement('style');
+  style.id = PRINT_STYLE_ID;
+  style.textContent = `
+    @media print {
+      /* Hide everything except the receipt */
+      body > *:not(#print-receipt-portal) { display: none !important; }
+      #print-receipt-portal { display: block !important; }
+      #print-receipt-portal #print-receipt {
+        display: block !important;
+        width: 80mm !important;
+        margin: 0 auto !important;
+      }
+      @page {
+        size: 80mm auto;
+        margin: 0;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 export default function POSPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [search, setSearch] = useState('');
-
+  const [note, setNote] = useState('');
+  const [lastOrder, setLastOrder] = useState<OrderResponse | null>(null);
+  const [lastNote, setLastNote] = useState('');
   // History state
 
   const [selectedOrder, setSelectedOrder] = useState<OrderDetail | null>(null);
@@ -84,9 +280,14 @@ export default function POSPage() {
 
   const posCheckoutMutation = useMutation({
     mutationFn: orderApi.posCheckout,
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success('Thanh toán thành công!');
+      // Save order for printing
+      const orderData = (data as any)?.data || data;
+      setLastOrder(orderData);
+      setLastNote(note);
       setCart([]);
+      setNote('');
       refetch();
       refetchHistory();
     },
@@ -94,6 +295,107 @@ export default function POSPage() {
       toast.error('Thanh toán thất bại: ' + (error as Error).message);
     },
   });
+
+  // Print function
+  const handlePrint = useCallback(
+    (orderToPrint?: OrderResponse, noteToPrint?: string) => {
+      const order = orderToPrint || lastOrder;
+      if (!order) {
+        toast.error('Không có hóa đơn để in!');
+        return;
+      }
+
+      ensurePrintStyles();
+
+      // Create a portal element for printing
+      let portal = document.getElementById('print-receipt-portal');
+      if (!portal) {
+        portal = document.createElement('div');
+        portal.id = 'print-receipt-portal';
+        portal.style.display = 'none';
+        document.body.appendChild(portal);
+      }
+
+      const printNote = noteToPrint ?? lastNote;
+
+      // Build receipt HTML
+      portal.innerHTML = `
+      <div id="print-receipt" style="font-family: 'Courier New', Courier, monospace; font-size: 13px; width: 80mm; padding: 8mm 5mm; color: #000; background: #fff;">
+        <div style="text-align: center; margin-bottom: 8px;">
+          <h2 style="font-size: 18px; font-weight: bold; margin: 0 0 2px;">PetCare Vet Shop</h2>
+          <p style="margin: 0; font-size: 11px;">Phòng khám thú y &amp; Shop thú cưng</p>
+          <p style="margin: 2px 0 0; font-size: 11px;">Hotline: 0123 456 789</p>
+        </div>
+        <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
+        <div style="text-align: center; margin-bottom: 6px;">
+          <h3 style="font-size: 16px; font-weight: bold; margin: 0;">HÓA ĐƠN BÁN HÀNG</h3>
+        </div>
+        <div style="margin-bottom: 6px; font-size: 12px;">
+          <div style="display: flex; justify-content: space-between;"><span>Mã HĐ:</span><span style="font-weight: bold;">${order.code}</span></div>
+          <div style="display: flex; justify-content: space-between;"><span>Ngày:</span><span>${formatFullDate(order.createdAt)}</span></div>
+          <div style="display: flex; justify-content: space-between;"><span>Thanh toán:</span><span>${order.paymentMethod === 'CASH' ? 'Tiền mặt' : order.paymentMethod}</span></div>
+        </div>
+        <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
+        <div style="font-size: 12px;">
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #000; padding: 2px 0; font-weight: bold;">
+            <span>Sản phẩm</span>
+            <span>T.Tiền</span>
+          </div>
+          ${order.items
+            .map(
+              (item, idx) => `
+            <div style="border-bottom: 1px dotted #ccc; padding: 4px 0;">
+              <div style="font-weight: 500;">${idx + 1}. ${item.productName}</div>
+              <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 1px;">
+                <span style="color: #555;">${item.quantity} x ${item.price.toLocaleString('vi-VN')}</span>
+                <span style="font-weight: bold;">${(item.price * item.quantity).toLocaleString('vi-VN')}</span>
+              </div>
+            </div>
+          `
+            )
+            .join('')}
+        </div>
+        <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
+        <div style="font-size: 12px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+            <span>Tạm tính:</span><span>${order.totalAmount.toLocaleString('vi-VN')} ₫</span>
+          </div>
+          ${order.shippingFee > 0 ? `<div style="display: flex; justify-content: space-between; margin-bottom: 2px;"><span>Phí vận chuyển:</span><span>${order.shippingFee.toLocaleString('vi-VN')} ₫</span></div>` : ''}
+          <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin-top: 4px; border-top: 1px solid #000; padding-top: 4px;">
+            <span>TỔNG CỘNG:</span><span>${(order.finalAmount || order.totalAmount).toLocaleString('vi-VN')} ₫</span>
+          </div>
+        </div>
+        ${
+          printNote || order.note
+            ? `
+          <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
+          <div style="font-size: 11px;"><span style="font-weight: bold;">Ghi chú: </span><span>${printNote || order.note}</span></div>
+        `
+            : ''
+        }
+        <div style="border-top: 1px dashed #000; margin: 8px 0;"></div>
+        <div style="text-align: center; font-size: 11px;">
+          <p style="margin: 0 0 2px;">Cảm ơn quý khách đã mua hàng!</p>
+          <p style="margin: 0; font-style: italic;">Hẹn gặp lại ❤</p>
+        </div>
+      </div>
+    `;
+
+      // Trigger print
+      setTimeout(() => {
+        window.print();
+      }, 100);
+    },
+    [lastOrder, lastNote]
+  );
+
+  // Print from history
+  const handlePrintHistoryOrder = useCallback(
+    (order: OrderResponse) => {
+      handlePrint(order, order.note);
+    },
+    [handlePrint]
+  );
 
   const addToCart = (product: Product) => {
     if (product.stockQuantity <= 0) {
@@ -144,6 +446,7 @@ export default function POSPage() {
 
     posCheckoutMutation.mutate({
       paymentMethod: 'CASH', // default for POS
+      note: note.trim() || undefined,
       items: cart.map((item) => ({
         productId: item.product.id,
         quantity: item.quantity,
@@ -189,6 +492,7 @@ export default function POSPage() {
                     onClick={() => addToCart(product)}
                   >
                     <div className="aspect-square bg-zinc-100 rounded-md mb-3 overflow-hidden shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={product.imageUrl}
                         alt={product.name}
@@ -258,6 +562,7 @@ export default function POSPage() {
                           key={item.product.id}
                           className="flex gap-3 bg-white border border-zinc-100 rounded-lg p-2 shadow-sm"
                         >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src={item.product.imageUrl}
                             alt={item.product.name}
@@ -301,6 +606,18 @@ export default function POSPage() {
                       ))
                     )}
                   </div>
+                  {/* Note section */}
+                  <div className="px-4 pb-2 pt-2 border-t">
+                    <label className="text-sm font-semibold text-zinc-700 mb-1.5 block">
+                      Ghi chú
+                    </label>
+                    <Textarea
+                      placeholder="Nhập ghi chú đơn hàng"
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      className="resize-none h-16 text-sm bg-zinc-50 border-zinc-200 focus:bg-white"
+                    />
+                  </div>
 
                   <div className="border-t p-4 bg-zinc-50">
                     <div className="space-y-2 mb-4">
@@ -319,13 +636,25 @@ export default function POSPage() {
                         </span>
                       </div>
                     </div>
-                    <Button
-                      className="w-full h-12 text-base font-semibold bg-orange-500 hover:bg-orange-600 text-white"
-                      disabled={cart.length === 0 || posCheckoutMutation.isPending}
-                      onClick={handleCheckout}
-                    >
-                      {posCheckoutMutation.isPending ? 'Đang xử lý...' : 'Thanh toán'}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        className="flex-1 h-12 text-base font-semibold bg-orange-500 hover:bg-orange-600 text-white"
+                        disabled={cart.length === 0 || posCheckoutMutation.isPending}
+                        onClick={handleCheckout}
+                      >
+                        {posCheckoutMutation.isPending ? 'Đang xử lý...' : 'Thanh toán'}
+                      </Button>
+                      {lastOrder && (
+                        <Button
+                          variant="outline"
+                          className="h-12 px-4 border-zinc-300 hover:bg-zinc-100"
+                          onClick={() => handlePrint()}
+                          title="In hóa đơn gần nhất"
+                        >
+                          <Printer className="w-5 h-5" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </TabsContent>
@@ -357,8 +686,10 @@ export default function POSPage() {
                       <div className="flex-1 overflow-y-auto space-y-3 pr-1">
                         {selectedOrder.items.map((item) => (
                           <div key={item.id} className="flex gap-3 items-center">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={item.productImage || '/placeholder.png'}
+                              alt=""
                               className="w-12 h-12 rounded border object-cover shrink-0"
                             />
                             <div className="flex-1 min-w-0">
@@ -382,6 +713,15 @@ export default function POSPage() {
                           {selectedOrder.totalAmount.toLocaleString('vi-VN')} ₫
                         </span>
                       </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1.5"
+                        onClick={() => handlePrintHistoryOrder(selectedOrder)}
+                      >
+                        <Printer className="w-4 h-4" />
+                        In HĐ
+                      </Button>
                     </div>
                   ) : (
                     <div className="flex flex-col flex-1 overflow-hidden">

@@ -18,6 +18,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { orderService } from '@/services/order.service';
 import { OrderStatus, Order } from '@/types/order';
+import { ReviewOrderModal } from '@/features/shop/components/ReviewOrderModal';
 
 const TABS: { value: OrderStatus | 'ALL'; label: string }[] = [
   { value: 'ALL', label: 'Tất cả' },
@@ -33,6 +34,8 @@ export default function OrdersPage() {
   const [timeRange, setTimeRange] = useState<string>('ALL');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [reviewOrderId, setReviewOrderId] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
   const { data: orders = [] } = useQuery({
@@ -99,9 +102,50 @@ export default function OrdersPage() {
     },
   });
 
+  const reviewMutation = useMutation({
+    mutationFn: ({
+      id,
+      reviews,
+    }: {
+      id: string;
+      reviews: { productId: string; rating: number; comment: string }[];
+    }) => orderService.reviewOrder({ id, reviews }),
+    onSuccess: () => {
+      toast.success('Đánh giá thành công!', {
+        description: 'Bạn đã nhận được 50 điểm thưởng.',
+      });
+      setIsReviewModalOpen(false);
+      setReviewOrderId(null);
+      queryClient.invalidateQueries({ queryKey: ['my-orders'] });
+      // Also invalidate points if they are fetched somewhere else
+      queryClient.invalidateQueries({ queryKey: ['my-points'] });
+      queryClient.invalidateQueries({ queryKey: ['loyalty-transactions'] });
+    },
+    onError: (error: any) => {
+      toast.error('Có lỗi xảy ra', {
+        description: error.response?.data?.message || 'Vui lòng thử lại sau.',
+      });
+    },
+  });
+
   const handleCancelOrder = (orderId: string, reason: string) => {
     cancelMutation.mutate({ id: orderId, reason });
   };
+
+  const handleReviewOrder = (orderId: string) => {
+    setReviewOrderId(orderId);
+    setIsReviewModalOpen(true);
+  };
+
+  const handleSubmitReview = (
+    reviews: { productId: string; rating: number; comment: string }[]
+  ) => {
+    if (reviewOrderId) {
+      reviewMutation.mutate({ id: reviewOrderId, reviews });
+    }
+  };
+
+  const reviewOrder = orders.find((o) => o.id === reviewOrderId);
 
   return (
     <div className="space-y-8">
@@ -190,7 +234,12 @@ export default function OrdersPage() {
                 className="space-y-4"
               >
                 {filteredOrders.map((order) => (
-                  <OrderCard key={order.id} order={order} onCancelOrder={handleCancelOrder} />
+                  <OrderCard
+                    key={order.id}
+                    order={order}
+                    onCancelOrder={handleCancelOrder}
+                    onReviewOrder={handleReviewOrder}
+                  />
                 ))}
               </motion.div>
             ) : (
@@ -210,6 +259,17 @@ export default function OrdersPage() {
           </TabsContent>
         ))}
       </Tabs>
+
+      <ReviewOrderModal
+        isOpen={isReviewModalOpen}
+        onClose={() => {
+          setIsReviewModalOpen(false);
+          setReviewOrderId(null);
+        }}
+        onSubmit={handleSubmitReview}
+        isSubmitting={reviewMutation.isPending}
+        items={reviewOrder?.items || []}
+      />
     </div>
   );
 }

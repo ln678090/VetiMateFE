@@ -1,8 +1,7 @@
 'use client';
-import { Phone } from 'lucide-react';
 import { RequiredLabel } from '@/components/ui/required-label';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowRight, AtSign, Lock, Mail, User } from 'lucide-react';
+import { ArrowRight, AtSign, Lock, Mail, Phone, User } from 'lucide-react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 

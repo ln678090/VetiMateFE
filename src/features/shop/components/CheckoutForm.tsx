@@ -7,8 +7,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { useQuery } from '@tanstack/react-query';
 
 import { Button } from '@/components/ui/button';
+import { getMyVouchers } from '@/features/loyalty/api/loyalty.api';
 import { orderService } from '@/services/order.service';
 import {
   Form,
@@ -56,7 +58,14 @@ export function CheckoutForm() {
     0
   );
   const shippingFee = totalPrice >= 500000 ? 0 : 30000;
-  const finalPrice = totalPrice + shippingFee;
+
+  const { data: myVouchers } = useQuery({
+    queryKey: ['loyalty', 'myVouchers'],
+    queryFn: getMyVouchers,
+  });
+
+  const availableVouchers =
+    myVouchers?.filter((uv) => !uv.isUsed && uv.voucher.minOrderAmount <= totalPrice) || [];
 
   const form = useForm<CheckoutInput>({
     resolver: zodResolver(checkoutSchema),
@@ -68,6 +77,7 @@ export function CheckoutForm() {
       specificAddress: '',
       note: '',
       paymentMethod: 'COD',
+      userVoucherId: 'none',
     },
   });
 
@@ -86,6 +96,26 @@ export function CheckoutForm() {
     }
   }, [selectedCityName, form]);
 
+  const selectedVoucherId = form.watch('userVoucherId');
+  const selectedVoucher =
+    selectedVoucherId && selectedVoucherId !== 'none'
+      ? availableVouchers.find((uv) => uv.id === selectedVoucherId)?.voucher
+      : undefined;
+
+  let discount = 0;
+  if (selectedVoucher) {
+    if (selectedVoucher.discountType === 'FIXED') {
+      discount = selectedVoucher.discountValue;
+    } else {
+      discount = (totalPrice * selectedVoucher.discountValue) / 100;
+      if (selectedVoucher.maxDiscount > 0 && discount > selectedVoucher.maxDiscount) {
+        discount = selectedVoucher.maxDiscount;
+      }
+    }
+  }
+
+  const finalPrice = Math.max(0, totalPrice - discount) + shippingFee;
+
   const onSubmit = async (data: CheckoutInput) => {
     setIsSubmitting(true);
 
@@ -96,6 +126,8 @@ export function CheckoutForm() {
           productId: item.product.id,
           quantity: item.quantity,
         })),
+        userVoucherId:
+          data.userVoucherId && data.userVoucherId !== 'none' ? data.userVoucherId : undefined,
       };
 
       await orderService.checkout(payload);
@@ -108,7 +140,6 @@ export function CheckoutForm() {
       clearCart();
       router.push('/profile/orders');
     } catch (error: unknown) {
-      // Đổi thành unknown
       const apiError = error as { response?: { data?: { message?: string } } };
       toast.error('Đặt hàng thất bại', {
         description: apiError.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại sau.',
@@ -275,6 +306,51 @@ export function CheckoutForm() {
             </div>
           </div>
 
+          {/* Voucher Section */}
+          <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8 dark:border-zinc-800 dark:bg-zinc-950">
+            <h2 className="mb-8 text-xl font-bold text-zinc-900 dark:text-white">
+              Mã Giảm Giá / Voucher
+            </h2>
+
+            <FormField
+              control={form.control}
+              name="userVoucherId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      value={field.value}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Chọn Voucher của bạn" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Không sử dụng voucher</SelectItem>
+                        {availableVouchers.map((uv) => (
+                          <SelectItem key={uv.id} value={uv.id}>
+                            {uv.voucher.code} - Giảm{' '}
+                            {uv.voucher.discountType === 'FIXED'
+                              ? formatVND(uv.voucher.discountValue)
+                              : `${uv.voucher.discountValue}%`}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {availableVouchers.length === 0 && (
+              <p className="mt-2 text-sm text-zinc-500">
+                Bạn không có voucher nào phù hợp cho đơn hàng này.
+              </p>
+            )}
+          </div>
+
           {/* Payment Method Section */}
           <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8 dark:border-zinc-800 dark:bg-zinc-950">
             <h2 className="mb-8 text-xl font-bold text-zinc-900 dark:text-white">
@@ -399,6 +475,12 @@ export function CheckoutForm() {
                     {shippingFee === 0 ? 'Miễn phí' : formatVND(shippingFee)}
                   </span>
                 </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-green-600 dark:text-green-400">
+                    <span>Voucher giảm giá</span>
+                    <span className="font-semibold">- {formatVND(discount)}</span>
+                  </div>
+                )}
               </div>
 
               <Separator className="my-6 border-zinc-200 dark:border-zinc-800" />

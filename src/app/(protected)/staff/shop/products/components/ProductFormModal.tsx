@@ -37,7 +37,6 @@ const formSchema = z.object({
   petType: z.enum(['dog', 'cat', 'both']),
   price: z.coerce.number().min(0, 'Giá không hợp lệ'),
   originalPrice: z.coerce.number().min(0, 'Giá không hợp lệ').optional(),
-  stockQuantity: z.coerce.number().min(0, 'Số lượng không hợp lệ'),
   imageUrl: z.string().min(1, 'URL ảnh không được để trống'),
   isFeatured: z.boolean(),
   isActive: z.boolean(),
@@ -75,7 +74,6 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
       petType: 'both',
       price: 0,
       originalPrice: 0,
-      stockQuantity: 0,
       imageUrl: '',
       isFeatured: false,
       isActive: true,
@@ -93,7 +91,6 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
           petType: productToEdit.petType,
           price: productToEdit.price || 0,
           originalPrice: productToEdit.originalPrice || 0,
-          stockQuantity: productToEdit.stockQuantity || 0,
           imageUrl: productToEdit.imageUrl || '',
           isFeatured: productToEdit.isFeatured ?? false,
           isActive: productToEdit.isActive ?? true,
@@ -107,7 +104,6 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
           petType: 'both',
           price: 0,
           originalPrice: 0,
-          stockQuantity: 0,
           imageUrl: '',
           isFeatured: false,
           isActive: true,
@@ -250,22 +246,6 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
                   <FormItem>
                     <FormLabel>
                       Giá bán (VNĐ) <span className="text-red-500">*</span>
-                    </FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="stockQuantity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Số lượng tồn kho <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input type="number" {...field} />
