@@ -242,12 +242,12 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     label: 'Quản lý Voucher',
     href: '/staff/shop/vouchers',
     icon: Ticket,
-    accessRoles: [ROLE.ADMIN, ROLE.SHOP_STAFF, ROLE.MANAGER],
-    sidebarRoles: [ROLE.SHOP_STAFF, ROLE.MANAGER],
-    dashboardRoles: [ROLE.SHOP_STAFF, ROLE.MANAGER],
+    accessRoles: [ROLE.ADMIN, ROLE.MANAGER],
+    sidebarRoles: [ROLE.MANAGER],
+    dashboardRoles: [ROLE.MANAGER],
     dashboardDescription: 'Quản lý mã giảm giá, voucher cho cửa hàng.',
     gradient: 'from-fuchsia-500 to-pink-500',
-    group: 'Cửa hàng',
+    group: 'Điều hành',
   },
 
   // POS tạm thuộc Shop Staff cho đến khi backend có ROLE_CASHIER.
