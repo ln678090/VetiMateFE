@@ -70,8 +70,6 @@ body {
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-<<<<<<< Updated upstream
-=======
 
   /* Material Design 3 Custom Colors */
   --color-m3-surface-dim: #dbd9d9;
@@ -134,15 +132,15 @@ body {
   --spacing-m3-md: 24px;
 
   /* Custom Fonts */
-  --font-body-sm: 'Inter';
-  --font-headline-lg-mobile: 'Inter';
-  --font-label-md: 'Inter';
-  --font-body-md: 'Inter';
-  --font-label-sm: 'Inter';
-  --font-headline-md: 'Inter';
-  --font-headline-lg: 'Inter';
-  --font-body-lg: 'Inter';
-  --font-display-lg: 'Inter';
+  --font-body-sm: "Inter";
+  --font-headline-lg-mobile: "Inter";
+  --font-label-md: "Inter";
+  --font-body-md: "Inter";
+  --font-label-sm: "Inter";
+  --font-headline-md: "Inter";
+  --font-headline-lg: "Inter";
+  --font-body-lg: "Inter";
+  --font-display-lg: "Inter";
 
   /* Custom Font Sizes */
   --text-body-sm: 14px;
@@ -183,7 +181,6 @@ body {
   --text-display-lg--line-height: 56px;
   --text-display-lg--letter-spacing: -0.02em;
   --text-display-lg--font-weight: 700;
->>>>>>> Stashed changes
 }
 
 html {

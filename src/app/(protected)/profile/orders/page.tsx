@@ -18,6 +18,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { orderService } from '@/services/order.service';
 import { OrderStatus, Order } from '@/types/order';
+import { ReviewOrderModal } from '@/features/shop/components/ReviewOrderModal';
 
 const TABS: { value: OrderStatus | 'ALL'; label: string }[] = [
   { value: 'ALL', label: 'Tất cả' },
@@ -33,14 +34,10 @@ export default function OrdersPage() {
   const [timeRange, setTimeRange] = useState<string>('ALL');
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
-<<<<<<< Updated upstream
   
-=======
-
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [reviewOrderId, setReviewOrderId] = useState<string | null>(null);
 
->>>>>>> Stashed changes
   const queryClient = useQueryClient();
   const { data: orders = [] } = useQuery({
     queryKey: ['my-orders'],
@@ -55,11 +52,11 @@ export default function OrdersPage() {
       order.items.some((item) =>
         item.productName.toLowerCase().includes(searchQuery.toLowerCase())
       );
-      
+
     let matchesDate = true;
     const orderDate = new Date(order.createdAt);
     orderDate.setHours(0, 0, 0, 0);
-    
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -106,16 +103,9 @@ export default function OrdersPage() {
     },
   });
 
-<<<<<<< Updated upstream
-=======
   const reviewMutation = useMutation({
-    mutationFn: ({
-      id,
-      reviews,
-    }: {
-      id: string;
-      reviews: { productId: string; rating: number; comment: string }[];
-    }) => orderService.reviewOrder({ id, reviews }),
+    mutationFn: ({ id, reviews }: { id: string; reviews: { productId: string; rating: number; comment: string }[] }) => 
+      orderService.reviewOrder({ id, reviews }),
     onSuccess: () => {
       toast.success('Đánh giá thành công!', {
         description: 'Bạn đã nhận được 50 điểm thưởng.',
@@ -134,32 +124,31 @@ export default function OrdersPage() {
     },
   });
 
->>>>>>> Stashed changes
   const handleCancelOrder = (orderId: string, reason: string) => {
     cancelMutation.mutate({ id: orderId, reason });
   };
 
-<<<<<<< Updated upstream
-=======
   const handleReviewOrder = (orderId: string) => {
     setReviewOrderId(orderId);
     setIsReviewModalOpen(true);
   };
 
-  const handleSubmitReview = (
-    reviews: { productId: string; rating: number; comment: string }[]
-  ) => {
+  const handleSubmitReview = (reviews: { productId: string; rating: number; comment: string }[]) => {
     if (reviewOrderId) {
       reviewMutation.mutate({ id: reviewOrderId, reviews });
     }
   };
 
-  const reviewOrder = orders.find((o) => o.id === reviewOrderId);
+  const reviewOrder = orders.find(o => o.id === reviewOrderId);
 
->>>>>>> Stashed changes
   return (
     <div className="space-y-8">
-      <Tabs defaultValue="ALL" value={activeTab} onValueChange={(v) => setActiveTab(v as OrderStatus | 'ALL')} className="w-full">
+      <Tabs
+        defaultValue="ALL"
+        value={activeTab}
+        onValueChange={(v) => setActiveTab(v as OrderStatus | 'ALL')}
+        className="w-full"
+      >
         {/* Scrollable TabsList for mobile support */}
         <div className="overflow-x-auto pb-2">
           <TabsList className="flex h-auto w-max min-w-full justify-start rounded-xl border border-zinc-200 bg-white p-1 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
@@ -181,28 +170,28 @@ export default function OrdersPage() {
             <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">Đơn Hàng Của Tôi</h1>
             <p className="mt-2 text-zinc-500">Quản lý và theo dõi trạng thái đơn hàng của bạn</p>
           </div>
-          
+
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
             {timeRange === 'CUSTOM' && (
               <div className="flex items-center gap-2">
-                <Input 
-                  type="date" 
-                  value={startDate} 
+                <Input
+                  type="date"
+                  value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
                   className="h-12 w-[130px] rounded-xl border-zinc-200 bg-white text-sm shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
                   title="Từ ngày"
                 />
                 <span className="text-zinc-400">-</span>
-                <Input 
-                  type="date" 
-                  value={endDate} 
+                <Input
+                  type="date"
+                  value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
                   className="h-12 w-[130px] rounded-xl border-zinc-200 bg-white text-sm shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
                   title="Đến ngày"
                 />
               </div>
             )}
-            
+
             <Select value={timeRange} onValueChange={setTimeRange}>
               <SelectTrigger className="!h-12 w-full lg:w-[160px] rounded-xl border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
                 <SelectValue placeholder="Thời gian" />
@@ -239,16 +228,7 @@ export default function OrdersPage() {
                 className="space-y-4"
               >
                 {filteredOrders.map((order) => (
-<<<<<<< Updated upstream
-                  <OrderCard key={order.id} order={order} onCancelOrder={handleCancelOrder} />
-=======
-                  <OrderCard
-                    key={order.id}
-                    order={order}
-                    onCancelOrder={handleCancelOrder}
-                    onReviewOrder={handleReviewOrder}
-                  />
->>>>>>> Stashed changes
+                  <OrderCard key={order.id} order={order} onCancelOrder={handleCancelOrder} onReviewOrder={handleReviewOrder} />
                 ))}
               </motion.div>
             ) : (
@@ -268,6 +248,17 @@ export default function OrdersPage() {
           </TabsContent>
         ))}
       </Tabs>
+
+      <ReviewOrderModal
+        isOpen={isReviewModalOpen}
+        onClose={() => {
+          setIsReviewModalOpen(false);
+          setReviewOrderId(null);
+        }}
+        onSubmit={handleSubmitReview}
+        isSubmitting={reviewMutation.isPending}
+        items={reviewOrder?.items || []}
+      />
     </div>
   );
 }

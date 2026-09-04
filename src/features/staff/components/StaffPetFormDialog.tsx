@@ -4,17 +4,8 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-<<<<<<< Updated upstream
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-=======
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
->>>>>>> Stashed changes
 import {
   Form,
   FormControl,
@@ -122,9 +113,7 @@ export function StaffPetFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? 'Cập nhật thú cưng' : 'Thêm thú cưng mới'}
-          </DialogTitle>
+          <DialogTitle>{isEditing ? 'Cập nhật thú cưng' : 'Thêm thú cưng mới'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -133,7 +122,9 @@ export function StaffPetFormDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tên thú cưng <span className="text-red-500">*</span></FormLabel>
+                  <FormLabel>
+                    Tên thú cưng <span className="text-red-500">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="Nhập tên thú cưng..." {...field} />
                   </FormControl>
@@ -148,11 +139,10 @@ export function StaffPetFormDialog({
                 name="species"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Loài <span className="text-red-500">*</span></FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                    <FormLabel>
+                      Loài <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Chọn loài" />
@@ -177,10 +167,7 @@ export function StaffPetFormDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Giới tính</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value || undefined}
-                    >
+                    <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Chọn giới tính" />
@@ -233,9 +220,7 @@ export function StaffPetFormDialog({
                         {...field}
                         value={field.value ?? ''}
                         onChange={(e) =>
-                          field.onChange(
-                            e.target.value ? Number(e.target.value) : null
-                          )
+                          field.onChange(e.target.value ? Number(e.target.value) : null)
                         }
                       />
                     </FormControl>
@@ -252,11 +237,7 @@ export function StaffPetFormDialog({
                 <FormItem>
                   <FormLabel>Ngày sinh</FormLabel>
                   <FormControl>
-                    <Input
-                      type="date"
-                      {...field}
-                      value={field.value || ''}
-                    />
+                    <Input type="date" {...field} value={field.value || ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

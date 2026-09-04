@@ -24,23 +24,18 @@ export const API_ROUTES = {
     me: '/api/users/me',
     profile: '/api/users/me/profile',
   },
+  inventory: {
+    suppliers: '/api/inventory/suppliers',
+    medicines: '/api/inventory/medicines',
+    vouchers: '/api/inventory/vouchers',
+    batches: '/api/inventory/batches',
+    dashboard: '/api/inventory/dashboard',
+    alerts: '/api/inventory/alerts',
+  },
 } as const;
 
 /** Routes cần đăng nhập */
-<<<<<<< Updated upstream
-export const PROTECTED_ROUTES = ['/dashboard', '/booking', '/cart', '/profile', '/management', '/doctor', '/staff'] as const;
-=======
-export const PROTECTED_ROUTES = [
-  '/dashboard',
-  '/booking',
-  '/cart',
-  '/profile',
-  '/inventory',
-  '/management',
-  '/doctor',
-  '/staff',
-] as const;
->>>>>>> Stashed changes
+export const PROTECTED_ROUTES = ['/dashboard', '/booking', '/cart', '/profile', '/inventory', '/management', '/doctor', '/staff'] as const;
 
 /** Routes auth (không cho user đã login truy cập) */
 export const AUTH_ROUTES = ['/login', '/register'] as const;
