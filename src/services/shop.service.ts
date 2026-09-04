@@ -80,9 +80,7 @@ export const shopService = {
     return data.map(toCardCompat);
   },
 
-  async getProductReviews(
-    slug: string
-  ): Promise<
+  async getProductReviews(slug: string): Promise<
     {
       id: string;
       user: string;

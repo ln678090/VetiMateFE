@@ -689,6 +689,7 @@ export default function POSPage() {
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={item.productImage || '/placeholder.png'}
+                              alt=""
                               className="w-12 h-12 rounded border object-cover shrink-0"
                             />
                             <div className="flex-1 min-w-0">

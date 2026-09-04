@@ -83,7 +83,6 @@ export function StaffPetFormDialog({
   }, [open, initialData, form]);
 
   const onSubmit = (values: z.input<typeof petFormSchema>) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const submitValues = values as any;
     if (isEditing) {
       updateMutation.mutate(
