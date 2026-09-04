@@ -5,12 +5,7 @@ import * as z from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -42,9 +37,9 @@ interface BrandFormModalProps {
 
 export function BrandFormModal({ isOpen, onClose, brandToEdit }: BrandFormModalProps) {
   const queryClient = useQueryClient();
-  
+
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema) as any,
+    resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
       description: '',
@@ -81,8 +76,10 @@ export function BrandFormModal({ isOpen, onClose, brandToEdit }: BrandFormModalP
       queryClient.invalidateQueries({ queryKey: ['brands'] });
       onClose();
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi thêm thương hiệu');
+    onError: (error: unknown) => {
+      // Đổi sang unknown ở đây
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(apiError.response?.data?.message || 'Có lỗi xảy ra khi thêm thương hiệu');
     },
   });
 
@@ -93,18 +90,19 @@ export function BrandFormModal({ isOpen, onClose, brandToEdit }: BrandFormModalP
       queryClient.invalidateQueries({ queryKey: ['brands'] });
       onClose();
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật thương hiệu');
+    onError: (error: unknown) => {
+      // Thay đổi sang unknown
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(apiError.response?.data?.message || 'Có lỗi xảy ra khi cập nhật thương hiệu');
     },
   });
-
   const onSubmit = (values: FormValues) => {
     // Convert empty string to undefined for optional fields
     const payload = {
       ...values,
       logoUrl: values.logoUrl === '' ? undefined : values.logoUrl,
     };
-    
+
     if (brandToEdit) {
       updateMutation.mutate({ id: brandToEdit.id, data: payload });
     } else {
@@ -120,7 +118,7 @@ export function BrandFormModal({ isOpen, onClose, brandToEdit }: BrandFormModalP
         <DialogHeader>
           <DialogTitle>{brandToEdit ? 'Sửa thương hiệu' : 'Thêm thương hiệu mới'}</DialogTitle>
         </DialogHeader>
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -128,7 +126,9 @@ export function BrandFormModal({ isOpen, onClose, brandToEdit }: BrandFormModalP
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tên thương hiệu <span className="text-red-500">*</span></FormLabel>
+                  <FormLabel>
+                    Tên thương hiệu <span className="text-red-500">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="Nhập tên thương hiệu..." {...field} />
                   </FormControl>
@@ -136,7 +136,7 @@ export function BrandFormModal({ isOpen, onClose, brandToEdit }: BrandFormModalP
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="logoUrl"
@@ -158,10 +158,10 @@ export function BrandFormModal({ isOpen, onClose, brandToEdit }: BrandFormModalP
                 <FormItem>
                   <FormLabel>Mô tả (Tùy chọn)</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Nhập mô tả về thương hiệu..." 
-                      className="resize-none" 
-                      {...field} 
+                    <Textarea
+                      placeholder="Nhập mô tả về thương hiệu..."
+                      className="resize-none"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -174,7 +174,7 @@ export function BrandFormModal({ isOpen, onClose, brandToEdit }: BrandFormModalP
                 Hủy
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? 'Đang lưu...' : (brandToEdit ? 'Lưu thay đổi' : 'Thêm mới')}
+                {isPending ? 'Đang lưu...' : brandToEdit ? 'Lưu thay đổi' : 'Thêm mới'}
               </Button>
             </div>
           </form>

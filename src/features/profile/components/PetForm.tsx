@@ -22,7 +22,7 @@ interface PetFormProps {
   pet?: PetDto;
   customerId?: string;
   onSubmitPet?: (values: PetFormValues) => Promise<void>;
-  
+
   // Props của Lâm
   initialValues?: PetFormValues;
   isSubmitting?: boolean;
@@ -31,16 +31,16 @@ interface PetFormProps {
   onSubmit?: (values: PetFormValues) => Promise<void>;
 }
 
-export function PetForm({ 
-  mode, 
-  pet, 
-  customerId, 
+export function PetForm({
+  mode,
+  pet,
+  customerId,
   onSubmitPet,
   initialValues,
   isSubmitting: externalIsSubmitting,
   submitLabel,
   onCancel,
-  onSubmit 
+  onSubmit,
 }: PetFormProps) {
   const router = useRouter();
 
@@ -88,7 +88,8 @@ export function PetForm({
     }
   });
 
-  const isSubmitting = externalIsSubmitting !== undefined ? externalIsSubmitting : form.formState.isSubmitting;
+  const isSubmitting =
+    externalIsSubmitting !== undefined ? externalIsSubmitting : form.formState.isSubmitting;
   const finalSubmitLabel = submitLabel || (mode === 'create' ? 'Thêm' : 'Lưu');
 
   return (
@@ -148,13 +149,7 @@ export function PetForm({
 
         <div className="space-y-2">
           <Label htmlFor="weightKg">Cân nặng kg</Label>
-          <Input
-            id="weightKg"
-            type="number"
-            step="0.1"
-            min="0"
-            {...form.register('weightKg')}
-          />
+          <Input id="weightKg" type="number" step="0.1" min="0" {...form.register('weightKg')} />
           <p className="text-sm text-red-500">{form.formState.errors.weightKg?.message}</p>
         </div>
       </div>

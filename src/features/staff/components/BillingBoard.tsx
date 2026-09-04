@@ -20,20 +20,25 @@ export const BillingBoard = () => {
   const [selectedInvoice, setSelectedInvoice] = useState<ClinicInvoiceDto | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
 
-  const filteredInvoices = invoices.filter(inv => {
+  const filteredInvoices = invoices.filter((inv) => {
     const matchFilter = filter === 'ALL' || inv.status === filter;
-    const matchSearch = inv.invoiceCode.toLowerCase().includes(search.toLowerCase()) || 
-                       (inv.customerName && inv.customerName.toLowerCase().includes(search.toLowerCase())) ||
-                       (inv.customerPhone && inv.customerPhone.includes(search));
+    const matchSearch =
+      inv.invoiceCode.toLowerCase().includes(search.toLowerCase()) ||
+      (inv.customerName && inv.customerName.toLowerCase().includes(search.toLowerCase())) ||
+      (inv.customerPhone && inv.customerPhone.includes(search));
     return matchFilter && matchSearch;
   });
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'PENDING': return <Badge className="bg-amber-500 hover:bg-amber-600">Chờ thanh toán</Badge>;
-      case 'PAID': return <Badge className="bg-green-500 hover:bg-green-600">Đã thanh toán</Badge>;
-      case 'CANCELLED': return <Badge variant="destructive">Đã hủy</Badge>;
-      default: return <Badge variant="outline">{status}</Badge>;
+      case 'PENDING':
+        return <Badge className="bg-amber-500 hover:bg-amber-600">Chờ thanh toán</Badge>;
+      case 'PAID':
+        return <Badge className="bg-green-500 hover:bg-green-600">Đã thanh toán</Badge>;
+      case 'CANCELLED':
+        return <Badge variant="destructive">Đã hủy</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
 
@@ -46,24 +51,39 @@ export const BillingBoard = () => {
     try {
       const customerData = await customerService.search('', 0, 1);
       const customer = customerData.content?.[0];
-      
+
       if (!customer) {
-        alert("Chưa có khách hàng nào trong DB để tạo demo!");
+        alert('Chưa có khách hàng nào trong DB để tạo demo!');
         return;
       }
-      
+
       createInvoice({
         customerId: customer.id,
-        note: "Hóa đơn Demo tự động",
+        note: 'Hóa đơn Demo tự động',
         items: [
-          { name: "Khám tổng quát (Demo)", quantity: 1, unitPrice: 150000, productId: "550e8400-e29b-41d4-a716-446655440201" },
-          { name: "Siêu âm ổ bụng (Demo)", quantity: 1, unitPrice: 250000, productId: "550e8400-e29b-41d4-a716-446655440202" },
-          { name: "Thuốc tiêu hóa (Demo)", quantity: 2, unitPrice: 50000, productId: "550e8400-e29b-41d4-a716-446655440203" }
-        ]
+          {
+            name: 'Khám tổng quát (Demo)',
+            quantity: 1,
+            unitPrice: 150000,
+            productId: '550e8400-e29b-41d4-a716-446655440201',
+          },
+          {
+            name: 'Siêu âm ổ bụng (Demo)',
+            quantity: 1,
+            unitPrice: 250000,
+            productId: '550e8400-e29b-41d4-a716-446655440202',
+          },
+          {
+            name: 'Thuốc tiêu hóa (Demo)',
+            quantity: 2,
+            unitPrice: 50000,
+            productId: '550e8400-e29b-41d4-a716-446655440203',
+          },
+        ],
       });
     } catch (error) {
       console.error(error);
-      alert("Lỗi khi tạo demo");
+      alert('Lỗi khi tạo demo');
     }
   };
 
@@ -73,31 +93,31 @@ export const BillingBoard = () => {
         <div className="flex gap-2 flex-1">
           <div className="relative max-w-sm w-full">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
-            <Input 
-              placeholder="Tìm mã HĐ, tên khách, SĐT..." 
+            <Input
+              placeholder="Tìm mã HĐ, tên khách, SĐT..."
               className="pl-9"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
           <div className="flex bg-slate-100 rounded-md p-1">
-            <Button 
-              variant={filter === 'ALL' ? 'default' : 'ghost'} 
+            <Button
+              variant={filter === 'ALL' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setFilter('ALL')}
             >
               Tất cả
             </Button>
-            <Button 
-              variant={filter === 'PENDING' ? 'default' : 'ghost'} 
+            <Button
+              variant={filter === 'PENDING' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setFilter('PENDING')}
               className={filter === 'PENDING' ? 'bg-amber-500 hover:bg-amber-600 text-white' : ''}
             >
               Chờ TT
             </Button>
-            <Button 
-              variant={filter === 'PAID' ? 'default' : 'ghost'} 
+            <Button
+              variant={filter === 'PAID' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setFilter('PAID')}
               className={filter === 'PAID' ? 'bg-green-500 hover:bg-green-600 text-white' : ''}
@@ -106,12 +126,16 @@ export const BillingBoard = () => {
             </Button>
           </div>
         </div>
-        <Button 
+        <Button
           className="bg-indigo-600 hover:bg-indigo-700"
           onClick={handleCreateDemoInvoice}
           disabled={isCreating}
         >
-          {isCreating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
+          {isCreating ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Plus className="mr-2 h-4 w-4" />
+          )}
           Tạo HĐ Demo
         </Button>
       </div>
@@ -123,9 +147,9 @@ export const BillingBoard = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredInvoices.length > 0 ? (
-            filteredInvoices.map(invoice => (
-              <Card 
-                key={invoice.id} 
+            filteredInvoices.map((invoice) => (
+              <Card
+                key={invoice.id}
                 className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer border-slate-200"
                 onClick={() => handleOpenInvoice(invoice)}
               >
@@ -137,11 +161,13 @@ export const BillingBoard = () => {
                     </div>
                     {getStatusBadge(invoice.status)}
                   </div>
-                  
+
                   <div className="space-y-2 text-sm text-slate-600">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-slate-400" />
-                      <span className="font-medium text-slate-800">{invoice.customerName || 'Khách vãng lai'}</span>
+                      <span className="font-medium text-slate-800">
+                        {invoice.customerName || 'Khách vãng lai'}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4 text-slate-400" />
@@ -152,7 +178,10 @@ export const BillingBoard = () => {
                   <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
                     <span className="text-sm text-slate-500">Tổng tiền</span>
                     <span className="text-lg font-bold text-slate-900">
-                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(invoice.totalAmount)}
+                      {new Intl.NumberFormat('vi-VN', {
+                        style: 'currency',
+                        currency: 'VND',
+                      }).format(invoice.totalAmount)}
                     </span>
                   </div>
                 </div>
@@ -168,11 +197,7 @@ export const BillingBoard = () => {
       )}
 
       {selectedInvoice && (
-        <BillingSheet 
-          open={sheetOpen} 
-          onOpenChange={setSheetOpen} 
-          invoice={selectedInvoice} 
-        />
+        <BillingSheet open={sheetOpen} onOpenChange={setSheetOpen} invoice={selectedInvoice} />
       )}
     </div>
   );

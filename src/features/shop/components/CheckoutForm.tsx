@@ -122,7 +122,7 @@ export function CheckoutForm() {
         ...data,
         items: selectedItems.map((item) => ({
           productId: item.product.id,
-          quantity: item.quantity
+          quantity: item.quantity,
         })),
         userVoucherId: (data.userVoucherId && data.userVoucherId !== 'none') ? data.userVoucherId : undefined
       };
@@ -136,7 +136,8 @@ export function CheckoutForm() {
       // Clear cart and redirect
       clearCart();
       router.push('/profile/orders');
-    } catch (error: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
+    } catch (error: unknown) {
+      const apiError = error as { response?: { data?: { message?: string } } };
       toast.error('Đặt hàng thất bại', {
         description: apiError.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại sau.',
       });

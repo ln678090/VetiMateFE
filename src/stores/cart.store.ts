@@ -11,7 +11,7 @@ export interface CartItem {
 interface CartState {
   items: CartItem[];
   selectedIds: string[]; // List of product IDs selected for checkout
-  
+
   // Actions
   addItem: (product: ProductCardCompat, quantity?: number) => void;
   removeItem: (productId: string) => void;
@@ -30,13 +30,11 @@ export const useCartStore = create<CartState>()(
 
       addItem: (product, quantity = 1) => {
         set((state) => {
-          const existingItemIndex = state.items.findIndex(
-            (item) => item.product.id === product.id
-          );
+          const existingItemIndex = state.items.findIndex((item) => item.product.id === product.id);
 
           // Tự động chọn item vừa được thêm nếu nó chưa được chọn
-          const newSelectedIds = state.selectedIds.includes(product.id) 
-            ? state.selectedIds 
+          const newSelectedIds = state.selectedIds.includes(product.id)
+            ? state.selectedIds
             : [...state.selectedIds, product.id];
 
           if (existingItemIndex >= 0) {
@@ -49,8 +47,11 @@ export const useCartStore = create<CartState>()(
 
           // Add new item
           return {
-            items: [...state.items, { product, quantity: Math.min(quantity, product.stockQuantity) }],
-            selectedIds: newSelectedIds
+            items: [
+              ...state.items,
+              { product, quantity: Math.min(quantity, product.stockQuantity) },
+            ],
+            selectedIds: newSelectedIds,
           };
         });
       },
@@ -58,14 +59,16 @@ export const useCartStore = create<CartState>()(
       removeItem: (productId) => {
         set((state) => ({
           items: state.items.filter((item) => item.product.id !== productId),
-          selectedIds: state.selectedIds.filter(id => id !== productId),
+          selectedIds: state.selectedIds.filter((id) => id !== productId),
         }));
       },
 
       updateQuantity: (productId, quantity) => {
         set((state) => ({
           items: state.items.map((item) =>
-            item.product.id === productId ? { ...item, quantity: Math.min(Math.max(1, quantity), item.product.stockQuantity) } : item
+            item.product.id === productId
+              ? { ...item, quantity: Math.min(Math.max(1, quantity), item.product.stockQuantity) }
+              : item
           ),
         }));
       },
@@ -77,14 +80,14 @@ export const useCartStore = create<CartState>()(
       toggleSelect: (productId) => {
         set((state) => ({
           selectedIds: state.selectedIds.includes(productId)
-            ? state.selectedIds.filter(id => id !== productId)
-            : [...state.selectedIds, productId]
+            ? state.selectedIds.filter((id) => id !== productId)
+            : [...state.selectedIds, productId],
         }));
       },
 
       selectAll: (selected) => {
         set((state) => ({
-          selectedIds: selected ? state.items.map(item => item.product.id) : []
+          selectedIds: selected ? state.items.map((item) => item.product.id) : [],
         }));
       },
 

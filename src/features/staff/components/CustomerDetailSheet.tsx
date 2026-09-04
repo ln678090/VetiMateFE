@@ -4,12 +4,7 @@ import { useState } from 'react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 import { Skeleton } from '@/components/ui/skeleton';
@@ -26,16 +21,11 @@ interface CustomerDetailSheetProps {
   customer: CustomerDto | null;
 }
 
-export function CustomerDetailSheet({
-  open,
-  onOpenChange,
-  customer,
-}: CustomerDetailSheetProps) {
-  const { data: petsData, isLoading: isLoadingPets } = useStaffPets(
+export function CustomerDetailSheet({ open, onOpenChange, customer }: CustomerDetailSheetProps) {
+  const { data: petsData, isLoading: isLoadingPets } = useStaffPets(customer?.id || '');
+  const { data: appointmentsData, isLoading: isLoadingAppointments } = useCustomerAppointments(
     customer?.id || ''
   );
-  const { data: appointmentsData, isLoading: isLoadingAppointments } =
-    useCustomerAppointments(customer?.id || '');
 
   if (!customer) return null;
 
@@ -67,7 +57,7 @@ export function CustomerDetailSheet({
                 <TabsTrigger value="pets">Danh sách Thú cưng</TabsTrigger>
                 <TabsTrigger value="history">Lịch sử Hẹn / Dịch vụ</TabsTrigger>
               </TabsList>
-              
+
               <ScrollArea className="flex-1 mt-4">
                 <TabsContent value="pets" className="m-0 space-y-4 pr-4">
                   {isLoadingPets ? (
@@ -87,12 +77,15 @@ export function CustomerDetailSheet({
                           className="p-4 rounded-xl border border-slate-200 bg-white shadow-sm"
                         >
                           <div>
-                            <h4 className="font-semibold text-lg text-slate-800">
-                              {pet.name}
-                            </h4>
+                            <h4 className="font-semibold text-lg text-slate-800">{pet.name}</h4>
                             <p className="text-sm text-slate-500">
-                              {pet.species === 'DOG' ? 'Chó' : 'Mèo'} • {pet.breed || 'Không rõ giống'} •{' '}
-                              {pet.gender === 'MALE' ? 'Đực' : pet.gender === 'FEMALE' ? 'Cái' : 'Chưa rõ giới tính'}
+                              {pet.species === 'DOG' ? 'Chó' : 'Mèo'} •{' '}
+                              {pet.breed || 'Không rõ giống'} •{' '}
+                              {pet.gender === 'MALE'
+                                ? 'Đực'
+                                : pet.gender === 'FEMALE'
+                                  ? 'Cái'
+                                  : 'Chưa rõ giới tính'}
                             </p>
                           </div>
                         </div>
@@ -116,12 +109,13 @@ export function CustomerDetailSheet({
                       {appointments.map((apt) => {
                         const date = new Date(apt.startAt);
                         return (
-                          <div
-                            key={apt.id}
-                            className="relative flex items-start gap-4"
-                          >
+                          <div key={apt.id} className="relative flex items-start gap-4">
                             <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-indigo-500 text-white shadow-sm shrink-0 z-10 relative">
-                              <svg className="fill-current w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12">
+                              <svg
+                                className="fill-current w-4 h-4"
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 12 12"
+                              >
                                 <path d="M12 10v2H7V8.496a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5V12H0V4.496a.5.5 0 0 1 .206-.4l5.5-4a.5.5 0 0 1 .588 0l5.5 4a.5.5 0 0 1 .206.4V10Z" />
                               </svg>
                             </div>
@@ -141,9 +135,11 @@ export function CustomerDetailSheet({
                                     {apt.petName}
                                   </span>
                                 </span>
-                                <Badge 
+                                <Badge
                                   variant={apt.status === 'DONE' ? 'default' : 'secondary'}
-                                  className={apt.status === 'DONE' ? 'bg-green-500 hover:bg-green-600' : ''}
+                                  className={
+                                    apt.status === 'DONE' ? 'bg-green-500 hover:bg-green-600' : ''
+                                  }
                                 >
                                   {apt.status === 'DONE' ? 'Đã xong' : apt.status}
                                 </Badge>

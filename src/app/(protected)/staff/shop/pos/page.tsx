@@ -4,8 +4,8 @@ import { useState, useRef, useCallback } from 'react';
 import { ShoppingCart, Search, Plus, Minus, Trash2, History, Clock, ArrowLeft, Printer } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { productApi } from '@/features/shop/api/product.api';
@@ -190,7 +190,6 @@ export default function POSPage() {
   const [note, setNote] = useState('');
   const [lastOrder, setLastOrder] = useState<OrderResponse | null>(null);
   const [lastNote, setLastNote] = useState('');
-  
   // History state
 
   const [selectedOrder, setSelectedOrder] = useState<OrderDetail | null>(null);
@@ -382,9 +381,9 @@ export default function POSPage() {
     if (cart.length === 0) return;
 
     posCheckoutMutation.mutate({
-      paymentMethod: 'CASH',
+      paymentMethod: 'CASH', // default for POS
       note: note.trim() || undefined,
-      items: cart.map(item => ({
+      items: cart.map((item) => ({
         productId: item.product.id,
         quantity: item.quantity,
       })),
@@ -412,34 +411,45 @@ export default function POSPage() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
+            <Button variant="outline" className="bg-white">
+              Quét mã vạch
+            </Button>
           </div>
 
           <div className="flex-1 overflow-y-auto pr-2 pb-2">
-          {isLoading ? (
-            <div className="flex justify-center items-center h-full">Đang tải sản phẩm...</div>
-          ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filteredProducts.map(product => (
-                <div 
-                  key={product.id} 
-                  className={`bg-white p-3 rounded-lg border shadow-sm cursor-pointer transition-all hover:border-orange-500 hover:shadow-md flex flex-col h-full ${product.stockQuantity <= 0 ? 'opacity-50 grayscale' : ''}`}
-                  onClick={() => addToCart(product)}
-                >
-                  <div className="aspect-square bg-zinc-100 rounded-md mb-3 overflow-hidden shrink-0">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 flex flex-col">
-                    <h3 className="text-sm font-medium line-clamp-2 mb-3" title={product.name}>{product.name}</h3>
-                    <div className="mt-auto flex flex-col gap-1.5">
-                      <span className="text-orange-600 font-bold text-base">{product.price.toLocaleString('vi-VN')} ₫</span>
-                      <span className="text-xs text-zinc-600 bg-zinc-100 px-2 py-1 rounded-md self-start font-medium border border-zinc-200">
-                        Còn lại: {product.stockQuantity}
-                      </span>
+            {isLoading ? (
+              <div className="flex justify-center items-center h-full">Đang tải sản phẩm...</div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {filteredProducts.map((product) => (
+                  <div
+                    key={product.id}
+                    className={`bg-white p-3 rounded-lg border shadow-sm cursor-pointer transition-all hover:border-orange-500 hover:shadow-md flex flex-col h-full ${product.stockQuantity <= 0 ? 'opacity-50 grayscale' : ''}`}
+                    onClick={() => addToCart(product)}
+                  >
+                    <div className="aspect-square bg-zinc-100 rounded-md mb-3 overflow-hidden shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 flex flex-col">
+                      <h3 className="text-sm font-medium line-clamp-2 mb-3" title={product.name}>
+                        {product.name}
+                      </h3>
+                      <div className="mt-auto flex flex-col gap-1.5">
+                        <span className="text-orange-600 font-bold text-base">
+                          {product.price.toLocaleString('vi-VN')} ₫
+                        </span>
+                        <span className="text-xs text-zinc-600 bg-zinc-100 px-2 py-1 rounded-md self-start font-medium border border-zinc-200">
+                          Còn lại: {product.stockQuantity}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
               </div>
             )}
           </div>
@@ -477,81 +487,108 @@ export default function POSPage() {
               >
                 <div className="flex-1 flex flex-col p-0 overflow-hidden">
                   <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                  {cart.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center text-zinc-400">
-                      <ShoppingCart className="w-12 h-12 mb-3 opacity-20" />
-                      <p>Chưa có sản phẩm nào trong giỏ</p>
-                    </div>
-                  ) : (
-                    cart.map(item => (
-                      <div key={item.product.id} className="flex gap-3 bg-white border border-zinc-100 rounded-lg p-2 shadow-sm">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={item.product.imageUrl} alt={item.product.name} className="w-16 h-16 rounded object-cover" />
-                        <div className="flex-1 flex flex-col">
-                          <h4 className="text-sm font-medium line-clamp-1">{item.product.name}</h4>
-                          <p className="text-orange-600 text-sm font-semibold mt-1">{(item.product.price * item.quantity).toLocaleString('vi-VN')} ₫</p>
-                          
-                          <div className="flex items-center justify-between mt-auto">
-                            <div className="flex items-center border rounded-md">
-                              <button 
-                                className="p-1 text-zinc-500 hover:bg-zinc-100 rounded-l-md"
-                                onClick={() => updateQuantity(item.product.id, -1)}
+                    {cart.length === 0 ? (
+                      <div className="h-full flex flex-col items-center justify-center text-zinc-400">
+                        <ShoppingCart className="w-12 h-12 mb-3 opacity-20" />
+                        <p>Chưa có sản phẩm nào trong giỏ</p>
+                      </div>
+                    ) : (
+                      cart.map((item) => (
+                        <div
+                          key={item.product.id}
+                          className="flex gap-3 bg-white border border-zinc-100 rounded-lg p-2 shadow-sm"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={item.product.imageUrl}
+                            alt={item.product.name}
+                            className="w-16 h-16 rounded object-cover"
+                          />
+                          <div className="flex-1 flex flex-col">
+                            <h4 className="text-sm font-medium line-clamp-1">
+                              {item.product.name}
+                            </h4>
+                            <p className="text-orange-600 text-sm font-semibold mt-1">
+                              {(item.product.price * item.quantity).toLocaleString('vi-VN')} ₫
+                            </p>
+
+                            <div className="flex items-center justify-between mt-auto">
+                              <div className="flex items-center border rounded-md">
+                                <button
+                                  className="p-1 text-zinc-500 hover:bg-zinc-100 rounded-l-md"
+                                  onClick={() => updateQuantity(item.product.id, -1)}
+                                >
+                                  <Minus className="w-3 h-3" />
+                                </button>
+                                <span className="text-xs font-medium w-6 text-center">
+                                  {item.quantity}
+                                </span>
+                                <button
+                                  className="p-1 text-zinc-500 hover:bg-zinc-100 rounded-r-md"
+                                  onClick={() => updateQuantity(item.product.id, 1)}
+                                >
+                                  <Plus className="w-3 h-3" />
+                                </button>
+                              </div>
+                              <button
+                                className="p-1 text-red-500 hover:bg-red-50 rounded"
+                                onClick={() => removeFromCart(item.product.id)}
                               >
                                 <Trash2 className="w-4 h-4" />
                               </button>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-                
-                {/* Note section */}
-                <div className="px-4 pb-2 pt-2 border-t">
-                  <label className="text-sm font-semibold text-zinc-700 mb-1.5 block">Ghi chú</label>
-                  <Textarea
-                    placeholder="Nhập ghi chú đơn hàng"
-                    value={note}
-                    onChange={(e) => setNote(e.target.value)}
-                    className="resize-none h-16 text-sm bg-zinc-50 border-zinc-200 focus:bg-white"
-                  />
-                </div>
-
-                <div className="border-t p-4 bg-zinc-50">
-                  <div className="space-y-2 mb-4">
-                    <div className="flex justify-between text-sm text-zinc-600">
-                      <span>Tạm tính:</span>
-                      <span>{totalAmount.toLocaleString('vi-VN')} ₫</span>
-                    </div>
-                    <div className="flex justify-between text-sm text-zinc-600">
-                      <span>Giảm giá:</span>
-                      <span>0 ₫</span>
-                    </div>
-                    <div className="flex justify-between font-bold text-lg pt-2 border-t mt-2">
-                      <span>Tổng tiền:</span>
-                      <span className="text-orange-600">{totalAmount.toLocaleString('vi-VN')} ₫</span>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      className="flex-1 h-12 text-base font-semibold bg-orange-500 hover:bg-orange-600 text-white" 
-                      disabled={cart.length === 0 || posCheckoutMutation.isPending}
-                      onClick={handleCheckout}
-                    >
-                      {posCheckoutMutation.isPending ? 'Đang xử lý...' : 'Thanh toán'}
-                    </Button>
-                    {lastOrder && (
-                      <Button
-                        variant="outline"
-                        className="h-12 px-4 border-zinc-300 hover:bg-zinc-100"
-                        onClick={() => handlePrint()}
-                        title="In hóa đơn gần nhất"
-                      >
-                        <Printer className="w-5 h-5" />
-                      </Button>
+                      ))
                     )}
+                </div>
+                  {/* Note section */}
+                  <div className="px-4 pb-2 pt-2 border-t">
+                    <label className="text-sm font-semibold text-zinc-700 mb-1.5 block">Ghi chú</label>
+                    <Textarea
+                      placeholder="Nhập ghi chú đơn hàng"
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      className="resize-none h-16 text-sm bg-zinc-50 border-zinc-200 focus:bg-white"
+                    />
                   </div>
+
+                  <div className="border-t p-4 bg-zinc-50">
+                    <div className="space-y-2 mb-4">
+                      <div className="flex justify-between text-sm text-zinc-600">
+                        <span>Tạm tính:</span>
+                        <span>{totalAmount.toLocaleString('vi-VN')} ₫</span>
+                      </div>
+                      <div className="flex justify-between text-sm text-zinc-600">
+                        <span>Giảm giá:</span>
+                        <span>0 ₫</span>
+                      </div>
+                      <div className="flex justify-between font-bold text-lg pt-2 border-t mt-2">
+                        <span>Tổng tiền:</span>
+                        <span className="text-orange-600">
+                          {totalAmount.toLocaleString('vi-VN')} ₫
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        className="flex-1 h-12 text-base font-semibold bg-orange-500 hover:bg-orange-600 text-white"
+                        disabled={cart.length === 0 || posCheckoutMutation.isPending}
+                        onClick={handleCheckout}
+                      >
+                        {posCheckoutMutation.isPending ? 'Đang xử lý...' : 'Thanh toán'}
+                      </Button>
+                      {lastOrder && (
+                        <Button
+                          variant="outline"
+                          className="h-12 px-4 border-zinc-300 hover:bg-zinc-100"
+                          onClick={() => handlePrint()}
+                          title="In hóa đơn gần nhất"
+                        >
+                          <Printer className="w-5 h-5" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </TabsContent>
@@ -561,15 +598,53 @@ export default function POSPage() {
                 className="flex-1 flex flex-col m-0 data-[state=active]:flex overflow-hidden"
               >
                 <div className="flex-1 flex flex-col p-4 overflow-hidden">
-                {selectedOrder ? (
-                  <div className="flex flex-col flex-1 overflow-hidden">
-                    <div className="flex items-center gap-2 mb-4 shrink-0 border-b pb-3">
-                      <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(null)} className="-ml-2">
-                        <ArrowLeft className="w-4 h-4" />
-                      </Button>
-                      <div className="flex-1">
-                        <h3 className="font-semibold">{selectedOrder.code}</h3>
-                        <p className="text-xs text-zinc-500">{formatDate(selectedOrder.createdAt)}</p>
+                  {selectedOrder ? (
+                    <div className="flex flex-col flex-1 overflow-hidden">
+                      <div className="flex items-center gap-2 mb-4 shrink-0 border-b pb-3">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setSelectedOrder(null)}
+                          className="-ml-2"
+                        >
+                          <ArrowLeft className="w-4 h-4" />
+                        </Button>
+                        <div>
+                          <h3 className="font-semibold">{selectedOrder.code}</h3>
+                          <p className="text-xs text-zinc-500">
+                            {formatDate(selectedOrder.createdAt)}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+                        {selectedOrder.items.map((item) => (
+                          <div key={item.id} className="flex gap-3 items-center">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={item.productImage || '/placeholder.png'}
+                              className="w-12 h-12 rounded border object-cover shrink-0"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm line-clamp-1">{item.productName}</p>
+                              <div className="flex justify-between mt-1 items-center">
+                                <p className="text-xs text-zinc-500">
+                                  {item.quantity} x {item.price.toLocaleString('vi-VN')}
+                                </p>
+                                <p className="font-semibold text-sm">
+                                  {(item.quantity * item.price).toLocaleString('vi-VN')} ₫
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="border-t pt-3 mt-3 flex justify-between items-center shrink-0">
+                        <span className="font-medium text-sm">Tổng cộng:</span>
+                        <span className="text-lg font-bold text-orange-600">
+                          {selectedOrder.totalAmount.toLocaleString('vi-VN')} ₫
+                        </span>
                       </div>
                       <Button
                         variant="outline"
@@ -581,81 +656,60 @@ export default function POSPage() {
                         In HĐ
                       </Button>
                     </div>
-
-                    <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-                      {selectedOrder.items.map((item: any) => (
-                        <div key={item.id} className="flex gap-3 items-center">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={item.productImage || '/placeholder.png'} alt={item.productName} className="w-12 h-12 rounded border object-cover shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-sm line-clamp-1">{item.productName}</p>
-                            <div className="flex justify-between mt-1 items-center">
-                              <p className="text-xs text-zinc-500">{item.quantity} x {item.price.toLocaleString('vi-VN')}</p>
-                              <p className="font-semibold text-sm">{(item.quantity * item.price).toLocaleString('vi-VN')} ₫</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {selectedOrder.note && (
-                      <div className="border-t pt-2 mt-2 shrink-0">
-                        <p className="text-xs text-zinc-500"><span className="font-medium">Ghi chú:</span> {selectedOrder.note}</p>
+                  ) : (
+                    <div className="flex flex-col flex-1 overflow-hidden">
+                      <div className="flex items-center gap-2 mb-4 shrink-0">
+                        <Input
+                          type="date"
+                          className="text-sm h-9"
+                          value={dateRange.startDate}
+                          onChange={(e) =>
+                            setDateRange((prev) => ({ ...prev, startDate: e.target.value }))
+                          }
+                        />
+                        <span className="text-zinc-400">-</span>
+                        <Input
+                          type="date"
+                          className="text-sm h-9"
+                          value={dateRange.endDate}
+                          onChange={(e) =>
+                            setDateRange((prev) => ({ ...prev, endDate: e.target.value }))
+                          }
+                        />
                       </div>
-                    )}
 
-                    <div className="border-t pt-3 mt-3 flex justify-between items-center shrink-0">
-                      <span className="font-medium text-sm">Tổng cộng:</span>
-                      <span className="text-lg font-bold text-orange-600">
-                        {selectedOrder.totalAmount.toLocaleString('vi-VN')} ₫
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-col flex-1 overflow-hidden">
-                    <div className="flex items-center gap-2 mb-4 shrink-0">
-                      <Input 
-                        type="date" 
-                        className="text-sm h-9"
-                        value={dateRange.startDate} 
-                        onChange={e => setDateRange(prev => ({...prev, startDate: e.target.value}))}
-                      />
-                      <span className="text-zinc-400">-</span>
-                      <Input 
-                        type="date" 
-                        className="text-sm h-9"
-                        value={dateRange.endDate} 
-                        onChange={e => setDateRange(prev => ({...prev, endDate: e.target.value}))}
-                      />
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto border rounded-md divide-y pr-1">
-                      {isLoadingHistory ? (
-                        <div className="p-4 text-center text-zinc-500 text-sm">Đang tải...</div>
-                      ) : historyOrders.length === 0 ? (
-                        <div className="p-4 text-center text-zinc-500 text-sm">Không có giao dịch.</div>
-                      ) : (
-                        historyOrders.map((order: any) => (
-                          <div 
-                            key={order.id} 
-                            className="p-3 hover:bg-zinc-50 cursor-pointer transition-colors"
-                            onClick={() => setSelectedOrder(order)}
-                          >
-                            <div className="flex justify-between items-start mb-1">
-                              <span className="font-medium text-sm text-blue-600">{order.code}</span>
-                              <span className="font-semibold text-sm text-orange-600">
-                                {order.totalAmount.toLocaleString('vi-VN')} ₫
-                              </span>
-                            </div>
-                            <div className="flex justify-between items-center text-xs text-zinc-500">
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {formatDate(order.createdAt, false)}
+                      <div className="flex-1 overflow-y-auto border rounded-md divide-y pr-1">
+                        {isLoadingHistory ? (
+                          <div className="p-4 text-center text-zinc-500 text-sm">Đang tải...</div>
+                        ) : historyOrders.length === 0 ? (
+                          <div className="p-4 text-center text-zinc-500 text-sm">
+                            Không có giao dịch.
+                          </div>
+                        ) : (
+                          historyOrders.map((order) => (
+                            <div
+                              key={order.id}
+                              className="p-3 hover:bg-zinc-50 cursor-pointer transition-colors"
+                              onClick={() => setSelectedOrder(order)}
+                            >
+                              <div className="flex justify-between items-start mb-1">
+                                <span className="font-medium text-sm text-blue-600">
+                                  {order.code}
+                                </span>
+                                <span className="font-semibold text-sm text-orange-600">
+                                  {order.totalAmount.toLocaleString('vi-VN')} ₫
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center text-xs text-zinc-500">
+                                <div className="flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  {formatDate(order.createdAt, false)}
+                                </div>
+                                <span>{order.items.length} SP</span>
                               </div>
                             </div>
-                          </div>
-                        ))
-                      )}
+                          ))
+                        )}
                       </div>
                     </div>
                   )}

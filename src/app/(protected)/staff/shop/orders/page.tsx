@@ -27,13 +27,10 @@ export default function OrdersPage() {
           </p>
         </div>
       </header>
-      
+
       <Card>
         <CardContent className="p-0">
-          <OrderTable 
-            items={orders as any}
-            isLoading={isLoading} 
-          />
+          <OrderTable items={orders} isLoading={isLoading} />
         </CardContent>
       </Card>
     </div>

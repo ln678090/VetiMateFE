@@ -46,18 +46,18 @@ export default function ProductsPage() {
           Thêm Sản phẩm
         </Button>
       </header>
-      
+
       <Card>
         <CardContent className="p-0">
-          <ProductTable 
-            products={productsData?.data?.items || []} 
-            isLoading={isLoading} 
+          <ProductTable
+            products={productsData?.data?.items || []}
+            isLoading={isLoading}
             onEdit={handleEdit}
           />
         </CardContent>
       </Card>
 
-      <ProductFormModal 
+      <ProductFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         productToEdit={editingProduct}

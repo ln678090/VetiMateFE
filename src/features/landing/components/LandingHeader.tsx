@@ -57,7 +57,12 @@ export function LandingHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="icon" className="relative h-10 w-10 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            className="relative h-10 w-10 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          >
             <Link href="/cart">
               <ShoppingCart className="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
               {mounted && totalItems > 0 && (

@@ -55,17 +55,21 @@ export default function CheckoutPage() {
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         >
           <div className="mb-10 flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => router.back()}
               className="h-12 w-12 rounded-full bg-white shadow-sm hover:bg-zinc-50 hover:shadow dark:bg-zinc-900 dark:hover:bg-zinc-800"
             >
               <ChevronLeft className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
             </Button>
             <div>
-              <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white">Thanh Toán</h1>
-              <p className="mt-1 text-zinc-500 dark:text-zinc-400">Vui lòng kiểm tra lại thông tin trước khi đặt hàng</p>
+              <h1 className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white">
+                Thanh Toán
+              </h1>
+              <p className="mt-1 text-zinc-500 dark:text-zinc-400">
+                Vui lòng kiểm tra lại thông tin trước khi đặt hàng
+              </p>
             </div>
           </div>
 

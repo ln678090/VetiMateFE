@@ -7,9 +7,19 @@ export const userService = {
   async updateProfile(input: UpdateProfileInput): Promise<string> {
     return unwrap(api.put<ApiResp<string>>('/api/users/me/profile', input));
   },
-  
-  async getMyProfile(): Promise<{ id: string, fullName: string, username: string, email: string, phone: string }> {
-    return unwrap(api.get<ApiResp<{ id: string, fullName: string, username: string, email: string, phone: string }>>('/api/users/me'));
+
+  async getMyProfile(): Promise<{
+    id: string;
+    fullName: string;
+    username: string;
+    email: string;
+    phone: string;
+  }> {
+    return unwrap(
+      api.get<
+        ApiResp<{ id: string; fullName: string; username: string; email: string; phone: string }>
+      >('/api/users/me')
+    );
   },
 
   async checkFavorite(productId: string): Promise<boolean> {
@@ -29,10 +39,8 @@ export const userService = {
     size: number = 12,
     startDate?: string,
     endDate?: string
-  ): Promise<any> {
-    // eslint-disable-line @typescript-eslint/no-explicit-any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const params: Record<string, any> = { page, size };
+  ): Promise<unknown> {
+    const params: Record<string, string | number> = { page, size };
     if (startDate) params.startDate = startDate;
     if (endDate) params.endDate = endDate;
     return unwrap(api.get('/api/users/me/favorites', { params }));
@@ -43,10 +51,8 @@ export const userService = {
     size: number = 12,
     startDate?: string,
     endDate?: string
-  ): Promise<any> {
-    // eslint-disable-line @typescript-eslint/no-explicit-any
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const params: Record<string, any> = { page, size };
+  ): Promise<unknown> {
+    const params: Record<string, string | number> = { page, size };
     if (startDate) params.startDate = startDate;
     if (endDate) params.endDate = endDate;
     return unwrap(api.get('/api/users/me/viewed', { params }));

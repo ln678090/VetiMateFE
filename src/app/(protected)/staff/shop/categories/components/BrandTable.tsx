@@ -31,8 +31,10 @@ export function BrandTable({ brands, isLoading, onEdit }: BrandTableProps) {
       toast.success('Xóa thương hiệu thành công');
       queryClient.invalidateQueries({ queryKey: ['brands'] });
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi xóa thương hiệu');
+    onError: (error: unknown) => {
+      // Đổi sang unknown ở đây
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(apiError.response?.data?.message || 'Có lỗi xảy ra khi  xoá thương hiệu');
     },
   });
 
@@ -77,7 +79,13 @@ export function BrandTable({ brands, isLoading, onEdit }: BrandTableProps) {
             <TableCell>
               {brand.logoUrl ? (
                 <div className="relative h-10 w-10 overflow-hidden rounded-md border border-zinc-200">
-                  <Image src={brand.logoUrl} alt={brand.name} fill className="object-cover" unoptimized />
+                  <Image
+                    src={brand.logoUrl}
+                    alt={brand.name}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
                 </div>
               ) : (
                 <div className="flex h-10 w-10 items-center justify-center rounded-md border border-zinc-200 bg-zinc-100 text-xs text-zinc-500">
@@ -89,17 +97,29 @@ export function BrandTable({ brands, isLoading, onEdit }: BrandTableProps) {
             <TableCell className="text-zinc-500">{brand.slug}</TableCell>
             <TableCell>
               {brand.isActive ? (
-                <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600">Hoạt động</Badge>
+                <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600">
+                  Hoạt động
+                </Badge>
               ) : (
                 <Badge variant="secondary">Đã ẩn</Badge>
               )}
             </TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600" onClick={() => onEdit(brand)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-blue-600"
+                  onClick={() => onEdit(brand)}
+                >
                   <Edit2 className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-600" onClick={() => handleDelete(brand.id)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-rose-600"
+                  onClick={() => handleDelete(brand.id)}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -110,4 +130,3 @@ export function BrandTable({ brands, isLoading, onEdit }: BrandTableProps) {
     </Table>
   );
 }
-

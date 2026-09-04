@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { billingService } from '@/services/billing.service';
 import { CreateClinicInvoiceReq, PayClinicInvoiceReq } from '@/types/billing';
 import { toast } from 'sonner';
+import { errors } from 'jose';
 
 export const BILLING_QUERY_KEY = 'clinic-invoices';
 
@@ -24,9 +25,9 @@ export const useBilling = () => {
       queryClient.invalidateQueries({ queryKey: [BILLING_QUERY_KEY] });
       toast.success('Đã tạo hóa đơn thành công');
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi tạo hóa đơn');
+    onError: (error: unknown) => {
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(apiError.response?.data?.message || 'Có lỗi xảy ra khi tạo hóa đơn');
     },
   });
 
@@ -37,9 +38,9 @@ export const useBilling = () => {
       queryClient.invalidateQueries({ queryKey: [BILLING_QUERY_KEY] });
       toast.success('Thanh toán thành công');
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi thanh toán');
+    onError: (error: unknown) => {
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(apiError.response?.data?.message || 'Có lỗi xảy ra khi thanh toán');
     },
   });
 
@@ -49,9 +50,9 @@ export const useBilling = () => {
       queryClient.invalidateQueries({ queryKey: [BILLING_QUERY_KEY] });
       toast.success('Hủy hóa đơn thành công');
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi hủy hóa đơn');
+    onError: (error: unknown) => {
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(apiError.response?.data?.message || 'Có lỗi xảy ra khi hủy hóa đơn');
     },
   });
 

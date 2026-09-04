@@ -30,8 +30,10 @@ export function CategoryTable({ categories, isLoading, onEdit }: CategoryTablePr
       toast.success('Xóa danh mục thành công');
       queryClient.invalidateQueries({ queryKey: ['categories'] });
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi xóa danh mục');
+    onError: (error: unknown) => {
+      const apiError = error as { response?: { data?: { message?: string } } };
+
+      toast.error(apiError?.response?.data?.message || 'Có lỗi xảy ra khi xóa danh mục');
     },
   });
 
@@ -76,17 +78,29 @@ export function CategoryTable({ categories, isLoading, onEdit }: CategoryTablePr
             <TableCell className="text-zinc-500">{category.slug}</TableCell>
             <TableCell>
               {category.isActive ? (
-                <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600">Hoạt động</Badge>
+                <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600">
+                  Hoạt động
+                </Badge>
               ) : (
                 <Badge variant="secondary">Đã ẩn</Badge>
               )}
             </TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600" onClick={() => onEdit(category)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-blue-600"
+                  onClick={() => onEdit(category)}
+                >
                   <Edit2 className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-600" onClick={() => handleDelete(category.id)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-rose-600"
+                  onClick={() => handleDelete(category.id)}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -97,4 +111,3 @@ export function CategoryTable({ categories, isLoading, onEdit }: CategoryTablePr
     </Table>
   );
 }
-

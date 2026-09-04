@@ -100,7 +100,12 @@ export function OrderCard({ order, onCancelOrder }: OrderCardProps) {
             <Store className="h-4 w-4" />
           </div>
           <span className="font-bold text-zinc-900 dark:text-white">PetCare Vet Shop</span>
-          <Button variant="secondary" size="sm" onClick={() => setIsDetailsOpen(true)} className="ml-2 h-7 rounded-full px-3 text-xs font-semibold hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/20 dark:hover:text-rose-400">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setIsDetailsOpen(true)}
+            className="ml-2 h-7 rounded-full px-3 text-xs font-semibold hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-500/20 dark:hover:text-rose-400"
+          >
             Xem chi tiết
           </Button>
         </div>
@@ -110,13 +115,20 @@ export function OrderCard({ order, onCancelOrder }: OrderCardProps) {
               <Truck className="h-4 w-4" /> Đơn hàng đang được giao đến bạn
             </span>
           )}
-          <span className={cn('rounded-full px-3 py-1 text-xs font-bold tracking-wider',
-            order.status === 'PENDING' ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-500' :
-              order.status === 'CONFIRMED' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-500' :
-                order.status === 'SHIPPING' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-500' :
-                  order.status === 'DELIVERED' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-500' :
-                    'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-500'
-          )}>
+          <span
+            className={cn(
+              'rounded-full px-3 py-1 text-xs font-bold tracking-wider',
+              order.status === 'PENDING'
+                ? 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-500'
+                : order.status === 'CONFIRMED'
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-500'
+                  : order.status === 'SHIPPING'
+                    ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-500'
+                    : order.status === 'DELIVERED'
+                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-500'
+                      : 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-500'
+            )}
+          >
             {statusInfo.label}
           </span>
           {hasCancelRequest && order.status !== 'CANCELLED' && (
@@ -137,24 +149,27 @@ export function OrderCard({ order, onCancelOrder }: OrderCardProps) {
                   alt={item.productName}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
-                  unoptimized />
+                  unoptimized
+                />
               </div>
               <div className="flex flex-1 flex-col justify-start py-1">
                 <h4 className="line-clamp-2 text-base font-bold text-zinc-900 dark:text-white">
                   {item.productName}
                 </h4>
-                <p className="mt-1.5 text-xs font-medium tracking-wider text-zinc-500 uppercase">Phân loại: Mặc định</p>
-                <p className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">x{item.quantity}</p>
+                <p className="mt-1.5 text-xs font-medium tracking-wider text-zinc-500 uppercase">
+                  Phân loại: Mặc định
+                </p>
+                <p className="mt-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                  x{item.quantity}
+                </p>
               </div>
               <div className="flex flex-col items-end justify-center">
-                <span className="text-base font-bold text-rose-500">
-                  {formatVND(item.price)}
-                </span>
+                <span className="text-base font-bold text-rose-500">{formatVND(item.price)}</span>
               </div>
             </li>
           ))}
         </ul>
-        
+
         {order.items.length > 2 && (
           <div className="mt-4 flex justify-center border-t border-zinc-100 pt-4 dark:border-zinc-800/50">
             <button
@@ -171,7 +186,10 @@ export function OrderCard({ order, onCancelOrder }: OrderCardProps) {
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className={cn('h-4 w-4 transition-transform duration-200', isItemsExpanded && 'rotate-180')}
+                className={cn(
+                  'h-4 w-4 transition-transform duration-200',
+                  isItemsExpanded && 'rotate-180'
+                )}
               >
                 <path d="m6 9 6 6 6-6" />
               </svg>
@@ -185,7 +203,9 @@ export function OrderCard({ order, onCancelOrder }: OrderCardProps) {
       {/* Footer: Total & Actions */}
       <div className="flex flex-col items-end bg-zinc-50/80 p-5 dark:bg-zinc-900/30">
         <div className="mb-5 flex items-center gap-3">
-          <span className="text-base font-medium text-zinc-600 dark:text-zinc-400">Thành tiền:</span>
+          <span className="text-base font-medium text-zinc-600 dark:text-zinc-400">
+            Thành tiền:
+          </span>
           <span className="text-2xl font-black text-rose-600 dark:text-rose-400">
             {formatVND(order.finalAmount)}
           </span>
@@ -209,7 +229,6 @@ export function OrderCard({ order, onCancelOrder }: OrderCardProps) {
               Mua Lại
             </Button>
           )}
-
         </div>
       </div>
 

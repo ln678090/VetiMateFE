@@ -53,12 +53,7 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
   const originalPrice = product.originalPrice;
 
-  useEffect(() => {
-    if (isFavorited !== undefined) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setWished(isFavorited);
-    }
-  }, [isFavorited]);
+  const hasDiscount = originalPrice != null && originalPrice > product.price;
 
   const discountPct = hasDiscount
     ? Math.round(((originalPrice - product.price) / originalPrice) * 100)
