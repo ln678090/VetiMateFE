@@ -11,6 +11,7 @@ import { APP_NAVIGATION_ITEMS, canShowNavigationItemOnDashboard } from '@/config
 import { getAuthoritiesFromToken } from '@/lib/auth-roles';
 import { useAuthStore } from '@/stores/auth.store';
 
+<<<<<<< Updated upstream
 type DashboardRole =
   | 'ADMIN'
   | 'MANAGER'
@@ -20,6 +21,9 @@ type DashboardRole =
   | 'WAREHOUSE'
   | 'SHOP_STAFF'
   | 'USER';
+=======
+type DashboardRole = 'ADMIN' | 'MANAGER' | 'RECEPTIONIST' | 'DOCTOR' | 'ACCOUNTANT' | 'SHOP_STAFF' | 'WAREHOUSE' | 'USER';
+>>>>>>> Stashed changes
 
 interface DashboardConfiguration {
   title: string;
@@ -84,6 +88,27 @@ const DASHBOARD_CONFIGURATIONS: Record<DashboardRole, DashboardConfiguration> = 
     activityTitle: 'Hoạt động gần đây',
     activityDescription: 'Đặt lịch hoặc cập nhật hồ sơ thú cưng để bắt đầu.',
   },
+
+  ACCOUNTANT: {
+    title: 'Phòng kế toán',
+    description: 'Theo dõi doanh thu, chi phí và quản lý sổ sách tài chính.',
+    activityTitle: 'Công việc kế toán',
+    activityDescription: 'Xem báo cáo hoặc đối soát hóa đơn.',
+  },
+
+  SHOP_STAFF: {
+    title: 'Quầy bán hàng',
+    description: 'Tư vấn sản phẩm và hỗ trợ khách hàng mua sắm.',
+    activityTitle: 'Công việc bán hàng',
+    activityDescription: 'Theo dõi đơn hàng và sản phẩm mới.',
+  },
+
+  WAREHOUSE: {
+    title: 'Quản lý kho',
+    description: 'Kiểm soát hàng hóa, tồn kho và tiến hành xuất nhập.',
+    activityTitle: 'Công việc thủ kho',
+    activityDescription: 'Kiểm tra tồn kho để lên kế hoạch nhập hàng.',
+  },
 };
 
 function resolveDashboardRole(authorities: readonly string[]): DashboardRole {
@@ -105,6 +130,47 @@ function resolveDashboardRole(authorities: readonly string[]): DashboardRole {
 
   if (authorities.includes('ROLE_ACCOUNTANT')) {
     return 'ACCOUNTANT';
+<<<<<<< Updated upstream
+=======
+  }
+
+  if (authorities.includes('ROLE_SHOP_STAFF')) {
+    return 'SHOP_STAFF';
+  }
+
+  if (authorities.includes('ROLE_WAREHOUSE')) {
+    return 'WAREHOUSE';
+  }
+
+  return 'USER';
+}
+
+function getFallbackGreeting(role: DashboardRole): string {
+  switch (role) {
+    case 'ADMIN':
+      return 'quản trị viên';
+
+    case 'MANAGER':
+      return 'quản lý';
+
+    case 'RECEPTIONIST':
+      return 'lễ tân';
+
+    case 'DOCTOR':
+      return 'bác sĩ';
+
+    case 'ACCOUNTANT':
+      return 'kế toán';
+
+    case 'SHOP_STAFF':
+      return 'nhân viên shop';
+
+    case 'WAREHOUSE':
+      return 'thủ kho';
+
+    default:
+      return 'bạn';
+>>>>>>> Stashed changes
   }
 
   if (authorities.includes('ROLE_WAREHOUSE')) {
