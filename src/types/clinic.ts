@@ -120,4 +120,3 @@ export interface ManagementAppointmentParams {
 export interface UpdateAppointmentStatusRequest {
   status: AppointmentStatus;
 }
-

@@ -62,4 +62,3 @@ export interface SpringPage<T> {
   last: boolean;
   empty: boolean;
 }
-
