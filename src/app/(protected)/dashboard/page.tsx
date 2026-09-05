@@ -11,7 +11,6 @@ import { APP_NAVIGATION_ITEMS, canShowNavigationItemOnDashboard } from '@/config
 import { getAuthoritiesFromToken } from '@/lib/auth-roles';
 import { useAuthStore } from '@/stores/auth.store';
 
-<<<<<<< Updated upstream
 type DashboardRole =
   | 'ADMIN'
   | 'MANAGER'
@@ -21,9 +20,6 @@ type DashboardRole =
   | 'WAREHOUSE'
   | 'SHOP_STAFF'
   | 'USER';
-=======
-type DashboardRole = 'ADMIN' | 'MANAGER' | 'RECEPTIONIST' | 'DOCTOR' | 'ACCOUNTANT' | 'SHOP_STAFF' | 'WAREHOUSE' | 'USER';
->>>>>>> Stashed changes
 
 interface DashboardConfiguration {
   title: string;
@@ -130,16 +126,14 @@ function resolveDashboardRole(authorities: readonly string[]): DashboardRole {
 
   if (authorities.includes('ROLE_ACCOUNTANT')) {
     return 'ACCOUNTANT';
-<<<<<<< Updated upstream
-=======
-  }
-
-  if (authorities.includes('ROLE_SHOP_STAFF')) {
-    return 'SHOP_STAFF';
   }
 
   if (authorities.includes('ROLE_WAREHOUSE')) {
     return 'WAREHOUSE';
+  }
+
+  if (authorities.includes('ROLE_SHOP_STAFF')) {
+    return 'SHOP_STAFF';
   }
 
   return 'USER';
@@ -170,18 +164,7 @@ function getFallbackGreeting(role: DashboardRole): string {
 
     default:
       return 'bạn';
->>>>>>> Stashed changes
   }
-
-  if (authorities.includes('ROLE_WAREHOUSE')) {
-    return 'WAREHOUSE';
-  }
-
-  if (authorities.includes('ROLE_SHOP_STAFF')) {
-    return 'SHOP_STAFF';
-  }
-
-  return 'USER';
 }
 
 export default function DashboardPage() {
