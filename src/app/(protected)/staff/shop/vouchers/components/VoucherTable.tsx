@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Edit, Loader2 } from 'lucide-react';
+import { Edit, Loader2, Trash2 } from 'lucide-react';
 import { formatVND } from '@/lib/utils';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -18,9 +18,10 @@ interface VoucherTableProps {
   data: Voucher[];
   isLoading: boolean;
   onEdit: (voucher: Voucher) => void;
+  onDelete: (id: string) => void;
 }
 
-export function VoucherTable({ data, isLoading, onEdit }: VoucherTableProps) {
+export function VoucherTable({ data, isLoading, onEdit, onDelete }: VoucherTableProps) {
   if (isLoading) {
     return (
       <div className="flex justify-center p-8">
@@ -36,7 +37,6 @@ export function VoucherTable({ data, isLoading, onEdit }: VoucherTableProps) {
           <TableRow>
             <TableHead>Mã Voucher</TableHead>
             <TableHead>Mức giảm</TableHead>
-            <TableHead>Hạng yêu cầu</TableHead>
             <TableHead>Điểm cần đổi</TableHead>
             <TableHead>Đã dùng / Giới hạn</TableHead>
             <TableHead>Trạng thái</TableHead>
@@ -85,40 +85,44 @@ export function VoucherTable({ data, isLoading, onEdit }: VoucherTableProps) {
                     </span>
                   )}
                 </TableCell>
-                <TableCell>
-                  {item.requiredTier ? (
-                    <Badge variant="outline" className="border-amber-500 text-amber-600">
-                      {item.requiredTier === 'DIAMOND'
-                        ? 'Kim Cương'
-                        : item.requiredTier === 'GOLD'
-                          ? 'Vàng'
-                          : item.requiredTier === 'SILVER'
-                            ? 'Bạc'
-                            : item.requiredTier === 'BRONZE'
-                              ? 'Đồng'
-                              : 'Tiêu chuẩn'}
-                    </Badge>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">Tất cả</span>
-                  )}
-                </TableCell>
-                <TableCell>{item.pointCost}</TableCell>
+                <TableCell>{item.pointsRequired}</TableCell>
                 <TableCell>
                   {item.usedCount} / {item.maxUsage || '∞'}
                 </TableCell>
                 <TableCell>
-                  {item.isActive ? (
+                  {!item.isActive ? (
+                    <Badge variant="secondary">Đã tắt</Badge>
+                  ) : item.endDate && new Date() > new Date(item.endDate) ? (
+                    <Badge
+                      variant="destructive"
+                      className="bg-rose-500 text-white hover:bg-rose-600 dark:bg-rose-600 dark:text-white"
+                    >
+                      Hết hạn
+                    </Badge>
+                  ) : (
                     <Badge variant="default" className="bg-green-500 hover:bg-green-600">
                       Hoạt động
                     </Badge>
-                  ) : (
-                    <Badge variant="secondary">Đã tắt</Badge>
                   )}
                 </TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="icon" onClick={() => onEdit(item)}>
                     <Edit className="h-4 w-4" />
                   </Button>
+                  {!item.isActive && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                      onClick={() => {
+                        if (window.confirm('Bạn có chắc chắn muốn xóa voucher này?')) {
+                          onDelete(item.id);
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </TableCell>
               </TableRow>
             ))

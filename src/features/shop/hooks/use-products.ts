@@ -31,8 +31,10 @@ export function useProduct(slug: string) {
 export function useRelatedProducts(slug: string, category: ProductCategory | undefined) {
   return useQuery({
     queryKey: SHOP_QUERY_KEYS.related(slug, category!),
-    queryFn: () => shopService.getRelatedProducts(slug, category!, 4),
+    queryFn: async () => {
+      const res = await shopService.getProducts({ sort: 'rating-desc', size: 6 });
+      return res.items.filter((p) => p.slug !== slug).slice(0, 5);
+    },
     staleTime: 60_000,
-    enabled: !!slug && !!category,
   });
 }

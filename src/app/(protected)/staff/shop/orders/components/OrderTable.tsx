@@ -242,7 +242,7 @@ export function OrderTable({ items, isLoading }: OrderTableProps) {
                   </TableCell>
                   <TableCell className="font-medium">
                     {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                      item.totalAmount
+                      item.finalAmount
                     )}
                   </TableCell>
                   <TableCell>

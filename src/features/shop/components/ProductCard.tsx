@@ -14,6 +14,7 @@ import type { Product } from '@/types/shop';
 
 interface ProductCardProps {
   product: Product;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   index?: number;
 }
 
@@ -95,14 +96,21 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           <span>({product.reviewCount})</span>
         </div>
 
-        {/* Price */}
-        <div className="mt-3 flex items-baseline gap-2">
-          <span className="text-lg font-bold text-rose-600 dark:text-rose-400">
-            {formatVND(product.price)}
-          </span>
-          {hasDiscount && (
-            <span className="text-xs text-zinc-400 line-through dark:text-zinc-500">
-              {formatVND(product.originalPrice!)}
+        {/* Price & Stock */}
+        <div className="mt-3 flex flex-col gap-1.5">
+          <div className="flex items-baseline gap-2">
+            <span className="text-lg font-bold text-rose-600 dark:text-rose-400">
+              {formatVND(product.price)}
+            </span>
+            {hasDiscount && (
+              <span className="text-xs text-zinc-400 line-through dark:text-zinc-500">
+                {formatVND(product.originalPrice!)}
+              </span>
+            )}
+          </div>
+          {product.stockQuantity > 0 && (
+            <span className="text-xs text-zinc-500">
+              Kho: <span className="font-semibold text-emerald-600">{product.stockQuantity}</span>
             </span>
           )}
         </div>

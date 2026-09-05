@@ -24,7 +24,7 @@ export interface Voucher {
   minOrderAmount: number;
   maxUsage: number;
   usedCount: number;
-  pointCost: number;
+  pointsRequired: number;
   requiredTier?: 'STANDARD' | 'BRONZE' | 'SILVER' | 'GOLD' | 'DIAMOND';
   startDate: string;
   endDate: string;
@@ -50,7 +50,7 @@ export interface CreateVoucherReq {
   maxDiscount?: number;
   minOrderAmount?: number;
   maxUsage?: number;
-  pointCost: number;
+  pointsRequired: number;
   requiredTier?: 'STANDARD' | 'BRONZE' | 'SILVER' | 'GOLD' | 'DIAMOND';
   startDate: string;
   endDate: string;

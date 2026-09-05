@@ -19,40 +19,7 @@ import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { useState, useEffect } from 'react';
 
-const getNextTierInfo = (currentTier: string | undefined, totalSpending: number | undefined) => {
-  const spending = totalSpending || 0;
-  if (!currentTier || currentTier === 'DIAMOND') return null;
-
-  let nextTierName = 'Hạng Đồng';
-  let nextReq = 3000000;
-  let currentReq = 0;
-
-  if (currentTier === 'MEMBER') {
-    nextTierName = 'Hạng Đồng';
-    nextReq = 3000000;
-    currentReq = 0;
-  } else if (currentTier === 'BRONZE') {
-    nextTierName = 'Hạng Bạc';
-    nextReq = 7000000;
-    currentReq = 3000000;
-  } else if (currentTier === 'SILVER') {
-    nextTierName = 'Hạng Vàng';
-    nextReq = 10000000;
-    currentReq = 7000000;
-  } else if (currentTier === 'GOLD') {
-    nextTierName = 'Hạng Kim Cương';
-    nextReq = 15000000;
-    currentReq = 10000000;
-  }
-
-  const amountNeeded = Math.max(0, nextReq - spending);
-  const progress = Math.max(
-    0,
-    Math.min(100, ((spending - currentReq) / (nextReq - currentReq)) * 100)
-  );
-
-  return { nextTierName, amountNeeded, progress };
-};
+// Helper function removed as tier feature is dropped
 
 export default function LoyaltyPage() {
   const queryClient = useQueryClient();
@@ -100,99 +67,20 @@ export default function LoyaltyPage() {
     }
   };
 
-  const nextTierInfo = getNextTierInfo(points?.tier, points?.totalSpending);
-
   const filteredVouchers =
     availableVouchers?.filter((v) => {
       if (v.endDate && new Date(v.endDate) < now) return false; // Tự động ẩn nếu đã hết hạn theo thời gian thực (client-side)
-      if (!v.requiredTier) return true; // Dành cho mọi hạng (null/undefined)
-      if (v.requiredTier === 'STANDARD') return true; // Hạng tiêu chuẩn thì ai cũng dùng được
-      return v.requiredTier === points?.tier; // Các hạng khác phải match chính xác
+      return true;
     }) || [];
 
   return (
     <div className="space-y-6">
       <div className="flex items-center">
         <h2 className="text-2xl font-bold tracking-tight">Thành viên & Ưu đãi</h2>
-        {!loadingPoints && points?.tier && (
-          <Badge
-            className={`ml-3 ${
-              points.tier === 'DIAMOND'
-                ? 'bg-cyan-500 hover:bg-cyan-600 text-white'
-                : points.tier === 'GOLD'
-                  ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
-                  : points.tier === 'SILVER'
-                    ? 'bg-slate-300 hover:bg-slate-400 text-slate-800'
-                    : points.tier === 'BRONZE'
-                      ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                      : 'bg-slate-100 text-slate-800 hover:bg-slate-200'
-            }`}
-          >
-            {points.tier === 'DIAMOND'
-              ? 'Hạng Kim Cương'
-              : points.tier === 'GOLD'
-                ? 'Hạng Vàng'
-                : points.tier === 'SILVER'
-                  ? 'Hạng Bạc'
-                  : points.tier === 'BRONZE'
-                    ? 'Hạng Đồng'
-                    : 'Thành viên'}
-          </Badge>
-        )}
       </div>
-      <p className="text-muted-foreground">
-        Quản lý điểm thưởng, hạng thành viên và voucher của bạn
-      </p>
+      <p className="text-muted-foreground">Quản lý điểm thưởng và voucher của bạn</p>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-none shadow-lg">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-lg font-medium">Hạng thành viên</CardTitle>
-            <Star className="h-5 w-5 text-indigo-200" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold mt-1">
-              {loadingPoints
-                ? '...'
-                : points?.tier === 'DIAMOND'
-                  ? 'Kim Cương'
-                  : points?.tier === 'GOLD'
-                    ? 'Vàng'
-                    : points?.tier === 'SILVER'
-                      ? 'Bạc'
-                      : points?.tier === 'BRONZE'
-                        ? 'Đồng'
-                        : points?.tier === 'STANDARD'
-                          ? 'Tiêu chuẩn'
-                          : 'Tiêu chuẩn'}
-            </div>
-            <p className="text-indigo-100 text-sm mt-2">
-              Chi tiêu: {loadingPoints ? '...' : formatVND(points?.totalSpending || 0)}
-            </p>
-
-            {!loadingPoints && nextTierInfo && (
-              <div className="mt-4 space-y-2">
-                <div className="flex justify-between text-xs text-indigo-50 font-medium">
-                  <span>
-                    Cần {formatVND(nextTierInfo.amountNeeded)} để lên {nextTierInfo.nextTierName}
-                  </span>
-                </div>
-                <div className="h-2 w-full bg-indigo-950/30 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-white rounded-full transition-all duration-1000"
-                    style={{ width: `${nextTierInfo.progress}%` }}
-                  />
-                </div>
-              </div>
-            )}
-
-            {!loadingPoints && points?.tier === 'DIAMOND' && (
-              <div className="mt-4 text-xs text-indigo-100 bg-indigo-950/20 py-2 px-2 rounded-md font-medium text-center">
-                🎉 Bạn đang ở hạng cao nhất!
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      <div className="grid gap-4 md:grid-cols-2">
         <Card className="bg-gradient-to-br from-primary/90 to-primary text-primary-foreground border-none shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-lg font-medium">Điểm hiện có</CardTitle>
@@ -268,7 +156,7 @@ export default function LoyaltyPage() {
                           variant="secondary"
                           className="bg-yellow-300 text-yellow-900 border-none shadow-sm"
                         >
-                          {voucher.pointCost} điểm
+                          {voucher.pointsRequired} điểm
                         </Badge>
                       </div>
                       <CardContent className="p-4 flex-1 flex flex-col">
@@ -301,11 +189,11 @@ export default function LoyaltyPage() {
                           className="w-full mt-auto font-medium"
                           disabled={
                             redeemMutation.isPending ||
-                            (points?.availablePoints || 0) < voucher.pointCost
+                            (points?.availablePoints || 0) < voucher.pointsRequired
                           }
                           onClick={() => handleRedeem(voucher.id)}
                         >
-                          {(points?.availablePoints || 0) < voucher.pointCost
+                          {(points?.availablePoints || 0) < voucher.pointsRequired
                             ? 'Chưa đủ điểm'
                             : 'Đổi ngay'}
                         </Button>

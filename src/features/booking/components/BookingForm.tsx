@@ -43,6 +43,7 @@ export function BookingForm({ customerId }: Props) {
     mode: 'onBlur',
   });
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const selectedServiceId = watch('serviceId');
   const selectedService = services?.find((s) => s.id === selectedServiceId);
 

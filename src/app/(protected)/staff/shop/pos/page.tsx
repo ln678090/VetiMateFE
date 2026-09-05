@@ -264,7 +264,7 @@ export default function POSPage() {
     (p) =>
       p.stockQuantity > 0 &&
       (p.name.toLowerCase().includes(search.toLowerCase()) ||
-        p.sku.toLowerCase().includes(search.toLowerCase()))
+        (p.sku && p.sku.toLowerCase().includes(search.toLowerCase())))
   );
 
   // Fetch history
@@ -475,9 +475,6 @@ export default function POSPage() {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <Button variant="outline" className="bg-white">
-              Quét mã vạch
-            </Button>
           </div>
 
           <div className="flex-1 overflow-y-auto pr-2 pb-2">

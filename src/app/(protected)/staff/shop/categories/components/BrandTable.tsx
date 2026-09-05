@@ -66,7 +66,6 @@ export function BrandTable({ brands, isLoading, onEdit }: BrandTableProps) {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Logo</TableHead>
           <TableHead>Tên thương hiệu</TableHead>
           <TableHead>Slug</TableHead>
           <TableHead>Trạng thái</TableHead>
@@ -76,23 +75,6 @@ export function BrandTable({ brands, isLoading, onEdit }: BrandTableProps) {
       <TableBody>
         {brands.map((brand) => (
           <TableRow key={brand.id}>
-            <TableCell>
-              {brand.logoUrl ? (
-                <div className="relative h-10 w-10 overflow-hidden rounded-md border border-zinc-200">
-                  <Image
-                    src={brand.logoUrl}
-                    alt={brand.name}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
-                </div>
-              ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-md border border-zinc-200 bg-zinc-100 text-xs text-zinc-500">
-                  No img
-                </div>
-              )}
-            </TableCell>
             <TableCell className="font-medium">{brand.name}</TableCell>
             <TableCell className="text-zinc-500">{brand.slug}</TableCell>
             <TableCell>

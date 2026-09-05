@@ -1,10 +1,5 @@
 export type StaffRoleType =
-  | 'DOCTOR'
-  | 'RECEPTIONIST'
-  | 'MANAGER'
-  | 'ACCOUNTANT'
-  | 'WAREHOUSE'
-  | 'SHOP_STAFF';
+  'DOCTOR' | 'RECEPTIONIST' | 'MANAGER' | 'ACCOUNTANT' | 'WAREHOUSE' | 'SHOP_STAFF';
 
 export interface StaffResponse {
   id: string;

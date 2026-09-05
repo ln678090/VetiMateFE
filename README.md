@@ -390,14 +390,14 @@ graduation_project_fe/
 
 ## 🗺️ Routes & Pages### Public (không cần login)
 
-| Route                   | File                                         | Mô tả                             |
+| Route | File | Mô tả |
 | ----------------------- | -------------------------------------------- | --------------------------------- | -------------------------------------------------------- |
-| `/`                     | `app/(public)/page.tsx`                      | Landing — hero + features + CTA   |
-| `/login`                | `app/(auth)/login/page.tsx`                  | Đăng nhập                         |
-| `/register`             | `app/(auth)/register/page.tsx`               | Đăng ký                           |
-| `/shop`                 | `app/(public)/shop/page.tsx`                 | Catalog có filter + search + sort |
-| `/shop/[slug]`          | `app/(public)/shop/[slug]/page.tsx`          | Chi tiết sản phẩm                 |
-| `/shop/category/[slug]` | `app/(public)/shop/category/[slug]/page.tsx` | Sản phẩm theo danh mục            | ### Protected (cần Bearer token / cookie refresh hợp lệ) |
+| `/` | `app/(public)/page.tsx` | Landing — hero + features + CTA |
+| `/login` | `app/(auth)/login/page.tsx` | Đăng nhập |
+| `/register` | `app/(auth)/register/page.tsx` | Đăng ký |
+| `/shop` | `app/(public)/shop/page.tsx` | Catalog có filter + search + sort |
+| `/shop/[slug]` | `app/(public)/shop/[slug]/page.tsx` | Chi tiết sản phẩm |
+| `/shop/category/[slug]` | `app/(public)/shop/category/[slug]/page.tsx` | Sản phẩm theo danh mục | ### Protected (cần Bearer token / cookie refresh hợp lệ) |
 
 | Route        | File                     | Mô tả                   |
 | ------------ | ------------------------ | ----------------------- |
