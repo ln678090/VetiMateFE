@@ -1,6 +1,7 @@
 export type LandingSceneId =
   'hero' | 'problem' | 'clinic' | 'shop' | 'passport' | 'proof' | 'finale';
 
+// updated
 export type LandingSceneAccent = 'rose' | 'pink' | 'amber';
 
 export interface LandingScene {

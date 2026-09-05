@@ -1,5 +1,7 @@
 # 🐾 Veterinary PetCare Shop — Frontend
 
+<!-- updated -->
+
 > Next.js 16.2.6 · TypeScript · TailwindCSS · shadcn/ui · Framer Motion · Zustand · TanStack Query
 
 Web app khách hàng cho hệ thống phòng khám thú y kết hợp shop pet (chó & mèo).
