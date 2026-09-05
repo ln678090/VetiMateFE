@@ -587,3 +587,4 @@ Hoặc trên `<Image />` thêm `unoptimized` để tạm bypass:
 MIT License — Đồ án tốt nghiệp 2026## 👨‍💻 Tác giả
 
 [Your Name] — [your.email@gmail.com]
+
