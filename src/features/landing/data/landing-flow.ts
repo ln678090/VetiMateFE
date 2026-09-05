@@ -105,3 +105,4 @@ export function getSceneById(sceneId: LandingSceneId): (typeof LANDING_SCENES)[n
 export function getSceneScrollHeight(sceneId: LandingSceneId): string {
   return `${getSceneById(sceneId).scrollVh}vh`;
 }
+// fix
