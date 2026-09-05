@@ -6,7 +6,7 @@ import { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Menu, X } from 'lucide-react';
 
 import { APP_NAVIGATION_ITEMS, canAccessNavigationItem } from '@/config/app-navigation';
-import { getAuthoritiesFromToken } from '@/lib/auth-roles';
+import { getAuthoritiesFromToken, getRoleDisplayName, getRoleInitials } from '@/lib/auth-roles';
 import { useAuthStore } from '@/stores/auth.store';
 
 function getRoutePath(href: string): string {
@@ -33,6 +33,7 @@ export function AppSidebar() {
   const accessToken = useAuthStore((state) => state.accessToken);
 
   const authorities = useMemo(() => getAuthoritiesFromToken(accessToken), [accessToken]);
+  const roleName = useMemo(() => getRoleDisplayName(authorities), [authorities]);
 
   const visibleItems = useMemo(
     () =>
@@ -42,9 +43,11 @@ export function AppSidebar() {
     [authorities]
   );
 
-  const displayName = user?.fullName ?? user?.username ?? 'Tài khoản';
-
-  const avatarLetter = displayName.trim().charAt(0).toUpperCase() || 'U';
+  const displayName = user?.fullName ?? roleName;
+  const avatarLetter = useMemo(
+    () => getRoleInitials(authorities, user?.fullName || user?.username),
+    [authorities, user]
+  );
 
   function closeMobileSidebar() {
     setMobileOpen(false);

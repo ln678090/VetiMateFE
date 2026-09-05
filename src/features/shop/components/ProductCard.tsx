@@ -8,6 +8,8 @@ import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn, formatVND } from '@/lib/utils';
+import { useCartStore } from '@/stores/cart.store';
+import { toast } from 'sonner';
 import type { Product } from '@/types/shop';
 
 interface ProductCardProps {
@@ -108,6 +110,12 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
         <Button
           size="sm"
           disabled={!product.inStock}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            useCartStore.getState().addItem(product, 1);
+            toast.success(`Đã thêm "${product.name}" vào giỏ hàng!`);
+          }}
           className={cn(
             'mt-3 h-9 w-full bg-gradient-to-br from-rose-500 to-amber-500 text-white shadow-md shadow-rose-500/20 transition hover:shadow-lg hover:shadow-rose-500/30'
           )}

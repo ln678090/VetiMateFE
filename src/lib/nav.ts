@@ -1,6 +1,7 @@
 import {
   CalendarHeart,
   LayoutDashboard,
+  Package,
   ShoppingBag,
   ShoppingCart,
   Stethoscope,
@@ -22,6 +23,7 @@ export const PROTECTED_NAV: NavItem[] = [
   { label: 'Khám thú y', href: '/vet', icon: Stethoscope },
   { label: 'Cửa hàng', href: '/shop', icon: ShoppingBag },
   { label: 'Giỏ hàng', href: '/cart', icon: ShoppingCart },
+  { label: 'Đơn hàng của tôi', href: '/customer/orders', icon: Package },
   { label: 'Hồ sơ', href: '/profile', icon: UserCircle2 },
   { label: 'Quản lý lịch  khám  ', href: '/management/appointments', icon: Stethoscope },
   { label: 'Quản lý khám ', href: '/doctor/examinations', icon: Stethoscope },

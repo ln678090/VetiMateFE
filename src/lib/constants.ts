@@ -18,18 +18,36 @@ export const API_ROUTES = {
     refreshMobile: '/api/auth/refresh-mobile',
     logout: '/api/auth/logout',
     test: '/api/auth/test',
+    forgotPassword: '/api/auth/forgot-password',
+    verifyOtp: '/api/auth/verify-otp',
+    resetPassword: '/api/auth/reset-password',
+  },
+  order: {
+    customerOrders: '/api/customer/orders',
   },
 } as const;
 
 /** Routes cần đăng nhập */
-export const PROTECTED_ROUTES = ['/dashboard', '/booking', '/cart', '/profile'] as const;
+export const PROTECTED_ROUTES = [
+  '/dashboard',
+  '/booking',
+  '/cart',
+  '/profile',
+  '/customer/orders',
+] as const;
 
 /** Routes auth (không cho user đã login truy cập) */
-export const AUTH_ROUTES = ['/login', '/register'] as const;
+export const AUTH_ROUTES = ['/login', '/register', '/forgot-password'] as const;
 
 export const QUERY_KEYS = {
   auth: {
     me: ['auth', 'me'] as const,
     session: ['auth', 'session'] as const,
+  },
+  orders: {
+    all: ['orders'] as const,
+    list: (params?: unknown) => ['orders', 'list', params] as const,
+    detail: (id: string) => ['orders', 'detail', id] as const,
+    tracking: (id: string) => ['orders', 'tracking', id] as const,
   },
 } as const;

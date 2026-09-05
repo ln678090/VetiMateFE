@@ -1,6 +1,12 @@
 import { api, publicApi, unwrap } from '@/lib/axios';
 import { API_ROUTES } from '@/lib/constants';
-import type { LoginInput, RegisterInput } from '@/schemas/auth.schema';
+import type {
+  ForgotPasswordInput,
+  LoginInput,
+  RegisterInput,
+  ResetPasswordInput,
+  VerifyOtpInput,
+} from '@/schemas/auth.schema';
 import type { ApiResp } from '@/types';
 import type { AuthResponse } from '@/types/auth';
 
@@ -25,6 +31,18 @@ export const authService = {
   async logout(): Promise<void> {
     // body rỗng — backend đọc refresh_token từ cookie
     await api.post(API_ROUTES.auth.logout, {});
+  },
+
+  async forgotPassword(input: ForgotPasswordInput): Promise<string> {
+    return unwrap(publicApi.post<ApiResp<string>>(API_ROUTES.auth.forgotPassword, input));
+  },
+
+  async verifyOtp(input: VerifyOtpInput): Promise<string> {
+    return unwrap(publicApi.post<ApiResp<string>>(API_ROUTES.auth.verifyOtp, input));
+  },
+
+  async resetPassword(input: ResetPasswordInput): Promise<string> {
+    return unwrap(publicApi.post<ApiResp<string>>(API_ROUTES.auth.resetPassword, input));
   },
 };
 

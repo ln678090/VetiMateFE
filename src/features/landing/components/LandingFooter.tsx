@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowUp, Cat, Dog, Heart, PawPrint } from 'lucide-react';
+import { ArrowUp, Cat, Clock, Dog, Heart, Mail, MapPin, PawPrint, Phone } from 'lucide-react';
 import Link from 'next/link';
 
 const FOOTER_GROUPS = [
@@ -18,7 +18,7 @@ const FOOTER_GROUPS = [
       },
       {
         label: 'Quy trình chăm sóc',
-        href: '#clinic',
+        href: '/#clinic',
       },
     ],
   },
@@ -34,8 +34,8 @@ const FOOTER_GROUPS = [
         href: '/cart',
       },
       {
-        label: 'Vì sao chọn PetCare',
-        href: '#shop',
+        label: 'Đơn hàng của tôi',
+        href: '/customer/orders',
       },
     ],
   },
@@ -51,8 +51,8 @@ const FOOTER_GROUPS = [
         href: '/register',
       },
       {
-        label: 'Tổng quan dịch vụ',
-        href: '#services',
+        label: 'Vào Dashboard',
+        href: '/dashboard',
       },
     ],
   },
@@ -60,7 +60,7 @@ const FOOTER_GROUPS = [
 
 export function LandingFooter() {
   return (
-    <footer className="relative overflow-hidden border-t border-rose-100 bg-[#fffaf8]">
+    <footer id="contact" className="relative overflow-hidden border-t border-rose-100 bg-[#fffaf8]">
       <div
         aria-hidden="true"
         className="absolute -left-40 bottom-0 size-96 rounded-full bg-rose-100/70 blur-3xl"
@@ -72,8 +72,8 @@ export function LandingFooter() {
       />
 
       <div className="relative mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-20">
-        <div className="grid gap-12 lg:grid-cols-[1.1fr_1.9fr]">
-          <div>
+        <div className="grid gap-12 lg:grid-cols-[1.2fr_1.8fr]">
+          <div id="about">
             <Link href="/" className="inline-flex items-center gap-3">
               <span className="relative grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-rose-500 to-amber-400 text-white shadow-lg shadow-rose-200">
                 <PawPrint className="size-6" />
@@ -108,17 +108,35 @@ export function LandingFooter() {
               </span>
 
               <div>
-                <p className="text-xl font-black tracking-[-0.04em] text-zinc-950">PetCare</p>
-
-                <p className="text-xs font-medium text-rose-500">Clinic & Shop</p>
+                <p className="text-xl font-black tracking-[-0.04em] text-zinc-950">VetiMate</p>
+                <p className="text-xs font-medium text-rose-500">Phòng Khám Thú Y & Pet Shop</p>
               </div>
             </Link>
 
-            <p className="mt-6 max-w-sm text-sm leading-6 text-zinc-600">
-              Một nơi để đặt lịch, theo dõi sức khỏe và mua sắm cho chó mèo.
+            <p className="mt-5 max-w-sm text-sm leading-6 text-zinc-600">
+              Hệ sinh thái chăm sóc thú cưng toàn diện: đặt lịch y tế, hồ sơ sức khỏe điện tử và mua sắm phụ kiện chính hãng cho chó mèo.
             </p>
 
-            <div className="mt-7 flex items-center gap-2 text-xs font-medium text-zinc-500">
+            <div className="mt-5 space-y-2 text-xs text-zinc-600">
+              <p className="flex items-center gap-2">
+                <MapPin className="size-4 text-rose-500 shrink-0" />
+                <span>123 Nguyễn Văn Cừ, Quận 5, TP. Hồ Chí Minh</span>
+              </p>
+              <p className="flex items-center gap-2">
+                <Phone className="size-4 text-rose-500 shrink-0" />
+                <a href="tel:19008888" className="font-semibold text-zinc-900 hover:text-rose-600">1900 8888 / 0909 123 456</a>
+              </p>
+              <p className="flex items-center gap-2">
+                <Mail className="size-4 text-rose-500 shrink-0" />
+                <a href="mailto:support@vetimate.vn" className="hover:text-rose-600">support@vetimate.vn</a>
+              </p>
+              <p className="flex items-center gap-2">
+                <Clock className="size-4 text-rose-500 shrink-0" />
+                <span>08:00 - 20:00 (Tất cả các ngày trong tuần)</span>
+              </p>
+            </div>
+
+            <div className="mt-6 flex items-center gap-2 text-xs font-medium text-zinc-500">
               <Heart className="size-4 fill-rose-400 text-rose-400" />
               Thiết kế vì hành trình khỏe mạnh của thú cưng.
             </div>
@@ -151,7 +169,7 @@ export function LandingFooter() {
         <div className="mt-14 h-px bg-gradient-to-r from-transparent via-rose-200 to-transparent" />
 
         <div className="mt-7 flex flex-col items-center justify-between gap-4 text-center text-xs text-zinc-400 sm:flex-row sm:text-left">
-          <p>© {new Date().getFullYear()} PetCare. Veterinary Clinic & Pet Shop.</p>
+          <p>© {new Date().getFullYear()} VetiMate. Veterinary Clinic & Pet Shop.</p>
 
           <motion.a
             href="#top"

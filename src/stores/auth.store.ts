@@ -1,3 +1,4 @@
+import { getUserFromToken } from '@/lib/auth-roles';
 import type { AuthState, User } from '@/types';
 import { create } from 'zustand';
 
@@ -22,7 +23,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   setAuth: ({ user, accessToken }) =>
     set({
-      user,
+      user: user ?? getUserFromToken(accessToken),
       accessToken,
       isAuthenticated: !!accessToken,
       isHydrating: false,
@@ -32,8 +33,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     set((s) => ({
       accessToken: token,
       isAuthenticated: !!token,
-      // giữ user cũ nếu chỉ refresh token
-      user: token ? s.user : null,
+      user: token ? (s.user ?? getUserFromToken(token)) : null,
     })),
 
   setUser: (user) => set({ user }),

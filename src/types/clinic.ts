@@ -18,7 +18,12 @@ export interface PetDto {
   gender: PetGender | null;
   birthDate: string | null;
   weightKg: number | null;
+  photoUrl?: string | null;
+  currentHealthStatus?: string | null;
+  currentHealthNote?: string | null;
   note: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AppointmentDto {
@@ -52,11 +57,43 @@ export const PET_SPECIES_OPTIONS: { value: PetSpecies; label: string }[] = [
 export type PetSpecies = 'DOG' | 'CAT';
 
 export type PetGender = 'MALE' | 'FEMALE' | 'UNKNOWN';
+
 export interface CustomerDto {
   id: string;
   userId: string | null;
-  fullName: string | null;
-  phone: string | null;
+  fullName: string;
+  phone: string;
+  email?: string | null;
+  address?: string | null;
+  note?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateCustomerRequest {
+  fullName: string;
+  phone: string;
+  email?: string;
+  address?: string;
+  note?: string;
+}
+
+export interface UpdateCustomerRequest {
+  fullName: string;
+  phone: string;
+  email?: string;
+  address?: string;
+  note?: string;
+}
+
+export interface MergeCustomerRequest {
+  targetId: string;
+  sourceId: string;
+}
+
+export interface MergePetRequest {
+  targetId: string;
+  sourceId: string;
 }
 
 export interface AvailableSlotDto {
@@ -74,6 +111,7 @@ export interface CreatePetRequest {
   gender?: 'MALE' | 'FEMALE' | 'UNKNOWN' | null;
   birthDate?: string | null; // 'yyyy-MM-dd'
   weightKg?: number | null;
+  photoUrl?: string | null;
   note?: string | null;
 }
 
@@ -86,12 +124,14 @@ export const PET_GENDER_OPTIONS = [
 
 // ============ UPDATE PET REQUEST ============
 export interface UpdatePetRequest {
+  customerId?: string;
   name: string;
   species: PetSpecies;
   breed?: string | null;
   gender?: PetGender | null;
   birthDate?: string | null; // yyyy-MM-dd
   weightKg?: number | null;
+  photoUrl?: string | null;
   note?: string | null;
 }
 
@@ -117,3 +157,97 @@ export interface ManagementAppointmentParams {
 export interface UpdateAppointmentStatusRequest {
   status: AppointmentStatus;
 }
+
+// ============ DAILY CARE TASKS ============
+export type DailyTaskType = 'POST_OP_CALL' | 'VACCINE_REMINDER';
+export type DailyTaskStatus = 'PENDING' | 'CALLED' | 'COMPLETED' | 'CANCELLED';
+
+export interface DailyCareTaskDto {
+  id: string;
+  taskDate: string;
+  taskType: DailyTaskType;
+  petId: string | null;
+  petName: string | null;
+  petSpecies: string | null;
+  petBreed: string | null;
+  petPhotoUrl: string | null;
+  customerId: string | null;
+  customerName: string | null;
+  phone: string;
+  appointmentId: string | null;
+  serviceName: string | null;
+  title: string;
+  description: string;
+  status: DailyTaskStatus;
+  callResult: string | null;
+  notes: string | null;
+  performedById: string | null;
+  performedByName: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateDailyTaskRequest {
+  status?: DailyTaskStatus;
+  callResult?: string;
+  notes?: string;
+  performedById?: string;
+}
+
+// ============ SMART QUEUE & TV DISPLAY ============
+export type QueueLaneType = 'CLINIC' | 'SPA';
+export type QueueTicketStatus = 'WAITING' | 'CALLED' | 'DONE' | 'CANCELLED';
+
+export interface QueueTicketDto {
+  id: string;
+  appointmentId: string | null;
+  queueDate: string;
+  queueType: QueueLaneType;
+  ticketNumber: number;
+  formattedTicket: string;
+  status: QueueTicketStatus;
+  calledAt: string | null;
+  completedAt: string | null;
+  petName: string;
+  customerName: string;
+  serviceName: string;
+  roomCounter: string;
+  doctorOrStaffName: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface QueueLaneDto {
+  laneType: QueueLaneType;
+  title: string;
+  currentServing: QueueTicketDto | null;
+  waitingList: QueueTicketDto[];
+  calledHistory: QueueTicketDto[];
+  totalWaiting: number;
+  totalServed: number;
+}
+
+export interface LobbyQueueBoardDto {
+  queueDate: string;
+  clinicLane: QueueLaneDto;
+  spaLane: QueueLaneDto;
+  lastCalledTicket: QueueTicketDto | null;
+}
+
+export interface IssueTicketRequest {
+  appointmentId?: string;
+  queueType: QueueLaneType;
+  petName?: string;
+  customerName?: string;
+  serviceName?: string;
+  roomCounter?: string;
+  doctorOrStaffName?: string;
+}
+
+export interface CallTicketRequest {
+  ticketId?: string;
+  queueType?: QueueLaneType;
+  roomCounter?: string;
+  doctorOrStaffName?: string;
+}
+

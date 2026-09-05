@@ -110,7 +110,64 @@ export function LoginForm() {
           </StaggerItem>
 
           <StaggerItem>
-            <p className="mt-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
+            <div className="mt-6 border-t border-dashed pt-4">
+              <p className="mb-2 text-center text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                Tài khoản thử nghiệm nhanh (Mật khẩu: 123456)
+              </p>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <button
+                  type="button"
+                  onClick={() => {
+                    form.setValue('email', 'customer@vetimate.vn');
+                    form.setValue('password', '123456');
+                  }}
+                  className="rounded-lg border border-zinc-200 bg-zinc-50/80 p-2 text-left font-medium transition hover:border-rose-300 hover:bg-rose-50/50 dark:border-zinc-800 dark:bg-zinc-800/50"
+                >
+                  <span className="block font-semibold text-zinc-800 dark:text-zinc-200">🧑‍🦰 Khách hàng</span>
+                  <span className="text-[11px] text-zinc-500">customer@vetimate.vn</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    form.setValue('email', 'admin@vetimate.vn');
+                    form.setValue('password', '123456');
+                  }}
+                  className="rounded-lg border border-zinc-200 bg-zinc-50/80 p-2 text-left font-medium transition hover:border-rose-300 hover:bg-rose-50/50 dark:border-zinc-800 dark:bg-zinc-800/50"
+                >
+                  <span className="block font-semibold text-zinc-800 dark:text-zinc-200">🛡️ Quản trị viên</span>
+                  <span className="text-[11px] text-zinc-500">admin@vetimate.vn</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    form.setValue('email', 'doctor@vetimate.vn');
+                    form.setValue('password', '123456');
+                  }}
+                  className="rounded-lg border border-zinc-200 bg-zinc-50/80 p-2 text-left font-medium transition hover:border-rose-300 hover:bg-rose-50/50 dark:border-zinc-800 dark:bg-zinc-800/50"
+                >
+                  <span className="block font-semibold text-zinc-800 dark:text-zinc-200">🩺 Bác sĩ thú y</span>
+                  <span className="text-[11px] text-zinc-500">doctor@vetimate.vn</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    form.setValue('email', 'receptionist@vetimate.vn');
+                    form.setValue('password', '123456');
+                  }}
+                  className="rounded-lg border border-zinc-200 bg-zinc-50/80 p-2 text-left font-medium transition hover:border-rose-300 hover:bg-rose-50/50 dark:border-zinc-800 dark:bg-zinc-800/50"
+                >
+                  <span className="block font-semibold text-zinc-800 dark:text-zinc-200">📋 Lễ tân phòng khám</span>
+                  <span className="text-[11px] text-zinc-500">receptionist@vetimate.vn</span>
+                </button>
+              </div>
+            </div>
+          </StaggerItem>
+
+          <StaggerItem>
+            <p className="mt-4 text-center text-sm text-zinc-600 dark:text-zinc-400">
               Chưa có tài khoản?{' '}
               <Link
                 href="/register"

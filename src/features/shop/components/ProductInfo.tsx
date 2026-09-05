@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn, formatVND } from '@/lib/utils';
+import { useCartStore } from '@/stores/cart.store';
 import type { Product } from '@/types/shop';
 import { QuantityStepper } from './QuantityStepper';
 
@@ -17,7 +18,7 @@ interface ProductInfoProps {
 }
 
 const TRUST_BADGES = [
-  { icon: Truck, label: 'Miễn phí ship đơn từ 500K' },
+  { icon: Truck, label: 'Miễn phí ship đơn từ 300K' },
   { icon: ShieldCheck, label: 'Hàng chính hãng 100%' },
   { icon: RotateCcw, label: 'Đổi trả trong 7 ngày' },
 ];
@@ -32,10 +33,8 @@ export function ProductInfo({ product }: ProductInfoProps) {
     : 0;
 
   const handleAddToCart = () => {
-    // Phase 3.1 sẽ wire vào Zustand cart store
-    toast.success(`Đã thêm ${quantity} × ${product.name} vào giỏ`, {
-      description: 'Cart store sẽ hoạt động ở Phase 3.1',
-    });
+    useCartStore.getState().addItem(product, quantity);
+    toast.success(`Đã thêm ${quantity} × "${product.name}" vào giỏ hàng!`);
   };
 
   const handleShare = async () => {
