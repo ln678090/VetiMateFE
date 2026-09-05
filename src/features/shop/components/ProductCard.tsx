@@ -14,7 +14,6 @@ import type { Product } from '@/types/shop';
 
 interface ProductCardProps {
   product: Product;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   index?: number;
 }
 
