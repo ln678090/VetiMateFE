@@ -1,10 +1,5 @@
 export type StaffRoleType =
-  | 'DOCTOR'
-  | 'RECEPTIONIST'
-  | 'MANAGER'
-  | 'ACCOUNTANT'
-  | 'WAREHOUSE'
-  | 'SHOP_STAFF';
+  'DOCTOR' | 'RECEPTIONIST' | 'MANAGER' | 'ACCOUNTANT' | 'WAREHOUSE' | 'SHOP_STAFF'; // updated
 
 export interface StaffResponse {
   id: string;
@@ -67,3 +62,4 @@ export interface SpringPage<T> {
   last: boolean;
   empty: boolean;
 }
+// fix

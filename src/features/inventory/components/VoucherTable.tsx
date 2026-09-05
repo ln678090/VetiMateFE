@@ -16,10 +16,14 @@ const TYPE_LABELS: Record<VoucherType, { label: string; color: string }> = {
     label: 'Xuất kho',
     color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
   },
+  STOCKTAKE: {
+    label: 'Kiểm kê',
+    color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+  },
 };
 
 const STATUS_LABELS: Record<VoucherStatus, { label: string; color: string }> = {
-  PENDING: {
+  DRAFT: {
     label: 'Chờ duyệt',
     color:
       'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-400',
@@ -74,7 +78,7 @@ export function VoucherTable({
           className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-rose-300 dark:border-zinc-700 dark:bg-zinc-900"
         >
           <option value="">Tất cả trạng thái</option>
-          <option value="PENDING">Chờ duyệt</option>
+          <option value="DRAFT">Chờ duyệt</option>
           <option value="APPROVED">Đã duyệt</option>
           <option value="CANCELLED">Đã hủy</option>
         </select>
@@ -213,7 +217,7 @@ function VoucherRow({
             >
               <Eye className="h-4 w-4" />
             </button>
-            {voucher.status === 'PENDING' && (
+            {voucher.status === 'DRAFT' && (
               <>
                 <button
                   onClick={handleApprove}
@@ -243,10 +247,11 @@ function VoucherRow({
             <table className="w-full text-xs">
               <thead>
                 <tr className="text-zinc-500">
-                  <th className="pb-2 text-left font-medium">Mặt hàng</th>
+                  <th className="pb-2 text-left font-medium w-2/5">Mặt hàng</th>
                   <th className="pb-2 text-left font-medium">Lô</th>
+                  <th className="pb-2 text-left font-medium">HSD</th>
                   <th className="pb-2 text-right font-medium">Số lượng</th>
-                  <th className="pb-2 text-right font-medium">Đơn giá</th>
+                  <th className="pb-2 text-right font-medium px-4">Đơn giá</th>
                   <th className="pb-2 text-left font-medium">Ghi chú</th>
                 </tr>
               </thead>
@@ -257,13 +262,23 @@ function VoucherRow({
                       {item.medicineName || item.productName || '—'}
                     </td>
                     <td className="py-1.5 text-zinc-500">{item.batchCode || '—'}</td>
+                    <td className="py-1.5 text-zinc-500">
+                      {item.expiryDate
+                        ? new Date(item.expiryDate).toLocaleDateString('vi-VN')
+                        : '—'}
+                    </td>
                     <td className="py-1.5 text-right text-zinc-800 dark:text-zinc-200">
                       {item.quantity}
                     </td>
-                    <td className="py-1.5 text-right text-zinc-500">
+                    <td className="py-1.5 text-right text-zinc-500 px-4">
                       {item.unitPrice ? `${item.unitPrice.toLocaleString('vi-VN')}₫` : '—'}
                     </td>
-                    <td className="py-1.5 text-zinc-500">{item.note || '—'}</td>
+                    <td
+                      className="py-1.5 text-zinc-500 truncate max-w-[150px]"
+                      title={item.note || ''}
+                    >
+                      {item.note || '—'}
+                    </td>
                   </tr>
                 ))}
               </tbody>

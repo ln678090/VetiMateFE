@@ -214,3 +214,22 @@ export const useInventoryDashboard = () =>
       return res.data.data;
     },
   });
+
+// ===== Alerts =====
+export const useNearExpiryBatches = () =>
+  useQuery({
+    queryKey: ['alerts', 'near-expiry'],
+    queryFn: async () => {
+      const res = await alertApi.getNearExpiry();
+      return res.data.data;
+    },
+  });
+
+export const useExpiredBatches = () =>
+  useQuery({
+    queryKey: ['alerts', 'expired'],
+    queryFn: async () => {
+      const res = await alertApi.getExpired();
+      return res.data.data;
+    },
+  });

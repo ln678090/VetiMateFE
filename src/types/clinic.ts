@@ -1,4 +1,5 @@
 // Types khớp DTO backend (com.graduation.project.clinic.dto)
+// updated
 export interface ClinicServiceDto {
   id: string;
   name: string;
@@ -97,12 +98,7 @@ export interface UpdatePetRequest {
 }
 
 export type AppointmentStatus =
-  | 'SCHEDULED'
-  | 'CONFIRMED'
-  | 'DONE'
-  | 'CANCELLED'
-  | 'NO_SHOW'
-  | 'ARRIVED';
+  'SCHEDULED' | 'CONFIRMED' | 'DONE' | 'CANCELLED' | 'NO_SHOW' | 'ARRIVED';
 
 export interface SpringPage<T> {
   content: T[];
@@ -125,3 +121,4 @@ export interface ManagementAppointmentParams {
 export interface UpdateAppointmentStatusRequest {
   status: AppointmentStatus;
 }
+// fix

@@ -4,6 +4,7 @@ import { Product, ProductListResp } from '../types/product.types';
 
 export interface ProductReq {
   name: string;
+  sku?: string;
   description?: string;
   shortDesc?: string;
   categoryId: string;

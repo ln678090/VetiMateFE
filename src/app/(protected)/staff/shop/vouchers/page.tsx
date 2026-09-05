@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { getAllVouchers } from '@/features/loyalty/api/loyalty.api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getAllVouchers, deleteVoucher } from '@/features/loyalty/api/loyalty.api';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { VoucherTable } from './components/VoucherTable';
@@ -25,20 +26,22 @@ export default function VouchersPage() {
     queryFn: getAllVouchers,
   });
 
-  const [tierFilter, setTierFilter] = useState('ALL');
   const [typeFilter, setTypeFilter] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState('ALL');
 
   const filteredVouchers = (vouchers || []).filter((v) => {
-    if (tierFilter !== 'ALL') {
-      if (tierFilter === 'NONE') {
-        if (v.requiredTier) return false;
-      } else {
-        if (v.requiredTier !== tierFilter) return false;
-      }
-    }
     if (typeFilter !== 'ALL' && v.discountType !== typeFilter) {
       return false;
     }
+
+    if (statusFilter !== 'ALL') {
+      const isExpired = v.endDate && new Date() > new Date(v.endDate);
+
+      if (statusFilter === 'EXPIRED' && !isExpired) return false;
+      if (statusFilter === 'ACTIVE' && (!v.isActive || isExpired)) return false;
+      if (statusFilter === 'INACTIVE' && v.isActive) return false;
+    }
+
     return true;
   });
 
@@ -52,6 +55,24 @@ export default function VouchersPage() {
     setIsModalOpen(true);
   };
 
+  const queryClient = useQueryClient();
+  const deleteMutation = useMutation({
+    mutationFn: deleteVoucher,
+    onSuccess: () => {
+      toast.success('Xóa voucher thành công');
+      queryClient.invalidateQueries({ queryKey: ['management', 'vouchers'] });
+    },
+    onError: (err: any) => {
+      toast.error('Lỗi khi xóa voucher', {
+        description: err?.response?.data?.message || err.message,
+      });
+    },
+  });
+
+  const handleDelete = (id: string) => {
+    deleteMutation.mutate(id);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -63,21 +84,6 @@ export default function VouchersPage() {
       </div>
 
       <div className="flex items-center gap-4 pb-2">
-        <Select value={tierFilter} onValueChange={setTierFilter}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Lọc theo hạng yêu cầu" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">Tất cả các hạng (bỏ lọc)</SelectItem>
-            <SelectItem value="NONE">Dành cho mọi hạng</SelectItem>
-            <SelectItem value="MEMBER">Tiêu chuẩn (MEMBER)</SelectItem>
-            <SelectItem value="BRONZE">Hạng Đồng (BRONZE)</SelectItem>
-            <SelectItem value="SILVER">Hạng Bạc (SILVER)</SelectItem>
-            <SelectItem value="GOLD">Hạng Vàng (GOLD)</SelectItem>
-            <SelectItem value="DIAMOND">Hạng Kim Cương (DIAMOND)</SelectItem>
-          </SelectContent>
-        </Select>
-
         <Select value={typeFilter} onValueChange={setTypeFilter}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Lọc theo loại giảm giá" />
@@ -88,9 +94,26 @@ export default function VouchersPage() {
             <SelectItem value="PERCENTAGE">Theo phần trăm (%)</SelectItem>
           </SelectContent>
         </Select>
+
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Trạng thái" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
+            <SelectItem value="ACTIVE">Hoạt động</SelectItem>
+            <SelectItem value="INACTIVE">Đã tắt</SelectItem>
+            <SelectItem value="EXPIRED">Hết hạn</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      <VoucherTable data={filteredVouchers} isLoading={isLoading} onEdit={handleEdit} />
+      <VoucherTable
+        data={filteredVouchers}
+        isLoading={isLoading}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
 
       <VoucherFormModal
         isOpen={isModalOpen}

@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { APP_NAVIGATION_ITEMS, canShowNavigationItemOnDashboard } from '@/config/app-navigation';
 import { getAuthoritiesFromToken } from '@/lib/auth-roles';
 import { useAuthStore } from '@/stores/auth.store';
+import { BatchAlertsWidget } from '@/features/inventory/components/widgets/BatchAlertsWidget';
 
 type DashboardRole =
   | 'ADMIN'
@@ -164,69 +165,67 @@ export default function DashboardPage() {
           {configuration.description}
         </p>
       </motion.header>
+      {['ADMIN', 'MANAGER', 'WAREHOUSE', 'SHOP_STAFF'].includes(dashboardRole) ? (
+        <BatchAlertsWidget role={dashboardRole} />
+      ) : (
+        <Stagger
+          delayChildren={0.15}
+          staggerChildren={0.08}
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        >
+          {dashboardActions.map((action) => {
+            const Icon = action.icon;
+            const gradient = action.gradient ?? 'from-rose-500 to-orange-500';
 
-      <Stagger
-        delayChildren={0.15}
-        staggerChildren={0.08}
-        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-      >
-        {dashboardActions.map((action) => {
-          const Icon = action.icon;
-
-          const gradient = action.gradient ?? 'from-rose-500 to-orange-500';
-
-          return (
-            <StaggerItem key={action.key}>
-              <Link href={action.href} className="block h-full">
-                <Card className="group relative h-full overflow-hidden border-zinc-200/70 bg-white/80 backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-rose-100/50 dark:border-zinc-800/60 dark:bg-zinc-900/60">
-                  <div
-                    className={[
-                      'absolute -right-12 -top-12 h-32 w-32 rounded-full bg-gradient-to-br opacity-10 blur-2xl',
-                      gradient,
-                    ].join(' ')}
-                  />
-
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                    <CardTitle className="text-base font-semibold text-zinc-900 dark:text-white">
-                      {action.label}
-                    </CardTitle>
-
-                    <span
+            return (
+              <StaggerItem key={action.key}>
+                <Link href={action.href} className="block h-full">
+                  <Card className="group relative h-full overflow-hidden border-zinc-200/70 bg-white/80 backdrop-blur-xl transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-rose-100/50 dark:border-zinc-800/60 dark:bg-zinc-900/60">
+                    <div
                       className={[
-                        'grid size-10 place-items-center rounded-xl bg-gradient-to-br text-white shadow-md',
+                        'absolute -right-12 -top-12 h-32 w-32 rounded-full bg-gradient-to-br opacity-10 blur-2xl',
                         gradient,
                       ].join(' ')}
-                    >
-                      <Icon className="size-5" strokeWidth={2.2} />
-                    </span>
-                  </CardHeader>
-
-                  <CardContent>
-                    <p className="text-sm leading-6 text-zinc-500 dark:text-zinc-400">
-                      {action.dashboardDescription}
-                    </p>
-
-                    <p className="mt-4 text-sm font-medium text-rose-600 transition-transform group-hover:translate-x-1 dark:text-rose-400">
-                      Mở chức năng →
-                    </p>
-                  </CardContent>
-                </Card>
-              </Link>
-            </StaggerItem>
-          );
-        })}
-      </Stagger>
-
-      {dashboardActions.length === 0 && (
-        <Card className="border-amber-200 bg-amber-50/70 dark:border-amber-900 dark:bg-amber-950/20">
-          <CardContent className="py-6">
-            <p className="text-sm text-amber-800 dark:text-amber-300">
-              Tài khoản chưa có chức năng Dashboard phù hợp. Hãy đăng nhập lại để làm mới quyền.
-            </p>
-          </CardContent>
-        </Card>
+                    />
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+                      <CardTitle className="text-base font-semibold text-zinc-900 dark:text-white">
+                        {action.label}
+                      </CardTitle>
+                      <span
+                        className={[
+                          'grid size-10 place-items-center rounded-xl bg-gradient-to-br text-white shadow-md',
+                          gradient,
+                        ].join(' ')}
+                      >
+                        <Icon className="size-5" strokeWidth={2.2} />
+                      </span>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+                        {action.dashboardDescription}
+                      </p>
+                      <p className="mt-4 text-sm font-medium text-rose-600 transition-transform group-hover:translate-x-1 dark:text-rose-400">
+                        Mở chức năng →
+                      </p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </StaggerItem>
+            );
+          })}
+        </Stagger>
       )}
 
+      {!['ADMIN', 'MANAGER', 'WAREHOUSE', 'SHOP_STAFF'].includes(dashboardRole) &&
+        dashboardActions.length === 0 && (
+          <Card className="border-amber-200 bg-amber-50/70 dark:border-amber-900 dark:bg-amber-950/20">
+            <CardContent className="py-6">
+              <p className="text-sm text-amber-800 dark:text-amber-300">
+                Tài khoản chưa có chức năng Dashboard phù hợp. Hãy đăng nhập lại để làm mới quyền.
+              </p>
+            </CardContent>
+          </Card>
+        )}
       <motion.section
         initial={{
           opacity: 0,
