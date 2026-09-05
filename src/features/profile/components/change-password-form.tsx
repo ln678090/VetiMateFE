@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/input';
 import { authService } from '@/services/auth.service';
 import { changePasswordSchema, type ChangePasswordInput } from '@/schemas/auth.schema';
 
-export function ChangePasswordForm() {
+export function ChangePasswordForm({ onSuccess }: { onSuccess?: () => void }) {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -39,6 +39,7 @@ export function ChangePasswordForm() {
     onSuccess: () => {
       toast.success('Đổi mật khẩu thành công!');
       form.reset();
+      onSuccess?.();
     },
     onError: (error: unknown) => {
       // Sửa thành unknown
@@ -150,10 +151,10 @@ export function ChangePasswordForm() {
           )}
         />
 
-        <div className="flex justify-end pt-2 mt-auto">
+        <div className="flex justify-end mt-auto">
           <Button
             type="submit"
-            className="rounded-xl w-full"
+            className="w-full mt-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-200/50 hover:from-emerald-600 hover:to-teal-600 hover:shadow-xl hover:shadow-emerald-300/50 transition-all duration-300 h-10 text-sm font-medium"
             disabled={changePasswordMutation.isPending}
           >
             {changePasswordMutation.isPending ? (

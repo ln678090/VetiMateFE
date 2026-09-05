@@ -1,6 +1,6 @@
 'use client';
 
-import { Loader2, LogOut } from 'lucide-react';
+import { Loader2, LogOut, ShieldCheck } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -12,9 +12,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/use-auth';
 import { getAuthoritiesFromToken } from '@/lib/auth-roles';
 import { useAuthStore } from '@/stores/auth.store';
+import { ChangePasswordForm } from '@/features/profile/components/change-password-form';
 
 function resolveRoleLabel(authorities: readonly string[]): string {
   if (authorities.includes('ROLE_ADMIN')) {
@@ -72,6 +80,7 @@ export function UserMenu() {
   const accessToken = useAuthStore((state) => state.accessToken);
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   const authorities = useMemo(() => getAuthoritiesFromToken(accessToken), [accessToken]);
 
@@ -97,6 +106,7 @@ export function UserMenu() {
   }
 
   return (
+    <>
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
@@ -136,6 +146,14 @@ export function UserMenu() {
         <DropdownMenuSeparator />
 
         <DropdownMenuItem
+          onClick={() => setIsPasswordModalOpen(true)}
+          className="cursor-pointer"
+        >
+          <ShieldCheck className="mr-2 h-4 w-4" strokeWidth={2} />
+          Đổi mật khẩu
+        </DropdownMenuItem>
+
+        <DropdownMenuItem
           disabled={isLoggingOut}
           onClick={() => void handleLogout()}
           className="text-rose-600 focus:bg-rose-50 focus:text-rose-700 dark:text-rose-400 dark:focus:bg-rose-500/10"
@@ -150,5 +168,18 @@ export function UserMenu() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+
+    <Dialog open={isPasswordModalOpen} onOpenChange={setIsPasswordModalOpen}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Đổi mật khẩu</DialogTitle>
+          <DialogDescription>
+            Cập nhật mật khẩu mới cho tài khoản của bạn.
+          </DialogDescription>
+        </DialogHeader>
+        <ChangePasswordForm onSuccess={() => setIsPasswordModalOpen(false)} />
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }

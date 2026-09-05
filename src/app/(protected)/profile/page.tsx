@@ -7,9 +7,6 @@ import {
   Mail,
   UserRound,
   ShieldCheck,
-  Package,
-  PawPrint,
-  CalendarDays,
   ChevronRight,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -24,12 +21,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMyCustomer } from '@/features/booking/hooks/use-clinic';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthStore } from '@/stores/auth.store';
 import { ChangePasswordForm } from '@/features/profile/components/change-password-form';
-import { ProductCard } from '@/features/shop/components/ProductCard';
-import { Product } from '@/types/shop';
-
 type ProfileUser = {
   id?: string;
   fullName?: string;
@@ -59,16 +52,6 @@ export default function ProfilePage() {
   } = useQuery({
     queryKey: ['my-profile'],
     queryFn: () => userService.getMyProfile(),
-  });
-
-  const { data: favoritesData, isLoading: loadingFavorites } = useQuery({
-    queryKey: ['my-favorites'],
-    queryFn: () => userService.getFavorites(),
-  });
-
-  const { data: viewedData, isLoading: loadingViewed } = useQuery({
-    queryKey: ['my-viewed'],
-    queryFn: () => userService.getRecentlyViewed(),
   });
 
   const isError = customerError || profileError;
@@ -134,37 +117,45 @@ export default function ProfilePage() {
   const displayName = profile?.fullName || customer?.fullName || profile?.username || 'Người dùng';
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
       {/* 1. Header Banner Gradient */}
-      <section className="overflow-hidden rounded-3xl border bg-gradient-to-br from-rose-500 via-orange-400 to-amber-400 p-6 text-white shadow-sm">
-        <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex size-20 items-center justify-center rounded-3xl bg-white/20 text-2xl font-bold backdrop-blur">
+      <section className="relative overflow-hidden rounded-3xl border-0 bg-gradient-to-br from-rose-500 via-orange-400 to-amber-400 p-6 text-white shadow-xl shadow-rose-200/50">
+        {/* Decorative background shapes */}
+        <div className="absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/20 blur-3xl"></div>
+        <div className="absolute -bottom-10 left-10 h-32 w-32 rounded-full bg-orange-200/20 blur-2xl"></div>
+
+        <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-5">
+            <div className="flex size-20 items-center justify-center rounded-2xl bg-white/20 text-2xl font-bold backdrop-blur-md ring-4 ring-white/30 shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-transform duration-500 hover:scale-105 hover:rotate-3 cursor-default">
               {getInitials(displayName, profile?.email)}
             </div>
 
-            <div>
-              <p className="text-sm font-medium text-white/80">Hồ sơ cá nhân</p>
-              <h1 className="mt-1 text-3xl font-bold tracking-tight">{displayName}</h1>
-              <div className="flex items-center gap-2 text-sm text-primary-foreground/80">
-                <Mail className="size-4" />
+            <div className="space-y-1">
+              <p className="text-xs font-semibold tracking-wider text-white/80 uppercase">Hồ sơ cá nhân</p>
+              <h1 className="text-2xl font-extrabold tracking-tight drop-shadow-sm">{displayName}</h1>
+              <div className="flex items-center gap-2 text-xs font-medium text-white/90 bg-black/10 w-fit px-2.5 py-1 rounded-full backdrop-blur-sm mt-1">
+                <Mail className="size-3.5" />
                 <span>{profile?.email || 'Chưa có'}</span>
               </div>
             </div>
           </div>
-          {/* Đã bỏ phần Role theo yêu cầu */}
         </div>
       </section>
 
       {/* 2. Grid 2 cột: Thông tin tài khoản & Đổi mật khẩu */}
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="rounded-3xl h-full flex flex-col">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserRound className="size-5 text-rose-500" />
-              Thông tin tài khoản
-            </CardTitle>
-            <CardDescription>Thông tin đăng nhập hiện tại.</CardDescription>
+        {/* Card Thông tin */}
+        <Card className="rounded-3xl h-full flex flex-col border-white/60 bg-white/70 shadow-xl shadow-rose-100/40 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-rose-100/60 overflow-hidden">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-rose-100 text-rose-500 shadow-inner">
+                <UserRound className="size-6" />
+              </div>
+              <div className="flex flex-col">
+                <CardTitle className="text-lg">Thông tin tài khoản</CardTitle>
+                <CardDescription className="text-xs font-medium mt-0.5">Thông định danh hiện tại của bạn.</CardDescription>
+              </div>
+            </div>
           </CardHeader>
 
           <CardContent className="flex-1 flex flex-col">
@@ -173,47 +164,56 @@ export default function ProfilePage() {
               className="space-y-4 text-sm flex-1 flex flex-col"
             >
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-muted-foreground">
+                <Label htmlFor="email" className="text-muted-foreground font-medium">
                   Email
                 </Label>
                 <Input
                   id="email"
                   value={profile?.email || 'Chưa có'}
                   disabled
-                  className="bg-muted/50"
+                  className="bg-muted/50 rounded-xl h-10"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="fullName">Họ tên</Label>
-                <Input id="fullName" {...register('fullName')} />
+                <Label htmlFor="fullName" className="font-medium">Họ tên</Label>
+                <Input id="fullName" {...register('fullName')} className="rounded-xl h-10" />
                 {errors.fullName && (
                   <p className="text-xs text-red-500">{errors.fullName.message}</p>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <Input id="username" {...register('username')} />
+                <Label htmlFor="username" className="font-medium">Username</Label>
+                <Input id="username" {...register('username')} className="rounded-xl h-10" />
                 {errors.username && (
                   <p className="text-xs text-red-500">{errors.username.message}</p>
                 )}
               </div>
 
-              <Button type="submit" disabled={isSubmitting} className="w-full mt-auto">
+              <Button 
+                type="submit" 
+                disabled={isSubmitting} 
+                className="w-full mt-4 rounded-xl bg-gradient-to-r from-rose-500 to-orange-500 text-white shadow-lg shadow-rose-200/50 hover:from-rose-600 hover:to-orange-600 hover:shadow-xl hover:shadow-rose-300/50 transition-all duration-300 h-10 text-sm font-medium"
+              >
                 {isSubmitting ? 'Đang lưu...' : 'Lưu thay đổi'}
               </Button>
             </form>
           </CardContent>
         </Card>
 
-        <Card className="rounded-3xl flex flex-col h-full">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ShieldCheck className="size-5 text-emerald-500" />
-              Đổi mật khẩu
-            </CardTitle>
-            <CardDescription>Cập nhật mật khẩu mới cho tài khoản của bạn.</CardDescription>
+        {/* Card Đổi mật khẩu */}
+        <Card className="rounded-3xl flex flex-col h-full border-white/60 bg-white/70 shadow-xl shadow-emerald-100/40 backdrop-blur-xl transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:shadow-emerald-100/60 overflow-hidden">
+          <CardHeader className="pb-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-500 shadow-inner">
+                <ShieldCheck className="size-6" />
+              </div>
+              <div className="flex flex-col">
+                <CardTitle className="text-lg">Đổi mật khẩu</CardTitle>
+                <CardDescription className="text-xs font-medium mt-0.5">Tăng cường bảo mật cho tài khoản.</CardDescription>
+              </div>
+            </div>
           </CardHeader>
 
           <CardContent className="flex-1 flex flex-col">
@@ -224,124 +224,7 @@ export default function ProfilePage() {
         </Card>
       </div>
 
-      {/* 4. Sản phẩm đã thích & Đã xem gần đây */}
-      <Card className="rounded-3xl">
-        <Tabs defaultValue="favorites" className="w-full">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <TabsList className="bg-muted/50 rounded-2xl p-1">
-              <TabsTrigger value="favorites" className="rounded-xl px-6">
-                Sản phẩm đã thích
-              </TabsTrigger>
-              <TabsTrigger value="viewed" className="rounded-xl px-6">
-                Đã xem gần đây
-              </TabsTrigger>
-            </TabsList>
-            <Button
-              variant="ghost"
-              className="text-sm font-medium text-rose-600 hover:text-rose-700"
-              asChild
-            >
-              <Link href="/profile/interactions">Xem tất cả</Link>
-            </Button>
-          </CardHeader>
 
-          <CardContent>
-            <TabsContent value="favorites" className="mt-0">
-              {loadingFavorites ? (
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Skeleton key={i} className="h-64 rounded-2xl" />
-                  ))}
-                </div>
-              ) : (favoritesData as unknown as { content?: unknown[] })?.content?.length ? (
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
-                  {(favoritesData as unknown as { content: unknown[] }).content
-                    .slice(0, 5)
-                    .map((product) => (
-                      <ProductCard
-                        key={String((product as { id?: string })?.id)}
-                        product={product as unknown as Product}
-                      />
-                    ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-center bg-muted/30 rounded-2xl border border-dashed">
-                  <Package className="size-12 text-muted-foreground/50 mb-4" />
-                  <p className="text-muted-foreground">Bạn chưa có sản phẩm yêu thích nào.</p>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="viewed" className="mt-0">
-              {loadingViewed ? (
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Skeleton key={i} className="h-64 rounded-2xl" />
-                  ))}
-                </div>
-              ) : (viewedData as unknown as { content?: unknown[] })?.content?.length ? (
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
-                  {(viewedData as unknown as { content: unknown[] }).content
-                    .slice(0, 5)
-                    .map((product) => (
-                      <ProductCard
-                        key={String((product as { id?: string })?.id)}
-                        product={product as unknown as Product}
-                      />
-                    ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-center bg-muted/30 rounded-2xl border border-dashed">
-                  <Package className="size-12 text-muted-foreground/50 mb-4" />
-                  <p className="text-muted-foreground">Chưa có sản phẩm nào được xem gần đây.</p>
-                </div>
-              )}
-            </TabsContent>
-          </CardContent>
-        </Tabs>
-      </Card>
     </div>
-  );
-}
-
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-4 rounded-2xl bg-muted/50 px-4 py-3">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="text-right font-medium">{value}</span>
-    </div>
-  );
-}
-
-function ActionCard({
-  href,
-  icon,
-  title,
-  description,
-}: {
-  href: string;
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}) {
-  return (
-    <Card className="rounded-3xl transition hover:-translate-y-0.5 hover:shadow-md">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <span className="text-rose-500">{icon}</span>
-          {title}
-        </CardTitle>
-        <CardDescription>{description}</CardDescription>
-      </CardHeader>
-
-      <CardContent>
-        <Button asChild className="w-full">
-          <Link href={href}>
-            Mở
-            <ChevronRight className="ml-2 size-4" />
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
   );
 }

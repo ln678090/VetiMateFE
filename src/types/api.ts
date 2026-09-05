@@ -12,3 +12,13 @@ export interface ApiError {
   timestamp?: string;
   errors?: Record<string, string[]>;
 }
+
+/** Cấu trúc phân trang từ backend Spring Boot */
+export interface PageResp<T> {
+  content: T[];
+  pageNo: number;
+  pageSize: number;
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+}

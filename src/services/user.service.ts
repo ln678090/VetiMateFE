@@ -8,6 +8,10 @@ export const userService = {
     return unwrap(api.put<ApiResp<string>>('/api/users/me/profile', input));
   },
 
+  async changePassword(input: any): Promise<string> {
+    return unwrap(api.put<ApiResp<string>>('/api/users/me/password', input));
+  },
+
   async getMyProfile(): Promise<{
     id: string;
     fullName: string;

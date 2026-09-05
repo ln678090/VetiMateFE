@@ -124,15 +124,6 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     accessRoles: [ROLE.USER],
     sidebarRoles: [ROLE.USER],
   },
-  {
-    key: 'profile',
-    label: 'Hồ sơ',
-    href: '/profile',
-    icon: UserRound,
-    accessRoles: [ROLE.USER],
-    sidebarRoles: [ROLE.USER],
-    exact: true,
-  },
 
   // ─────────────────────────────────────────────
   // Manager và Receptionist
@@ -302,16 +293,17 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
   // Admin
   // ─────────────────────────────────────────────
 
+
   {
     key: 'staff-management',
-    label: 'Tài khoản & phân quyền',
+    label: 'Nhân sự & phân quyền',
     href: '/management/staff',
     icon: UsersRound,
     accessRoles: [ROLE.ADMIN],
     sidebarRoles: [ROLE.ADMIN],
     dashboardRoles: [ROLE.ADMIN],
-    dashboardDescription: 'Quản lý tài khoản, vai trò và trạng thái truy cập.',
-    gradient: 'from-cyan-500 to-blue-500',
+    dashboardDescription: 'Quản lý nhân viên, vai trò và trạng thái truy cập.',
+    gradient: 'from-blue-500 to-indigo-500',
     group: 'Quản trị hệ thống',
   },
 
@@ -342,6 +334,8 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     dashboardDescription: 'Tra cứu hồ sơ khám đã hoàn thành.',
     gradient: 'from-sky-500 to-indigo-500',
   },
+
+
 ];
 
 function hasRequiredRole(
