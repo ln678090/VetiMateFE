@@ -223,12 +223,23 @@ export function OrderCard({ order, onCancelOrder, onReviewOrder }: OrderCardProp
             </Button>
           )}
           {order.status === 'DELIVERED' && (
-            <Button
-              onClick={handleBuyAgain}
-              className="h-10 rounded-xl bg-rose-500 font-bold text-white shadow-md shadow-rose-500/20 hover:bg-rose-600"
-            >
-              Mua Lại
-            </Button>
+            <>
+              {onReviewOrder && (
+                <Button
+                  variant="outline"
+                  onClick={() => onReviewOrder(order.id)}
+                  className="h-10 rounded-xl border-zinc-200 font-semibold text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                >
+                  Đánh giá
+                </Button>
+              )}
+              <Button
+                onClick={handleBuyAgain}
+                className="h-10 rounded-xl bg-rose-500 font-bold text-white shadow-md shadow-rose-500/20 hover:bg-rose-600"
+              >
+                Mua Lại
+              </Button>
+            </>
           )}
         </div>
       </div>

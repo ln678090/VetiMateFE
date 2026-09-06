@@ -12,6 +12,7 @@ import {
 } from '@/config/app-navigation';
 import { getAuthoritiesFromToken } from '@/lib/auth-roles';
 import { useAuthStore } from '@/stores/auth.store';
+import { useOrderNotification } from '@/hooks/use-order-notification';
 
 function getRoutePath(href: string): string {
   return href.split('?')[0] ?? href;
@@ -81,10 +82,14 @@ export function AppSidebar() {
     setCollapsed((current) => !current);
   }
 
+  const { pendingCount } = useOrderNotification();
+
   function renderNavigationItem(item: AppNavigationItem) {
     const Icon = item.icon;
 
     const active = isActiveRoute(pathname, item.href, item.exact);
+
+    const showBadge = item.key === 'shop-orders' && pendingCount > 0;
 
     return (
       <Link
@@ -104,9 +109,22 @@ export function AppSidebar() {
               ].join(' '),
         ].join(' ')}
       >
-        <Icon className="size-5 shrink-0" strokeWidth={2} />
+        <div className="relative">
+          <Icon className="size-5 shrink-0" strokeWidth={2} />
+          {showBadge && collapsed && (
+            <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white shadow-sm">
+              {pendingCount > 99 ? '99+' : pendingCount}
+            </span>
+          )}
+        </div>
 
-        {!collapsed && <span className="truncate text-sm font-medium">{item.label}</span>}
+        {!collapsed && <span className="flex-1 truncate text-sm font-medium">{item.label}</span>}
+
+        {showBadge && !collapsed && (
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[11px] font-bold text-white shadow-sm animate-pulse">
+            {pendingCount > 99 ? '99+' : pendingCount}
+          </span>
+        )}
       </Link>
     );
   }

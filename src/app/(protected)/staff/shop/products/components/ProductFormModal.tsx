@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { ImageUpload } from '@/components/ui/image-upload';
 import {
   Select,
   SelectContent,
@@ -30,6 +31,7 @@ import { catalogApi } from '@/features/shop/api/catalog.api';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Tên sản phẩm phải có ít nhất 2 ký tự'),
+  sku: z.string().optional(),
   description: z.string().optional(),
   shortDesc: z.string().optional(),
   categoryId: z.string().min(1, 'Vui lòng chọn danh mục'),
@@ -84,8 +86,9 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
     if (isOpen) {
       if (productToEdit) {
         form.reset({
-          name: productToEdit.name,
-          description: productToEdit.description || '',
+          name: productToEdit?.name || '',
+          sku: productToEdit?.sku || '',
+          description: productToEdit?.description || '',
           categoryId: productToEdit.categoryId,
           brandId: productToEdit.brandId,
           petType: productToEdit.petType,
@@ -173,12 +176,26 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                  <FormItem className="col-span-2">
+                  <FormItem className="col-span-1">
                     <FormLabel>
                       Tên sản phẩm <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input placeholder="Nhập tên sản phẩm..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="sku"
+                render={({ field }) => (
+                  <FormItem className="col-span-1">
+                    <FormLabel>Mã SKU</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Nhập mã SKU..." {...field} value={field.value || ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -284,10 +301,14 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      URL Ảnh đại diện <span className="text-red-500">*</span>
+                      Ảnh đại diện <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
-                      <Input placeholder="https://example.com/image.png" {...field} />
+                      <ImageUpload
+                        value={field.value}
+                        onChange={field.onChange}
+                        folder="petcare/products"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

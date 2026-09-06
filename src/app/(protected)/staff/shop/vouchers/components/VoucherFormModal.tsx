@@ -34,9 +34,9 @@ const schema = z.object({
   discountValue: z.coerce.number().min(0, 'Phải lớn hơn hoặc bằng 0'),
   minOrderAmount: z.coerce.number().min(0).optional(),
   maxDiscount: z.coerce.number().min(0, 'Giảm giá tối đa phải >= 0').optional(),
-  pointCost: z.coerce.number().min(0, 'Điểm yêu cầu phải >= 0'),
+  pointsRequired: z.coerce.number().min(0, 'Điểm yêu cầu phải >= 0'),
   maxUsage: z.coerce.number().min(0, 'Giới hạn số lần sử dụng phải >= 0'),
-  requiredTier: z.string().optional(),
+
   startDate: z.string().optional().or(z.literal('')),
   endDate: z.string().optional().or(z.literal('')),
   isActive: z.boolean(),
@@ -63,8 +63,8 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
       discountValue: 0,
       minOrderAmount: 0,
       maxDiscount: 0,
-      pointCost: 0,
-      requiredTier: 'STANDARD',
+      pointsRequired: 0,
+
       maxUsage: 0,
       startDate: '',
       endDate: '',
@@ -78,12 +78,12 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
         code: initialData.code,
         description: initialData.description || '',
         discountType: initialData.discountType,
-        discountValue: initialData.discountValue,
-        minOrderAmount: initialData.minOrderAmount,
-        maxDiscount: initialData.maxDiscount || 0,
-        pointCost: initialData.pointCost,
-        requiredTier: initialData.requiredTier || 'STANDARD',
-        maxUsage: initialData.maxUsage || 0,
+        discountValue: initialData.discountValue ?? 0,
+        minOrderAmount: initialData.minOrderAmount ?? 0,
+        maxDiscount: initialData.maxDiscount ?? 0,
+        pointsRequired: initialData.pointsRequired ?? 0,
+
+        maxUsage: initialData.maxUsage ?? 0,
         startDate: initialData.startDate ? initialData.startDate.substring(0, 16) : '',
         endDate: initialData.endDate ? initialData.endDate.substring(0, 16) : '',
         isActive: initialData.isActive,
@@ -96,8 +96,8 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
         discountValue: 0,
         minOrderAmount: 0,
         maxDiscount: 0,
-        pointCost: 0,
-        requiredTier: 'STANDARD',
+        pointsRequired: 0,
+
         maxUsage: 0,
         startDate: '',
         endDate: '',
@@ -135,13 +135,7 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
       ...values,
       name: values.code,
       discountType: values.discountType as 'PERCENT' | 'FIXED',
-      requiredTier: values.requiredTier as
-        | 'STANDARD'
-        | 'BRONZE'
-        | 'SILVER'
-        | 'GOLD'
-        | 'DIAMOND'
-        | undefined,
+
       maxUsage: values.maxUsage === 0 ? undefined : values.maxUsage,
       maxDiscount: values.maxDiscount === 0 ? undefined : values.maxDiscount,
       startDate: values.startDate ? new Date(values.startDate).toISOString() : '',
@@ -170,7 +164,12 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
                 <FormItem>
                   <FormLabel>Mã Voucher</FormLabel>
                   <FormControl>
-                    <Input {...field} className="uppercase" placeholder="VÍ DỤ: Giam10K" />
+                    <Input
+                      {...field}
+                      value={field.value ?? ''}
+                      className="uppercase"
+                      placeholder="VÍ DỤ: Giam10K"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -184,7 +183,11 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
                 <FormItem>
                   <FormLabel>Mô tả</FormLabel>
                   <FormControl>
-                    <Textarea {...field} placeholder="Thông tin chi tiết về voucher..." />
+                    <Textarea
+                      {...field}
+                      value={field.value ?? ''}
+                      placeholder="Thông tin chi tiết về voucher..."
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -221,7 +224,7 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
                   <FormItem>
                     <FormLabel>Mức giảm</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input type="number" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -237,7 +240,7 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
                   <FormItem>
                     <FormLabel>Giảm tối đa (VND) - Để 0 nếu không giới hạn</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input type="number" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -251,42 +254,13 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
                   <FormItem>
                     <FormLabel>Đơn tối thiểu (VND)</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input type="number" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
-
-            <FormField
-              control={form.control as any}
-              name="requiredTier"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Hạng yêu cầu</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    value={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Chọn hạng yêu cầu" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="STANDARD">Tiêu chuẩn</SelectItem>
-                      <SelectItem value="BRONZE">Đồng</SelectItem>
-                      <SelectItem value="SILVER">Bạc</SelectItem>
-                      <SelectItem value="GOLD">Vàng</SelectItem>
-                      <SelectItem value="DIAMOND">Kim Cương</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
             <div className="grid grid-cols-2 gap-4">
               <FormField
@@ -296,7 +270,7 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
                   <FormItem>
                     <FormLabel>Thời gian bắt đầu</FormLabel>
                     <FormControl>
-                      <Input type="datetime-local" {...field} />
+                      <Input type="datetime-local" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -310,7 +284,7 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
                   <FormItem>
                     <FormLabel>Thời gian kết thúc</FormLabel>
                     <FormControl>
-                      <Input type="datetime-local" {...field} />
+                      <Input type="datetime-local" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -321,12 +295,12 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control as any}
-                name="pointCost"
+                name="pointsRequired"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Điểm cần đổi (0 = Miễn phí)</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input type="number" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -340,7 +314,7 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
                   <FormItem>
                     <FormLabel>Số lượng mã (0 = Không giới hạn)</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input type="number" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
