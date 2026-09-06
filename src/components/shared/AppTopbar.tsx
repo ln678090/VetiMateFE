@@ -16,29 +16,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-interface AppNotification {
-  id: string;
-  title: string;
-  message: string;
-  isRead: boolean;
-  createdAt: string;
-  link?: string | null;
-}
+import { useNotifications } from '@/hooks/use-notifications';
 
 export function AppTopbar() {
   const router = useRouter();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
-  // Placeholder có type rõ ràng.
-  // Thay bằng dữ liệu từ Notification API sau.
-  const notifications: AppNotification[] = [];
-
-  const unreadCount = notifications.filter((notification) => !notification.isRead).length;
-
-  function markAllAsRead(): void {
-    // Sẽ nối mutation Notification API sau.
-  }
-
-  function handleNotificationClick(notification: AppNotification): void {
+  function handleNotificationClick(notification: any): void {
+    if (!notification.isRead) {
+      markAsRead(notification.id);
+    }
     if (notification.link && notification.link.startsWith('/')) {
       router.push(notification.link);
     }

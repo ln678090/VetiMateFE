@@ -9,7 +9,7 @@ import type {
   CreateVoucherRequest,
   MedicineResp,
 } from '@/types/inventory';
-import { useCreateVoucher, useMedicines } from '../hooks/use-inventory';
+import { useCreateVoucher, useMedicines, useSuppliers } from '../hooks/use-inventory';
 import { getApiErrorMessage } from '@/lib/axios';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
@@ -29,6 +29,7 @@ export function VoucherForm({
   const router = useRouter();
   const createMutation = useCreateVoucher();
   const { data: medicines } = useMedicines(true);
+  const { data: suppliers } = useSuppliers(true);
   const { data: productsData } = useQuery({
     queryKey: ['products-for-inventory'],
     queryFn: async () => {
@@ -272,6 +273,23 @@ export function VoucherForm({
                       onChange={(e) => updateItem(idx, 'expiryDate', e.target.value || undefined)}
                       className="w-full px-4 py-2 rounded-lg border border-m3-outline bg-m3-surface text-m3-on-surface"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-m3-on-surface mb-1">
+                      Nhà cung cấp
+                    </label>
+                    <select
+                      value={item.supplierId || ''}
+                      onChange={(e) => updateItem(idx, 'supplierId', e.target.value || undefined)}
+                      className="w-full px-4 py-2 rounded-lg border border-m3-outline bg-m3-surface text-m3-on-surface"
+                    >
+                      <option value="">-- Chọn nhà cung cấp --</option>
+                      {suppliers?.map((s: any) => (
+                        <option key={s.id} value={s.id}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </>
               )}

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Heart, RotateCcw, Share2, ShieldCheck, ShoppingCart, Star, Truck } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn, formatVND } from '@/lib/utils';
 import { userService } from '@/services/user.service';
+import { useAuthStore } from '@/stores/auth.store';
 import { useCartStore } from '@/stores/cart.store';
 import type { Product } from '@/types/shop';
 
@@ -42,6 +44,8 @@ export function ProductInfo({ product }: ProductInfoProps) {
 
   const queryClient = useQueryClient();
   const addItem = useCartStore((state) => state.addItem);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const router = useRouter();
 
   const favoriteStatusQueryKey = ['favorite-status', product.id] as const;
 
@@ -68,6 +72,12 @@ export function ProductInfo({ product }: ProductInfoProps) {
   }, [product.id]);
 
   const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      toast.error('Vui lòng đăng nhập để thêm vào giỏ hàng');
+      router.push('/login');
+      return;
+    }
+
     addItem(
       {
         ...product,

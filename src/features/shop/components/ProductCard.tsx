@@ -4,11 +4,13 @@ import { motion } from 'framer-motion';
 import { ShoppingCart, Star } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn, formatVND } from '@/lib/utils';
+import { useAuthStore } from '@/stores/auth.store';
 import { useCartStore } from '@/stores/cart.store';
 import type { Product } from '@/types/shop';
 
@@ -23,6 +25,8 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
     ? Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100)
     : 0;
   const addItem = useCartStore((s) => s.addItem);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const router = useRouter();
 
   return (
     <motion.article
@@ -120,6 +124,11 @@ export function ProductCard({ product, index = 0 }: ProductCardProps) {
           disabled={!product.inStock}
           onClick={(e) => {
             e.preventDefault();
+            if (!isAuthenticated) {
+              toast.error('Vui lòng đăng nhập để thêm vào giỏ hàng');
+              router.push('/login');
+              return;
+            }
             addItem({
               ...product,
               image: product.imageUrl,

@@ -57,25 +57,9 @@ export function useOrderNotification() {
       onConnect: () => {
         client.subscribe('/topic/shop-orders', (message) => {
           try {
-            const data: OrderNotification = JSON.parse(message.body);
-            if (data.type === 'NEW_ORDER') {
+            const data = JSON.parse(message.body);
+            if (data.title === 'Đơn hàng mới') {
               setPendingCount((prev) => prev + 1);
-
-              const amount = new Intl.NumberFormat('vi-VN', {
-                style: 'currency',
-                currency: 'VND',
-              }).format(Number(data.totalAmount));
-
-              toast.info(`🛒 Đơn hàng mới: ${data.orderCode}`, {
-                description: `Tổng: ${amount}. Nhấn để xem chi tiết.`,
-                duration: 10000,
-                action: {
-                  label: 'Xem',
-                  onClick: () => {
-                    window.location.href = '/staff/shop/orders';
-                  },
-                },
-              });
             }
           } catch {
             // Ignore parse errors
