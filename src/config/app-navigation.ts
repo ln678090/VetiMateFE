@@ -62,6 +62,13 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     href: '/dashboard',
     icon: LayoutDashboard,
   },
+  {
+    key: 'staff-profile',
+    label: 'Hồ sơ cá nhân',
+    href: '/dashboard/profile',
+    icon: UserRound,
+    roles: [ROLE.MANAGER, ROLE.RECEPTIONIST, ROLE.DOCTOR, ROLE.ACCOUNTANT, ROLE.SHOP_STAFF, ROLE.WAREHOUSE],
+  },
 
   // ─────────────────────────────────────────────
   // Khách hàng
