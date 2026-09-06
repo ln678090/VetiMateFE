@@ -185,18 +185,31 @@ export default function LoyaltyPage() {
                             </div>
                           )}
                         </div>
-                        <Button
-                          className="w-full mt-auto font-medium"
-                          disabled={
-                            redeemMutation.isPending ||
-                            (points?.availablePoints || 0) < voucher.pointsRequired
-                          }
-                          onClick={() => handleRedeem(voucher.id)}
-                        >
-                          {(points?.availablePoints || 0) < voucher.pointsRequired
-                            ? 'Chưa đủ điểm'
-                            : 'Đổi ngay'}
-                        </Button>
+                        {(() => {
+                          const hasActiveVoucher = myVouchers?.some(
+                            (uv) =>
+                              uv.voucher.id === voucher.id &&
+                              !uv.isUsed &&
+                              (!uv.voucher.endDate || new Date(uv.voucher.endDate) >= now)
+                          );
+                          return (
+                            <Button
+                              className="w-full mt-auto font-medium"
+                              disabled={
+                                hasActiveVoucher ||
+                                redeemMutation.isPending ||
+                                (points?.availablePoints || 0) < voucher.pointsRequired
+                              }
+                              onClick={() => handleRedeem(voucher.id)}
+                            >
+                              {hasActiveVoucher
+                                ? 'Đã đổi'
+                                : (points?.availablePoints || 0) < voucher.pointsRequired
+                                  ? 'Chưa đủ điểm'
+                                  : 'Đổi ngay'}
+                            </Button>
+                          );
+                        })()}
                       </CardContent>
                     </Card>
                   ))}
@@ -222,56 +235,63 @@ export default function LoyaltyPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {myVouchers?.map((uv) => (
-                    <Card
-                      key={uv.id}
-                      className={`flex overflow-hidden border ${uv.isUsed ? 'opacity-60 bg-slate-50' : 'border-green-200 bg-green-50/30'}`}
-                    >
-                      <div
-                        className={`w-24 ${uv.isUsed ? 'bg-slate-300' : 'bg-green-500'} flex items-center justify-center text-white border-r border-dashed border-white`}
+                  {myVouchers
+                    ?.filter((uv) => {
+                      // Ẩn voucher đã hết hạn (trừ voucher đã dùng - giữ lại để xem lịch sử)
+                      if (!uv.isUsed && uv.voucher.endDate && new Date(uv.voucher.endDate) < now)
+                        return false;
+                      return true;
+                    })
+                    .map((uv) => (
+                      <Card
+                        key={uv.id}
+                        className={`flex overflow-hidden border ${uv.isUsed ? 'opacity-60 bg-slate-50' : 'border-green-200 bg-green-50/30'}`}
                       >
-                        <div className="-rotate-90 font-bold tracking-widest whitespace-nowrap">
-                          {uv.isUsed ? 'ĐÃ DÙNG' : 'VOUCHER'}
-                        </div>
-                      </div>
-                      <div className="p-4 flex-1">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="font-bold text-lg">{uv.voucher.code}</div>
-                            <div className="text-sm text-green-700 font-medium">
-                              Giảm{' '}
-                              {uv.voucher.discountType === 'FIXED'
-                                ? formatVND(uv.voucher.discountValue)
-                                : `${uv.voucher.discountValue}%`}
-                            </div>
+                        <div
+                          className={`w-24 ${uv.isUsed ? 'bg-slate-300' : 'bg-green-500'} flex items-center justify-center text-white border-r border-dashed border-white`}
+                        >
+                          <div className="-rotate-90 font-bold tracking-widest whitespace-nowrap">
+                            {uv.isUsed ? 'ĐÃ DÙNG' : 'VOUCHER'}
                           </div>
-                          {uv.isUsed && (
-                            <Badge variant="outline" className="bg-slate-100">
-                              Đã sử dụng
-                            </Badge>
-                          )}
                         </div>
-                        <div className="mt-2 text-xs text-muted-foreground">
-                          {uv.voucher.description}
-                        </div>
-                        <div className="mt-2 text-xs text-slate-500">
-                          <div>
-                            Đã dùng:{' '}
-                            {uv.usedAt &&
-                              format(new Date(uv.usedAt), 'HH:mm dd/MM/yyyy', { locale: vi })}
-                          </div>
-                          {uv.voucher.endDate && !uv.isUsed && (
-                            <div className="text-red-500 font-medium mt-1">
-                              Hết hạn:{' '}
-                              {format(new Date(uv.voucher.endDate), 'HH:mm dd/MM/yyyy', {
-                                locale: vi,
-                              })}
+                        <div className="p-4 flex-1">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <div className="font-bold text-lg">{uv.voucher.code}</div>
+                              <div className="text-sm text-green-700 font-medium">
+                                Giảm{' '}
+                                {uv.voucher.discountType === 'FIXED'
+                                  ? formatVND(uv.voucher.discountValue)
+                                  : `${uv.voucher.discountValue}%`}
+                              </div>
                             </div>
-                          )}
+                            {uv.isUsed && (
+                              <Badge variant="outline" className="bg-slate-100">
+                                Đã sử dụng
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="mt-2 text-xs text-muted-foreground">
+                            {uv.voucher.description}
+                          </div>
+                          <div className="mt-2 text-xs text-slate-500">
+                            <div>
+                              Đã dùng:{' '}
+                              {uv.usedAt &&
+                                format(new Date(uv.usedAt), 'HH:mm dd/MM/yyyy', { locale: vi })}
+                            </div>
+                            {uv.voucher.endDate && !uv.isUsed && (
+                              <div className="text-red-500 font-medium mt-1">
+                                Hết hạn:{' '}
+                                {format(new Date(uv.voucher.endDate), 'HH:mm dd/MM/yyyy', {
+                                  locale: vi,
+                                })}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </Card>
-                  ))}
+                      </Card>
+                    ))}
                 </div>
               )}
             </CardContent>

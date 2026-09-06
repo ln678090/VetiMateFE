@@ -1,10 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -65,13 +60,13 @@ export function ProductDetailModal({ product, isOpen, onClose }: ProductDetailMo
               )}
             </div>
           </div>
-          
+
           <div className="col-span-1 md:col-span-2 space-y-4">
             <div>
               <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">{product.name}</h2>
               <p className="text-sm text-zinc-500 mt-1">SKU: {product.sku || 'N/A'}</p>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-zinc-500">Danh mục</p>
@@ -84,12 +79,17 @@ export function ProductDetailModal({ product, isOpen, onClose }: ProductDetailMo
               <div>
                 <p className="text-sm text-zinc-500">Giá bán</p>
                 <p className="font-medium text-emerald-600">
-                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                    product.price
+                  )}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-zinc-500">Trạng thái</p>
-                <Badge variant={product.isActive ? 'default' : 'secondary'} className={product.isActive ? 'bg-emerald-500' : ''}>
+                <Badge
+                  variant={product.isActive ? 'default' : 'secondary'}
+                  className={product.isActive ? 'bg-emerald-500' : ''}
+                >
                   {product.isActive ? 'Đang bán' : 'Ngừng bán'}
                 </Badge>
               </div>
@@ -139,8 +139,12 @@ export function ProductDetailModal({ product, isOpen, onClose }: ProductDetailMo
 
                     return (
                       <TableRow key={batch.id}>
-                        <TableCell className="font-medium whitespace-nowrap">{batch.batchCode}</TableCell>
-                        <TableCell className="whitespace-nowrap">{batch.supplierName || '---'}</TableCell>
+                        <TableCell className="font-medium whitespace-nowrap">
+                          {batch.batchCode}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {batch.supplierName || '---'}
+                        </TableCell>
                         <TableCell className="text-right font-medium text-emerald-600 whitespace-nowrap">
                           {batch.remainingQty}
                         </TableCell>
@@ -153,7 +157,10 @@ export function ProductDetailModal({ product, isOpen, onClose }: ProductDetailMo
                               Sắp hết hạn
                             </Badge>
                           ) : (
-                            <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600">
+                            <Badge
+                              variant="default"
+                              className="bg-emerald-500 hover:bg-emerald-600"
+                            >
                               Bình thường
                             </Badge>
                           )}

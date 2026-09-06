@@ -88,7 +88,7 @@ function PrintReceipt({ order, note }: { order: OrderResponse | null; note?: str
           PetCare Vet Shop
         </h2>
         <p style={{ margin: '0', fontSize: '11px' }}>Phòng khám thú y &amp; Shop thú cưng</p>
-        <p style={{ margin: '2px 0 0', fontSize: '11px' }}>Hotline: 0123 456 789</p>
+        <p style={{ margin: '2px 0 0', fontSize: '11px' }}>Hotline: 0974501927</p>
       </div>
 
       <div style={{ borderTop: '1px dashed #000', margin: '6px 0' }} />
@@ -255,8 +255,8 @@ export default function POSPage() {
     isLoading,
     refetch,
   } = useQuery({
-    queryKey: ['products'],
-    queryFn: () => productApi.getProducts(),
+    queryKey: ['pos-products'],
+    queryFn: () => productApi.getProducts({ size: 1000 }),
   });
 
   const products = productsData?.data?.items || [];
@@ -324,7 +324,7 @@ export default function POSPage() {
         <div style="text-align: center; margin-bottom: 8px;">
           <h2 style="font-size: 18px; font-weight: bold; margin: 0 0 2px;">PetCare Vet Shop</h2>
           <p style="margin: 0; font-size: 11px;">Phòng khám thú y &amp; Shop thú cưng</p>
-          <p style="margin: 2px 0 0; font-size: 11px;">Hotline: 0123 456 789</p>
+          <p style="margin: 2px 0 0; font-size: 11px;">Hotline: 0974501927</p>
         </div>
         <div style="border-top: 1px dashed #000; margin: 6px 0;"></div>
         <div style="text-align: center; margin-bottom: 6px;">

@@ -18,7 +18,7 @@ export interface Voucher {
   code: string;
   name: string;
   description?: string;
-  discountType: 'FIXED' | 'PERCENT';
+  discountType: 'FIXED' | 'PERCENTAGE';
   discountValue: number;
   maxDiscount: number;
   minOrderAmount: number;
@@ -45,7 +45,7 @@ export interface CreateVoucherReq {
   code: string;
   name: string;
   description?: string;
-  discountType: 'FIXED' | 'PERCENT';
+  discountType: 'FIXED' | 'PERCENTAGE';
   discountValue: number;
   maxDiscount?: number;
   minOrderAmount?: number;

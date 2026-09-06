@@ -34,20 +34,20 @@ export function ProductBatchesModal({ product, isOpen, onClose }: ProductBatches
     enabled: !!product?.id && isOpen,
   });
 
-  const batches = Array.isArray(batchesData?.data?.data)
+  const rawBatches = Array.isArray(batchesData?.data?.data)
     ? batchesData.data.data
     : Array.isArray(batchesData?.data)
       ? batchesData.data
       : [];
+
+  const batches = rawBatches.filter((b: any) => b.remainingQty > 0);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>Chi tiết tồn kho - {product?.name}</DialogTitle>
-          <DialogDescription>
-            Danh sách các lô hàng đang còn tồn trong hệ thống.
-          </DialogDescription>
+          <DialogDescription>Danh sách các lô hàng đang còn tồn trong hệ thống.</DialogDescription>
         </DialogHeader>
 
         <div className="mt-4">
@@ -82,8 +82,12 @@ export function ProductBatchesModal({ product, isOpen, onClose }: ProductBatches
 
                     return (
                       <TableRow key={batch.id}>
-                        <TableCell className="font-medium whitespace-nowrap">{batch.batchCode}</TableCell>
-                        <TableCell className="whitespace-nowrap">{batch.supplierName || '---'}</TableCell>
+                        <TableCell className="font-medium whitespace-nowrap">
+                          {batch.batchCode}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap">
+                          {batch.supplierName || '---'}
+                        </TableCell>
                         <TableCell className="text-right font-medium text-emerald-600 whitespace-nowrap">
                           {batch.remainingQty}
                         </TableCell>
@@ -96,7 +100,10 @@ export function ProductBatchesModal({ product, isOpen, onClose }: ProductBatches
                               Sắp hết hạn
                             </Badge>
                           ) : (
-                            <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600">
+                            <Badge
+                              variant="default"
+                              className="bg-emerald-500 hover:bg-emerald-600"
+                            >
                               Bình thường
                             </Badge>
                           )}

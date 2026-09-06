@@ -30,7 +30,7 @@ import { toast } from 'sonner';
 const schema = z.object({
   code: z.string().min(1, 'Mã voucher là bắt buộc'),
   description: z.string().optional(),
-  discountType: z.enum(['PERCENT', 'FIXED']),
+  discountType: z.enum(['PERCENTAGE', 'FIXED']),
   discountValue: z.coerce.number().min(0, 'Phải lớn hơn hoặc bằng 0'),
   minOrderAmount: z.coerce.number().min(0).optional(),
   maxDiscount: z.coerce.number().min(0, 'Giảm giá tối đa phải >= 0').optional(),
@@ -59,7 +59,7 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
     defaultValues: {
       code: '',
       description: '',
-      discountType: 'PERCENT',
+      discountType: 'PERCENTAGE',
       discountValue: 0,
       minOrderAmount: 0,
       maxDiscount: 0,
@@ -92,7 +92,7 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
       form.reset({
         code: '',
         description: '',
-        discountType: 'PERCENT',
+        discountType: 'PERCENTAGE',
         discountValue: 0,
         minOrderAmount: 0,
         maxDiscount: 0,
@@ -134,7 +134,7 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
     const req: CreateVoucherReq = {
       ...values,
       name: values.code,
-      discountType: values.discountType as 'PERCENT' | 'FIXED',
+      discountType: values.discountType as 'PERCENTAGE' | 'FIXED',
 
       maxUsage: values.maxUsage === 0 ? undefined : values.maxUsage,
       maxDiscount: values.maxDiscount === 0 ? undefined : values.maxDiscount,
@@ -208,7 +208,7 @@ export function VoucherFormModal({ isOpen, onClose, initialData }: VoucherFormMo
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="PERCENT">Phần trăm (%)</SelectItem>
+                        <SelectItem value="PERCENTAGE">Phần trăm (%)</SelectItem>
                         <SelectItem value="FIXED">Số tiền cố định (VND)</SelectItem>
                       </SelectContent>
                     </Select>

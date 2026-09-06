@@ -87,7 +87,7 @@ export function InventoryTable({ products, isLoading }: InventoryTableProps) {
           })}
         </TableBody>
       </Table>
-      
+
       <ProductBatchesModal
         product={selectedProduct}
         isOpen={!!selectedProduct}

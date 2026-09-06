@@ -124,3 +124,11 @@ export interface InventoryDashboardResp {
   expiredCount: number;
   totalStockValue: number;
 }
+
+export interface WarehouseStockResp {
+  id: string;
+  name: string;
+  categoryName: string;
+  brandName: string;
+  stockQuantity: number;
+}

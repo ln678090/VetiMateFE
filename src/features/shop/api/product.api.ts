@@ -21,8 +21,19 @@ export interface ProductReq {
 }
 
 export const productApi = {
-  getProducts: async (sort?: string) => {
-    const query = sort ? `?sort=${sort}` : '';
+  getProducts: async (params?: {
+    sort?: string;
+    size?: number;
+    search?: string;
+    inStockOnly?: boolean;
+  }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.sort) searchParams.append('sort', params.sort);
+    if (params?.size) searchParams.append('size', params.size.toString());
+    if (params?.search) searchParams.append('search', params.search);
+    if (params?.inStockOnly) searchParams.append('inStockOnly', params.inStockOnly.toString());
+
+    const query = searchParams.toString() ? `?${searchParams.toString()}` : '';
     const res = await api.get<ApiResp<ProductListResp>>(`/api/products${query}`);
     return res.data;
   },

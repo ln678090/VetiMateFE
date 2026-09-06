@@ -33,7 +33,7 @@ export function VoucherForm({
   const { data: productsData } = useQuery({
     queryKey: ['products-for-inventory'],
     queryFn: async () => {
-      const res = await productApi.getProducts();
+      const res = await productApi.getProducts({ size: 1000 });
       return res.data;
     },
   });
@@ -155,6 +155,7 @@ export function VoucherForm({
               className="w-full px-4 py-2 rounded-lg border border-m3-outline bg-m3-surface text-m3-on-surface"
             >
               <option value="IMPORT">Nhập kho</option>
+              <option value="EXPORT">Xuất kho</option>
             </select>
           </div>
           <div>
@@ -311,30 +312,36 @@ export function VoucherForm({
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-m3-on-surface mb-1">Đơn giá</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="1"
-                  value={item.unitPrice === 0 ? '' : item.unitPrice}
-                  onChange={(e) =>
-                    updateItem(idx, 'unitPrice', e.target.value ? parseFloat(e.target.value) : 0)
-                  }
-                  className="w-full px-4 py-2 rounded-lg border border-m3-outline bg-m3-surface text-m3-on-surface"
-                />
-              </div>
+              {type === 'IMPORT' && (
+                <div>
+                  <label className="block text-sm font-medium text-m3-on-surface mb-1">
+                    Đơn giá
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={item.unitPrice === 0 ? '' : item.unitPrice}
+                    onChange={(e) =>
+                      updateItem(idx, 'unitPrice', e.target.value ? parseFloat(e.target.value) : 0)
+                    }
+                    className="w-full px-4 py-2 rounded-lg border border-m3-outline bg-m3-surface text-m3-on-surface"
+                  />
+                </div>
+              )}
             </div>
           </div>
         ))}
       </div>
 
-      <div className="bg-m3-surface-container rounded-xl p-6 flex justify-between items-center">
-        <span className="text-lg font-semibold text-m3-on-surface">Tổng cộng:</span>
-        <span className="text-2xl font-bold text-m3-primary">
-          {calculateTotal().toLocaleString('vi-VN')} ₫
-        </span>
-      </div>
+      {type === 'IMPORT' && (
+        <div className="bg-m3-surface-container rounded-xl p-6 flex justify-between items-center">
+          <span className="text-lg font-semibold text-m3-on-surface">Tổng cộng:</span>
+          <span className="text-2xl font-bold text-m3-primary">
+            {calculateTotal().toLocaleString('vi-VN')} đ
+          </span>
+        </div>
+      )}
     </form>
   );
 }

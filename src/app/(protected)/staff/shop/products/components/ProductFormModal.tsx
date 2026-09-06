@@ -297,9 +297,34 @@ export function ProductFormModal({ isOpen, onClose, productToEdit }: ProductForm
 
               <FormField
                 control={form.control}
-                name="imageUrl"
+                name="isActive"
                 render={({ field }) => (
                   <FormItem>
+                    <FormLabel>Trạng thái</FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(value === 'true')}
+                      value={field.value ? 'true' : 'false'}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Chọn trạng thái" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="true">Đang bán</SelectItem>
+                        <SelectItem value="false">Ngừng bán</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="imageUrl"
+                render={({ field }) => (
+                  <FormItem className="col-span-2">
                     <FormLabel>
                       Ảnh đại diện <span className="text-red-500">*</span>
                     </FormLabel>

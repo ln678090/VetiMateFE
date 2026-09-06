@@ -1,4 +1,5 @@
 import {
+  BarChart3,
   CalendarCheck,
   CalendarHeart,
   ClipboardList,
@@ -61,6 +62,7 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     label: 'Tổng quan',
     href: '/dashboard',
     icon: LayoutDashboard,
+    showInSidebar: false,
   },
 
   // ─────────────────────────────────────────────
@@ -197,10 +199,22 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     group: 'Kế toán',
   },
 
-  // ─────────────────────────────────────────────
+  // ==============================================================================================================
   // Shop Staff
-  // ─────────────────────────────────────────────
+  // ==============================================================================================================
 
+  {
+    key: 'shop-dashboard',
+    label: 'Báo cáo thống kê',
+    href: '/staff/shop/dashboard',
+    icon: BarChart3,
+    accessRoles: [ROLE.ADMIN, ROLE.SHOP_STAFF],
+    sidebarRoles: [ROLE.SHOP_STAFF],
+    dashboardRoles: [ROLE.SHOP_STAFF],
+    dashboardDescription: 'Báo cáo tổng quan về hoạt động của cửa hàng.',
+    gradient: 'from-blue-500 to-cyan-500',
+    group: 'Cửa hàng',
+  },
   {
     key: 'shop-products',
     label: 'Sản phẩm Shop',
