@@ -3,6 +3,7 @@ import {
   CalendarCheck,
   CalendarHeart,
   ClipboardList,
+  FileClock,
   FileText,
   LayoutDashboard,
   ListOrdered,
@@ -359,21 +360,31 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     gradient: 'from-violet-500 to-purple-500',
     group: 'Điều hành',
   },
-
-  // ─────────────────────────────────────────────
-  // Admin
-  // ─────────────────────────────────────────────
-
   {
     key: 'staff-management',
     label: 'Tài khoản & phân quyền',
     href: '/management/staff',
     icon: UsersRound,
+    accessRoles: [ROLE.MANAGER],
+    sidebarRoles: [ROLE.MANAGER],
+    dashboardRoles: [ROLE.MANAGER],
+    dashboardDescription: 'Quản lý tài khoản, vai trò và trạng thái truy cập.',
+    gradient: 'from-cyan-500 to-blue-500',
+    group: 'Quản trị hệ thống',
+  }, // ─────────────────────────────────────────────
+  // Admin
+  // ─────────────────────────────────────────────
+
+  {
+    key: 'audit-logs',
+    label: 'Nhật ký hệ thống',
+    href: '/admin/audit-logs',
+    icon: FileClock,
     accessRoles: [ROLE.ADMIN],
     sidebarRoles: [ROLE.ADMIN],
     dashboardRoles: [ROLE.ADMIN],
-    dashboardDescription: 'Quản lý tài khoản, vai trò và trạng thái truy cập.',
-    gradient: 'from-cyan-500 to-blue-500',
+    dashboardDescription: 'Theo dõi các thao tác quan trọng trong toàn hệ thống.',
+    gradient: 'from-slate-600 to-zinc-800',
     group: 'Quản trị hệ thống',
   },
 

@@ -52,7 +52,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="vi" suppressHydrationWarning className={cn('font-sans', geist.variable)}>
+    <html
+      lang="vi"
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+      className={cn('font-sans', geist.variable)}
+    >
       <body className={`${inter.variable} font-sans antialiased`}>
         <Providers>{children}</Providers>
       </body>
