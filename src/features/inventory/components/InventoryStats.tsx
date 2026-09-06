@@ -58,7 +58,7 @@ export function InventoryStats({ data, isLoading }: InventoryStatsProps) {
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
       {stats.map((stat) => {
         const Icon = stat.icon;
-        const value = (data && data[stat.key] !== undefined) ? data[stat.key]! : 0;
+        const value = data && data[stat.key] !== undefined ? data[stat.key]! : 0;
 
         return (
           <div

@@ -51,7 +51,8 @@ export default function InventoryDashboardPage() {
             Tổng Quan Kho Bảo Quản
           </h1>
           <p className="font-body-md text-[16px] text-m3-on-surface-variant">
-            Kho lưu trữ trung tâm. Theo dõi số lượng vật tư và xuất các lô hết hạn sang kho của bác sĩ.
+            Kho lưu trữ trung tâm. Theo dõi số lượng vật tư và xuất các lô hết hạn sang kho của bác
+            sĩ.
           </p>
         </div>
 
@@ -305,7 +306,9 @@ export default function InventoryDashboardPage() {
                   className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors shadow-sm flex items-center gap-1.5 cursor-pointer"
                 >
                   <Send className="h-3.5 w-3.5" />
-                  {exportAllExpiredMutation.isPending ? 'Đang xuất...' : 'Xuất tất cả lên kho bác sĩ'}
+                  {exportAllExpiredMutation.isPending
+                    ? 'Đang xuất...'
+                    : 'Xuất tất cả lên kho bác sĩ'}
                 </button>
               )}
               <Link

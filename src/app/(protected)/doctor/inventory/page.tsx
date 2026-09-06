@@ -21,7 +21,9 @@ import type { StockBatchResp } from '@/types/inventory';
 export default function DoctorInventoryPage() {
   const { data: batches = [], isLoading, refetch, isFetching } = useBatchesByWarehouse('DOCTOR');
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'EXPIRED' | 'NEAR_EXPIRY' | 'GOOD'>('ALL');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'EXPIRED' | 'NEAR_EXPIRY' | 'GOOD'>(
+    'ALL'
+  );
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -114,7 +116,8 @@ export default function DoctorInventoryPage() {
             Kho Dược & Vật Tư Của Bác Sĩ
           </h1>
           <p className="font-body-md text-[15px] text-m3-on-surface-variant mt-1">
-            Quản lý các lô thuốc, vật tư tại phòng khám được điều chuyển từ kho bảo quản để phục vụ chẩn đoán & điều trị.
+            Quản lý các lô thuốc, vật tư tại phòng khám được điều chuyển từ kho bảo quản để phục vụ
+            chẩn đoán & điều trị.
           </p>
         </div>
 
@@ -145,7 +148,8 @@ export default function DoctorInventoryPage() {
             </div>
           </div>
           <p className="text-xs text-m3-on-surface-variant mt-3">
-            Gồm <strong className="text-m3-on-surface">{stats.totalMedicines}</strong> mặt hàng / thuốc
+            Gồm <strong className="text-m3-on-surface">{stats.totalMedicines}</strong> mặt hàng /
+            thuốc
           </p>
         </div>
 
@@ -169,7 +173,9 @@ export default function DoctorInventoryPage() {
         <div className="bg-m3-surface rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-m3-surface-container-high flex flex-col justify-between">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-xs font-medium text-red-600 dark:text-red-400">Lô đã hết hạn (chuyển lên)</p>
+              <p className="text-xs font-medium text-red-600 dark:text-red-400">
+                Lô đã hết hạn (chuyển lên)
+              </p>
               <h3 className="text-3xl font-bold text-red-600 dark:text-red-400 mt-1">
                 {isLoading ? '...' : stats.expiredCount}
               </h3>
@@ -187,7 +193,9 @@ export default function DoctorInventoryPage() {
         <div className="bg-m3-surface rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.04)] border border-m3-surface-container-high flex flex-col justify-between">
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-xs font-medium text-amber-600 dark:text-amber-400">Lô cận date (&le; 30 ngày)</p>
+              <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                Lô cận date (&le; 30 ngày)
+              </p>
               <h3 className="text-3xl font-bold text-amber-600 dark:text-amber-400 mt-1">
                 {isLoading ? '...' : stats.nearExpiryCount}
               </h3>
@@ -196,7 +204,9 @@ export default function DoctorInventoryPage() {
               <Clock className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-xs text-m3-on-surface-variant mt-3">Ưu tiên kê đơn trước khi hết date</p>
+          <p className="text-xs text-m3-on-surface-variant mt-3">
+            Ưu tiên kê đơn trước khi hết date
+          </p>
         </div>
       </div>
 
@@ -295,7 +305,8 @@ export default function DoctorInventoryPage() {
                 : 'Chưa có lô thuốc nào trong kho của bác sĩ'}
             </p>
             <p className="text-xs text-m3-on-surface-variant max-w-md">
-              Khi thủ kho xuất điều chuyển hoặc xuất các lô hết hạn từ kho bảo quản lên, danh sách các lô sẽ hiển thị tại đây để bác sĩ sử dụng.
+              Khi thủ kho xuất điều chuyển hoặc xuất các lô hết hạn từ kho bảo quản lên, danh sách
+              các lô sẽ hiển thị tại đây để bác sĩ sử dụng.
             </p>
           </div>
         ) : (
@@ -327,7 +338,10 @@ export default function DoctorInventoryPage() {
                             {batch.medicineName || batch.productName || 'Thuốc'}
                           </p>
                           <p className="text-xs text-m3-on-surface-variant">
-                            Kho: <span className="font-medium text-sky-600 dark:text-sky-400">Kho Bác Sĩ</span>
+                            Kho:{' '}
+                            <span className="font-medium text-sky-600 dark:text-sky-400">
+                              Kho Bác Sĩ
+                            </span>
                           </p>
                         </div>
                       </div>

@@ -186,7 +186,9 @@ export const useBatchesByMedicine = (medicineId: string) =>
     enabled: !!medicineId,
   });
 
-export const useBatchesByWarehouse = (warehouse: import('@/types/inventory').WarehouseLocation = 'STORAGE') =>
+export const useBatchesByWarehouse = (
+  warehouse: import('@/types/inventory').WarehouseLocation = 'STORAGE'
+) =>
   useQuery({
     queryKey: ['batches', 'warehouse', warehouse],
     queryFn: async () => {
@@ -226,7 +228,9 @@ export const useExportAllExpiredToDoctor = () => {
 };
 
 // ===== Alerts =====
-export const useNearExpiryAlerts = (warehouse: import('@/types/inventory').WarehouseLocation = 'STORAGE') =>
+export const useNearExpiryAlerts = (
+  warehouse: import('@/types/inventory').WarehouseLocation = 'STORAGE'
+) =>
   useQuery({
     queryKey: ['alerts', 'near-expiry', warehouse],
     queryFn: async () => {
@@ -235,7 +239,9 @@ export const useNearExpiryAlerts = (warehouse: import('@/types/inventory').Wareh
     },
   });
 
-export const useExpiredAlerts = (warehouse: import('@/types/inventory').WarehouseLocation = 'STORAGE') =>
+export const useExpiredAlerts = (
+  warehouse: import('@/types/inventory').WarehouseLocation = 'STORAGE'
+) =>
   useQuery({
     queryKey: ['alerts', 'expired', warehouse],
     queryFn: async () => {
