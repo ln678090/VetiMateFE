@@ -19,8 +19,8 @@ export default function QueuePage() {
         </p>
       </header>
 
-      <Tabs 
-        value={activeTab} 
+      <Tabs
+        value={activeTab}
         onValueChange={(val) => setActiveTab(val as QueueType)}
         className="w-full"
       >

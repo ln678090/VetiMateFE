@@ -1,23 +1,27 @@
-// ===== Inventory Types — match backend DTOs =====
-
+// ===== Supplier =====
 export interface SupplierResp {
   id: string;
   name: string;
-  phone: string | null;
-  email: string | null;
+  phone?: string;
+  email?: string;
+  address?: string;
   isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface SupplierRequest {
   name: string;
   phone?: string;
   email?: string;
+  address?: string;
 }
 
+// ===== Medicine =====
 export interface MedicineResp {
   id: string;
   name: string;
-  sku: string | null;
+  sku?: string;
   unit: string;
   minStock: number;
   importPrice: number;
@@ -35,48 +39,50 @@ export interface MedicineRequest {
   sellPrice: number;
 }
 
-export type VoucherType = 'IMPORT' | 'EXPORT' | 'TRANSFER' | 'STOCKTAKE';
-export type VoucherStatus = 'DRAFT' | 'APPROVED' | 'CANCELLED';
-
+// ===== Stock Batch =====
 export interface StockBatchResp {
   id: string;
-  batchCode: string | null;
+  batchCode: string;
   quantity: number;
   remainingQty: number;
   importPrice: number;
-  expiryDate: string | null;
+  expiryDate: string;
   receivedAt: string;
-  medicineId: string | null;
-  medicineName: string | null;
-  productId: string | null;
-  productName: string | null;
-  supplierId: string | null;
-  supplierName: string | null;
+  medicineId?: string;
+  medicineName?: string;
+  productId?: string;
+  productName?: string;
+  supplierId?: string;
+  supplierName?: string;
   isExpired: boolean;
   isNearExpiry: boolean;
 }
 
-export interface StockVoucherItemResp {
-  id: string;
-  medicineId: string | null;
-  medicineName: string | null;
-  productId: string | null;
-  productName: string | null;
-  batchCode: string | null;
+// ===== Voucher =====
+export type VoucherType = 'IMPORT' | 'EXPORT';
+export type VoucherStatus = 'PENDING' | 'APPROVED' | 'CANCELLED';
+
+export interface VoucherItem {
+  id?: string;
+  medicineId?: string;
+  medicineName?: string;
+  productId?: string;
+  productName?: string;
+  batchCode?: string;
   quantity: number;
-  unitPrice: number | null;
-  note: string | null;
+  unitPrice: number;
+  note?: string;
 }
 
 export interface StockVoucherResp {
   id: string;
   type: VoucherType;
   status: VoucherStatus;
-  createdBy: string | null;
-  approvedBy: string | null;
-  approvedAt: string | null;
-  note: string | null;
-  items: StockVoucherItemResp[];
+  createdBy?: string;
+  approvedBy?: string;
+  approvedAt?: string;
+  note?: string;
+  items: VoucherItem[];
   createdAt: string;
   updatedAt: string;
   itemCount: number;
@@ -100,21 +106,20 @@ export interface CreateVoucherRequest {
   items: VoucherItemRequest[];
 }
 
+// ===== Pagination =====
+export interface PageResp<T> {
+  items: T[];
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+}
+
+// ===== Dashboard =====
 export interface InventoryDashboardResp {
   totalMedicines: number;
   totalSuppliers: number;
   lowStockCount: number;
   nearExpiryCount: number;
   expiredCount: number;
-  pendingVouchers: number;
   totalStockValue: number;
-}
-
-/** Paginated response from Spring Boot */
-export interface PageResp<T> {
-  content: T[];
-  totalElements: number;
-  totalPages: number;
-  number: number;
-  size: number;
 }

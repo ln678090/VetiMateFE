@@ -21,9 +21,7 @@ export default function NewVoucherPage() {
           <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
             Tạo phiếu kho mới
           </h1>
-          <p className="text-sm text-zinc-500">
-            Nhập kho, xuất kho hoặc kiểm kê
-          </p>
+          <p className="text-sm text-zinc-500">Nhập kho, xuất kho hoặc kiểm kê</p>
         </div>
       </div>
 

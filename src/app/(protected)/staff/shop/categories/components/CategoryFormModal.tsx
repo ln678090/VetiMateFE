@@ -5,12 +5,7 @@ import * as z from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -22,7 +17,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Category, CategoryReq } from '@/features/shop/types/catalog.types';
 import { catalogApi } from '@/features/shop/api/catalog.api';
 
@@ -42,11 +43,16 @@ interface CategoryFormModalProps {
   categories: Category[]; // To select parent category
 }
 
-export function CategoryFormModal({ isOpen, onClose, categoryToEdit, categories }: CategoryFormModalProps) {
+export function CategoryFormModal({
+  isOpen,
+  onClose,
+  categoryToEdit,
+  categories,
+}: CategoryFormModalProps) {
   const queryClient = useQueryClient();
-  
+
   const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema) as any,
+    resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
       description: '',
@@ -83,20 +89,23 @@ export function CategoryFormModal({ isOpen, onClose, categoryToEdit, categories 
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       onClose();
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi thêm danh mục');
+    onError: (error: unknown) => {
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(apiError?.response?.data?.message || 'Có lỗi xảy ra khi thêm danh mục');
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: CategoryReq }) => catalogApi.updateCategory(id, data),
+    mutationFn: ({ id, data }: { id: string; data: CategoryReq }) =>
+      catalogApi.updateCategory(id, data),
     onSuccess: () => {
       toast.success('Cập nhật danh mục thành công');
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       onClose();
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật danh mục');
+    onError: (error: unknown) => {
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(apiError?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật danh mục');
     },
   });
 
@@ -116,7 +125,7 @@ export function CategoryFormModal({ isOpen, onClose, categoryToEdit, categories 
         <DialogHeader>
           <DialogTitle>{categoryToEdit ? 'Sửa danh mục' : 'Thêm danh mục mới'}</DialogTitle>
         </DialogHeader>
-        
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -124,7 +133,9 @@ export function CategoryFormModal({ isOpen, onClose, categoryToEdit, categories 
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tên danh mục <span className="text-red-500">*</span></FormLabel>
+                  <FormLabel>
+                    Tên danh mục <span className="text-red-500">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="Nhập tên danh mục..." {...field} />
                   </FormControl>
@@ -132,14 +143,14 @@ export function CategoryFormModal({ isOpen, onClose, categoryToEdit, categories 
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="parentId"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Danh mục cha (Tùy chọn)</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value || "none"}>
+                  <Select onValueChange={field.onChange} value={field.value || 'none'}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Chọn danh mục cha" />
@@ -148,11 +159,12 @@ export function CategoryFormModal({ isOpen, onClose, categoryToEdit, categories 
                     <SelectContent>
                       <SelectItem value="none">-- Không có danh mục cha --</SelectItem>
                       {categories
-                        .filter(c => c.id !== categoryToEdit?.id) // Cannot be parent of itself
-                        .map(c => (
-                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                        ))
-                      }
+                        .filter((c) => c.id !== categoryToEdit?.id) // Cannot be parent of itself
+                        .map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.name}
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -167,10 +179,10 @@ export function CategoryFormModal({ isOpen, onClose, categoryToEdit, categories 
                 <FormItem>
                   <FormLabel>Mô tả (Tùy chọn)</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Nhập mô tả ngắn gọn..." 
-                      className="resize-none" 
-                      {...field} 
+                    <Textarea
+                      placeholder="Nhập mô tả ngắn gọn..."
+                      className="resize-none"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
@@ -183,7 +195,7 @@ export function CategoryFormModal({ isOpen, onClose, categoryToEdit, categories 
                 Hủy
               </Button>
               <Button type="submit" disabled={isPending}>
-                {isPending ? 'Đang lưu...' : (categoryToEdit ? 'Lưu thay đổi' : 'Thêm mới')}
+                {isPending ? 'Đang lưu...' : categoryToEdit ? 'Lưu thay đổi' : 'Thêm mới'}
               </Button>
             </div>
           </form>

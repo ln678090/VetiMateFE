@@ -31,8 +31,11 @@ export function ProductTable({ products, isLoading, onEdit }: ProductTableProps)
       toast.success('Xóa sản phẩm thành công');
       queryClient.invalidateQueries({ queryKey: ['products'] });
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi xóa sản phẩm');
+
+    onError: (error: unknown) => {
+      // Sửa thành unknown
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(apiError.response?.data?.message || 'Có lỗi xảy ra khi xóa sản phẩm');
     },
   });
 
@@ -80,7 +83,13 @@ export function ProductTable({ products, isLoading, onEdit }: ProductTableProps)
             <TableCell>
               {product.imageUrl ? (
                 <div className="relative h-10 w-10 overflow-hidden rounded-md border border-zinc-200">
-                  <Image src={product.imageUrl} alt={product.name} fill className="object-cover" unoptimized />
+                  <Image
+                    src={product.imageUrl}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
                 </div>
               ) : (
                 <div className="flex h-10 w-10 items-center justify-center rounded-md border border-zinc-200 bg-zinc-100 text-xs text-zinc-500">
@@ -93,10 +102,14 @@ export function ProductTable({ products, isLoading, onEdit }: ProductTableProps)
             </TableCell>
             <TableCell className="text-zinc-500 text-xs">{product.sku}</TableCell>
             <TableCell>
-              <Badge variant="outline" className="font-normal">{product.categoryName}</Badge>
+              <Badge variant="outline" className="font-normal">
+                {product.categoryName}
+              </Badge>
             </TableCell>
             <TableCell className="font-medium text-emerald-600">
-              {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}
+              {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                product.price
+              )}
             </TableCell>
             <TableCell>
               {product.stockQuantity > 10 ? (
@@ -109,17 +122,29 @@ export function ProductTable({ products, isLoading, onEdit }: ProductTableProps)
             </TableCell>
             <TableCell>
               {product.isActive ? (
-                <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600">Đang bán</Badge>
+                <Badge variant="default" className="bg-emerald-500 hover:bg-emerald-600">
+                  Đang bán
+                </Badge>
               ) : (
                 <Badge variant="secondary">Ngừng bán</Badge>
               )}
             </TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-blue-600" onClick={() => onEdit(product)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-blue-600"
+                  onClick={() => onEdit(product)}
+                >
                   <Edit2 className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-600" onClick={() => handleDelete(product.id)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 text-rose-600"
+                  onClick={() => handleDelete(product.id)}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>

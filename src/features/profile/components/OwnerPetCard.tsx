@@ -17,14 +17,20 @@ export function OwnerPetCard({ pet, onEdit }: OwnerPetCardProps) {
     if (window.confirm(`Bạn có chắc chắn muốn xóa thú cưng ${pet.name} không?`)) {
       deleteMutation.mutate(pet.id, {
         onSuccess: () => toast.success('Đã xóa thú cưng'),
-        onError: (err: any) => toast.error(err?.message || 'Lỗi khi xóa thú cưng'),
+        onError: (err: unknown) => {
+          // Đổi thành unknown
+          const apiError = err as Error; // Ép kiểu sang Error chuẩn
+          toast.error(apiError.message || 'Lỗi khi xóa thú cưng');
+        },
       });
     }
   };
 
   const Icon = pet.species === 'DOG' ? Dog : Cat;
-  const genderLabel = PET_GENDER_OPTIONS.find((g) => g.value === pet.gender)?.label || 'Chưa xác định';
-  const speciesLabel = PET_SPECIES_OPTIONS.find((s) => s.value === pet.species)?.label || pet.species;
+  const genderLabel =
+    PET_GENDER_OPTIONS.find((g) => g.value === pet.gender)?.label || 'Chưa xác định';
+  const speciesLabel =
+    PET_SPECIES_OPTIONS.find((s) => s.value === pet.species)?.label || pet.species;
 
   return (
     <Card className="overflow-hidden transition-all hover:shadow-md border border-gray-200 dark:border-gray-800">
@@ -43,28 +49,41 @@ export function OwnerPetCard({ pet, onEdit }: OwnerPetCardProps) {
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="pt-4 pb-2">
         <div className="space-y-3">
           <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
             <div className="w-6 flex justify-center text-rose-400">
               <Info className="w-4 h-4" />
             </div>
-            <span>Giới tính: <span className="font-medium text-gray-900 dark:text-gray-100">{genderLabel}</span></span>
+            <span>
+              Giới tính:{' '}
+              <span className="font-medium text-gray-900 dark:text-gray-100">{genderLabel}</span>
+            </span>
           </div>
-          
+
           <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
             <div className="w-6 flex justify-center text-rose-400">
               <Calendar className="w-4 h-4" />
             </div>
-            <span>Ngày sinh: <span className="font-medium text-gray-900 dark:text-gray-100">{pet.birthDate || 'Chưa cập nhật'}</span></span>
+            <span>
+              Ngày sinh:{' '}
+              <span className="font-medium text-gray-900 dark:text-gray-100">
+                {pet.birthDate || 'Chưa cập nhật'}
+              </span>
+            </span>
           </div>
 
           <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
             <div className="w-6 flex justify-center text-rose-400">
               <Weight className="w-4 h-4" />
             </div>
-            <span>Cân nặng: <span className="font-medium text-gray-900 dark:text-gray-100">{pet.weightKg ? `${pet.weightKg} kg` : 'Chưa cập nhật'}</span></span>
+            <span>
+              Cân nặng:{' '}
+              <span className="font-medium text-gray-900 dark:text-gray-100">
+                {pet.weightKg ? `${pet.weightKg} kg` : 'Chưa cập nhật'}
+              </span>
+            </span>
           </div>
         </div>
       </CardContent>

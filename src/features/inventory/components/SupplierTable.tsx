@@ -3,11 +3,7 @@
 import { useState } from 'react';
 import { Search, Plus, ToggleLeft, ToggleRight, Edit } from 'lucide-react';
 import type { SupplierResp, SupplierRequest } from '@/types/inventory';
-import {
-  useCreateSupplier,
-  useUpdateSupplier,
-  useToggleSupplier,
-} from '../hooks/use-inventory';
+import { useCreateSupplier, useUpdateSupplier, useToggleSupplier } from '../hooks/use-inventory';
 import { getApiErrorMessage } from '@/lib/axios';
 import { toast } from 'sonner';
 
@@ -21,9 +17,7 @@ export function SupplierTable({ data, isLoading }: SupplierTableProps) {
   const [showForm, setShowForm] = useState(false);
   const [editItem, setEditItem] = useState<SupplierResp | null>(null);
 
-  const filtered = data?.filter((s) =>
-    s.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = data?.filter((s) => s.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
     <div className="space-y-4">
@@ -116,13 +110,7 @@ export function SupplierTable({ data, isLoading }: SupplierTableProps) {
   );
 }
 
-function SupplierRow({
-  supplier,
-  onEdit,
-}: {
-  supplier: SupplierResp;
-  onEdit: () => void;
-}) {
+function SupplierRow({ supplier, onEdit }: { supplier: SupplierResp; onEdit: () => void }) {
   const toggleMutation = useToggleSupplier();
 
   return (

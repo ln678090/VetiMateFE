@@ -1,233 +1,216 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { getApiErrorMessage } from '@/lib/axios';
 import {
-  alertApi,
-  batchApi,
-  dashboardApi,
-  medicineApi,
   supplierApi,
+  medicineApi,
   voucherApi,
+  batchApi,
+  alertApi,
+  dashboardApi,
 } from '../api/inventory.api';
 import type {
-  CreateVoucherRequest,
-  MedicineRequest,
   SupplierRequest,
-  VoucherStatus,
+  MedicineRequest,
+  CreateVoucherRequest,
   VoucherType,
+  VoucherStatus,
 } from '@/types/inventory';
 
-// ===== Query Keys =====
-const KEYS = {
-  suppliers: ['inventory', 'suppliers'] as const,
-  medicines: ['inventory', 'medicines'] as const,
-  lowStock: ['inventory', 'medicines', 'low-stock'] as const,
-  vouchers: ['inventory', 'vouchers'] as const,
-  batchesMedicine: (id: string) => ['inventory', 'batches', 'medicine', id] as const,
-  batchesProduct: (id: string) => ['inventory', 'batches', 'product', id] as const,
-  nearExpiry: ['inventory', 'alerts', 'near-expiry'] as const,
-  expired: ['inventory', 'alerts', 'expired'] as const,
-  dashboard: ['inventory', 'dashboard'] as const,
-};
+const SUPPLIER_KEY = 'suppliers';
+const MEDICINE_KEY = 'medicines';
+const VOUCHER_KEY = 'vouchers';
 
 // ===== Suppliers =====
-
-export function useSuppliers(all = false) {
-  return useQuery({
-    queryKey: [...KEYS.suppliers, { all }],
+export const useSuppliers = (all = false) =>
+  useQuery({
+    queryKey: [SUPPLIER_KEY, all],
     queryFn: async () => {
-      const { data } = await supplierApi.getAll(all);
-      return data.data;
+      const res = await supplierApi.getAll(all);
+      return res.data.data;
     },
   });
-}
 
-export function useCreateSupplier() {
+export const useCreateSupplier = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: SupplierRequest) => supplierApi.create(data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.suppliers }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [SUPPLIER_KEY] });
+      toast.success('Thêm nhà cung cấp thành công');
+    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err)),
   });
-}
+};
 
-export function useUpdateSupplier() {
+export const useUpdateSupplier = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: SupplierRequest }) =>
       supplierApi.update(id, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.suppliers }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [SUPPLIER_KEY] });
+      toast.success('Cập nhật nhà cung cấp thành công');
+    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err)),
   });
-}
+};
 
-export function useToggleSupplier() {
+export const useToggleSupplier = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => supplierApi.toggleActive(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.suppliers }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [SUPPLIER_KEY] });
+      toast.success('Cập nhật trạng thái thành công');
+    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err)),
   });
-}
+};
 
 // ===== Medicines =====
-
-export function useMedicines(all = false) {
-  return useQuery({
-    queryKey: [...KEYS.medicines, { all }],
+export const useMedicines = (all = false) =>
+  useQuery({
+    queryKey: [MEDICINE_KEY, all],
     queryFn: async () => {
-      const { data } = await medicineApi.getAll(all);
-      return data.data;
+      const res = await medicineApi.getAll(all);
+      return res.data.data;
     },
   });
-}
 
-export function useLowStockMedicines() {
-  return useQuery({
-    queryKey: KEYS.lowStock,
-    queryFn: async () => {
-      const { data } = await medicineApi.getLowStock();
-      return data.data;
-    },
-  });
-}
-
-export function useCreateMedicine() {
+export const useCreateMedicine = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: MedicineRequest) => medicineApi.create(data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.medicines }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [MEDICINE_KEY] });
+      toast.success('Thêm thuốc thành công');
+    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err)),
   });
-}
+};
 
-export function useUpdateMedicine() {
+export const useUpdateMedicine = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: MedicineRequest }) =>
       medicineApi.update(id, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.medicines }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [MEDICINE_KEY] });
+      toast.success('Cập nhật thuốc thành công');
+    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err)),
   });
-}
+};
 
-export function useToggleMedicine() {
+export const useToggleMedicine = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => medicineApi.toggleActive(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: KEYS.medicines }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [MEDICINE_KEY] });
+      toast.success('Cập nhật trạng thái thành công');
+    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err)),
   });
-}
+};
+
+export const useLowStockMedicines = () =>
+  useQuery({
+    queryKey: [MEDICINE_KEY, 'low-stock'],
+    queryFn: async () => {
+      const res = await medicineApi.getLowStock();
+      return res.data.data;
+    },
+  });
 
 // ===== Vouchers =====
-
-export function useVouchers(params?: {
+export const useVouchers = (params?: {
   type?: VoucherType;
   status?: VoucherStatus;
   page?: number;
   size?: number;
-}) {
-  return useQuery({
-    queryKey: [...KEYS.vouchers, params],
+}) =>
+  useQuery({
+    queryKey: [VOUCHER_KEY, params],
     queryFn: async () => {
-      const { data } = await voucherApi.getAll(params);
-      return data.data;
+      const res = await voucherApi.getAll(params);
+      return res.data.data;
     },
   });
-}
 
-export function useVoucherById(id: string) {
-  return useQuery({
-    queryKey: [...KEYS.vouchers, id],
-    queryFn: async () => {
-      const { data } = await voucherApi.getById(id);
-      return data.data;
-    },
-    enabled: !!id,
-  });
-}
-
-export function useCreateVoucher() {
+export const useCreateVoucher = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: CreateVoucherRequest) => voucherApi.create(data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: KEYS.vouchers });
-      qc.invalidateQueries({ queryKey: KEYS.dashboard });
+      qc.invalidateQueries({ queryKey: [VOUCHER_KEY] });
+      toast.success('Tạo phiếu thành công');
     },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err)),
   });
-}
+};
 
-export function useApproveVoucher() {
+export const useApproveVoucher = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => voucherApi.approve(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: KEYS.vouchers });
-      qc.invalidateQueries({ queryKey: KEYS.medicines });
-      qc.invalidateQueries({ queryKey: KEYS.dashboard });
+      qc.invalidateQueries({ queryKey: [VOUCHER_KEY] });
+      toast.success('Duyệt phiếu thành công');
     },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err)),
   });
-}
+};
 
-export function useCancelVoucher() {
+export const useCancelVoucher = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => voucherApi.cancel(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: KEYS.vouchers });
-      qc.invalidateQueries({ queryKey: KEYS.dashboard });
+      qc.invalidateQueries({ queryKey: [VOUCHER_KEY] });
+      toast.success('Huỷ phiếu thành công');
     },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err)),
   });
-}
+};
 
 // ===== Batches =====
-
-export function useBatchesByMedicine(medicineId: string) {
-  return useQuery({
-    queryKey: KEYS.batchesMedicine(medicineId),
+export const useBatchesByMedicine = (medicineId: string) =>
+  useQuery({
+    queryKey: ['batches', 'medicine', medicineId],
     queryFn: async () => {
-      const { data } = await batchApi.getByMedicine(medicineId);
-      return data.data;
+      const res = await batchApi.getByMedicine(medicineId);
+      return res.data.data;
     },
     enabled: !!medicineId,
   });
-}
-
-export function useBatchesByProduct(productId: string) {
-  return useQuery({
-    queryKey: KEYS.batchesProduct(productId),
-    queryFn: async () => {
-      const { data } = await batchApi.getByProduct(productId);
-      return data.data;
-    },
-    enabled: !!productId,
-  });
-}
 
 // ===== Alerts =====
-
-export function useNearExpiryBatches() {
-  return useQuery({
-    queryKey: KEYS.nearExpiry,
+export const useNearExpiryAlerts = () =>
+  useQuery({
+    queryKey: ['alerts', 'near-expiry'],
     queryFn: async () => {
-      const { data } = await alertApi.getNearExpiry();
-      return data.data;
+      const res = await alertApi.getNearExpiry();
+      return res.data.data;
     },
   });
-}
 
-export function useExpiredBatches() {
-  return useQuery({
-    queryKey: KEYS.expired,
+export const useExpiredAlerts = () =>
+  useQuery({
+    queryKey: ['alerts', 'expired'],
     queryFn: async () => {
-      const { data } = await alertApi.getExpired();
-      return data.data;
+      const res = await alertApi.getExpired();
+      return res.data.data;
     },
   });
-}
 
 // ===== Dashboard =====
-
-export function useInventoryDashboard() {
-  return useQuery({
-    queryKey: KEYS.dashboard,
+export const useInventoryDashboard = () =>
+  useQuery({
+    queryKey: ['inventory-dashboard'],
     queryFn: async () => {
-      const { data } = await dashboardApi.get();
-      return data.data;
+      const res = await dashboardApi.get();
+      return res.data.data;
     },
   });
-}

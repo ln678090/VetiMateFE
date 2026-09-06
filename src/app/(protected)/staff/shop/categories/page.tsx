@@ -18,7 +18,7 @@ export default function CategoriesPage() {
   const [activeTab, setActiveTab] = useState('categories');
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isBrandModalOpen, setIsBrandModalOpen] = useState(false);
-  
+
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
 
@@ -53,7 +53,7 @@ export default function CategoriesPage() {
             Quản lý các danh mục sản phẩm và thương hiệu của shop
           </p>
         </div>
-        <Button 
+        <Button
           onClick={() => {
             if (activeTab === 'categories') {
               setEditingCategory(null);
@@ -78,9 +78,9 @@ export default function CategoriesPage() {
         <TabsContent value="categories" className="space-y-4">
           <Card>
             <CardContent className="p-0">
-              <CategoryTable 
-                categories={categoriesData?.data || []} 
-                isLoading={isLoadingCategories} 
+              <CategoryTable
+                categories={categoriesData?.data || []}
+                isLoading={isLoadingCategories}
                 onEdit={handleEditCategory}
               />
             </CardContent>
@@ -89,24 +89,24 @@ export default function CategoriesPage() {
         <TabsContent value="brands" className="space-y-4">
           <Card>
             <CardContent className="p-0">
-              <BrandTable 
-                brands={brandsData?.data || []} 
-                isLoading={isLoadingBrands} 
+              <BrandTable
+                brands={brandsData?.data || []}
+                isLoading={isLoadingBrands}
                 onEdit={handleEditBrand}
               />
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-      
-      <CategoryFormModal 
+
+      <CategoryFormModal
         isOpen={isCategoryModalOpen}
         onClose={() => setIsCategoryModalOpen(false)}
         categoryToEdit={editingCategory}
         categories={categoriesData?.data || []}
       />
 
-      <BrandFormModal 
+      <BrandFormModal
         isOpen={isBrandModalOpen}
         onClose={() => setIsBrandModalOpen(false)}
         brandToEdit={editingBrand}

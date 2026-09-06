@@ -6,12 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toast } from 'sonner';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -38,11 +33,7 @@ interface CustomerFormDialogProps {
   initialData?: CustomerDto;
 }
 
-export function CustomerFormDialog({
-  open,
-  onOpenChange,
-  initialData,
-}: CustomerFormDialogProps) {
+export function CustomerFormDialog({ open, onOpenChange, initialData }: CustomerFormDialogProps) {
   const isEditing = !!initialData;
   const createMutation = useCreateCustomer();
   const updateMutation = useUpdateCustomer();
@@ -96,9 +87,7 @@ export function CustomerFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? 'Cập nhật khách hàng' : 'Thêm khách hàng mới'}
-          </DialogTitle>
+          <DialogTitle>{isEditing ? 'Cập nhật khách hàng' : 'Thêm khách hàng mới'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -107,7 +96,9 @@ export function CustomerFormDialog({
               name="fullName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Họ và tên <span className="text-red-500">*</span></FormLabel>
+                  <FormLabel>
+                    Họ và tên <span className="text-red-500">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="Nhập tên khách hàng..." {...field} />
                   </FormControl>
@@ -121,7 +112,9 @@ export function CustomerFormDialog({
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Số điện thoại <span className="text-red-500">*</span></FormLabel>
+                  <FormLabel>
+                    Số điện thoại <span className="text-red-500">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="Nhập số điện thoại..." {...field} />
                   </FormControl>

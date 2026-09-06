@@ -36,9 +36,7 @@ export default function VouchersPage() {
             <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
               Phiếu kho
             </h1>
-            <p className="text-sm text-zinc-500">
-              Nhập kho, xuất kho, kiểm kê
-            </p>
+            <p className="text-sm text-zinc-500">Nhập kho, xuất kho, kiểm kê</p>
           </div>
         </div>
         <Link
@@ -51,7 +49,7 @@ export default function VouchersPage() {
       </div>
 
       <VoucherTable
-        data={pageData?.content}
+        data={pageData?.items || []}
         isLoading={isLoading}
         typeFilter={typeFilter}
         statusFilter={statusFilter}

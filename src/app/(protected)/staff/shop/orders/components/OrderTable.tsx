@@ -8,7 +8,15 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ShoppingBag, Eye, MoreHorizontal, CheckCircle2, Truck, PackageCheck, XCircle } from 'lucide-react';
+import {
+  ShoppingBag,
+  Eye,
+  MoreHorizontal,
+  CheckCircle2,
+  Truck,
+  PackageCheck,
+  XCircle,
+} from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Order, OrderStatus } from '@/types/order';
 import {
@@ -57,15 +65,15 @@ export function OrderTable({ items, isLoading }: OrderTableProps) {
   const [endDate, setEndDate] = useState('');
 
   const filteredItems = useMemo(() => {
-    return items.filter(item => {
+    return items.filter((item) => {
       const query = searchQuery.toLowerCase();
       const codeMatches = (item.code || '').toLowerCase().includes(query);
       const nameMatches = (item.customerName || '').toLowerCase().includes(query);
       const phoneMatches = (item.customerPhone || '').includes(query);
-      
+
       const matchesSearch = codeMatches || nameMatches || phoneMatches;
       const matchesStatus = statusFilter === 'ALL' || item.status === statusFilter;
-      
+
       let matchesDate = true;
       if (startDate || endDate) {
         const orderDate = new Date(item.createdAt);
@@ -76,7 +84,7 @@ export function OrderTable({ items, isLoading }: OrderTableProps) {
           start.setHours(0, 0, 0, 0);
           if (orderDate < start) matchesDate = false;
         }
-        
+
         if (endDate) {
           const end = new Date(endDate);
           end.setHours(0, 0, 0, 0);
@@ -89,31 +97,34 @@ export function OrderTable({ items, isLoading }: OrderTableProps) {
   }, [items, searchQuery, statusFilter, startDate, endDate]);
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) => 
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
       orderService.updateOrderStatus({ id, status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shop-orders'] });
       toast.success('Cập nhật trạng thái thành công');
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      // Thay đổi sang unknown
       console.error(error);
-      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi cập nhật trạng thái');
-    }
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(apiError.response?.data?.message || 'Có lỗi xảy ra khi cập nhật trạng thái');
+    },
   });
 
   const processCancelMutation = useMutation({
-    mutationFn: ({ id, accept }: { id: string; accept: boolean }) => 
+    mutationFn: ({ id, accept }: { id: string; accept: boolean }) =>
       orderService.processCancelRequest({ id, accept }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shop-orders'] });
       toast.success('Đã xử lý yêu cầu hủy đơn');
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      // Thay đổi sang unknown
       console.error(error);
-      toast.error(error?.response?.data?.message || 'Có lỗi xảy ra khi xử lý yêu cầu hủy');
-    }
+      const apiError = error as { response?: { data?: { message?: string } } };
+      toast.error(apiError.response?.data?.message || 'Có lỗi xảy ra khi xử lý yêu cầu hủy');
+    },
   });
-
   if (isLoading) {
     return (
       <div className="p-4 space-y-4">
@@ -143,33 +154,36 @@ export function OrderTable({ items, isLoading }: OrderTableProps) {
       <div className="flex flex-wrap items-center gap-4 p-4 border-b bg-zinc-50/50">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
-          <Input 
-            placeholder="Tìm mã đơn, tên KH, SĐT..." 
+          <Input
+            placeholder="Tìm mã đơn, tên KH, SĐT..."
             className="pl-9 bg-white"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        
+
         <div className="flex items-center gap-2">
-          <Input 
-            type="date" 
-            value={startDate} 
+          <Input
+            type="date"
+            value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             className="w-[130px] bg-white text-sm"
             title="Từ ngày"
           />
           <span className="text-zinc-400">-</span>
-          <Input 
-            type="date" 
-            value={endDate} 
+          <Input
+            type="date"
+            value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
             className="w-[130px] bg-white text-sm"
             title="Đến ngày"
           />
         </div>
 
-        <Select value={statusFilter} onValueChange={(val: any) => setStatusFilter(val)}>
+        <Select
+          value={statusFilter}
+          onValueChange={(val) => setStatusFilter(val as OrderStatus | 'ALL')}
+        >
           <SelectTrigger className="w-[160px] bg-white">
             <SelectValue placeholder="Trạng thái" />
           </SelectTrigger>
@@ -183,112 +197,133 @@ export function OrderTable({ items, isLoading }: OrderTableProps) {
         </Select>
       </div>
       <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Mã đơn hàng</TableHead>
-          <TableHead>Khách hàng</TableHead>
-          <TableHead>Tổng tiền</TableHead>
-          <TableHead>Trạng thái</TableHead>
-          <TableHead>Thời gian tạo</TableHead>
-          <TableHead className="text-right">Thao tác</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {filteredItems.length === 0 ? (
+        <TableHeader>
           <TableRow>
-            <TableCell colSpan={6} className="h-24 text-center text-zinc-500">
-              Không tìm thấy đơn hàng nào phù hợp.
-            </TableCell>
+            <TableHead>Mã đơn hàng</TableHead>
+            <TableHead>Khách hàng</TableHead>
+            <TableHead>Tổng tiền</TableHead>
+            <TableHead>Trạng thái</TableHead>
+            <TableHead>Thời gian tạo</TableHead>
+            <TableHead className="text-right">Thao tác</TableHead>
           </TableRow>
-        ) : filteredItems.map((item) => {
-          const statusConfig = STATUS_MAP[item.status] || STATUS_MAP.PENDING;
-          const hasCancelRequest = item.note?.includes('[CANCEL_REQUEST]:');
-          
-          return (
-            <TableRow 
-              key={item.id}
-              onDoubleClick={() => setSelectedOrder(item)}
-              className="cursor-pointer group hover:bg-zinc-50"
-            >
-              <TableCell className="font-medium text-blue-600 group-hover:underline">
-                {item.code}
-              </TableCell>
-              <TableCell>
-                <div className="flex flex-col">
-                  <span className="font-medium">
-                    {item.customerName && item.customerName !== 'null' ? item.customerName : 'Khách vãng lai'}
-                  </span>
-                  {item.customerPhone && item.customerPhone !== 'null' && (
-                    <span className="text-xs text-zinc-500">{item.customerPhone}</span>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell className="font-medium">
-                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.totalAmount)}
-              </TableCell>
-              <TableCell>
-                <div className="flex flex-col gap-1 items-start">
-                  <Badge variant="outline" className={statusConfig.className}>
-                    {statusConfig.label}
-                  </Badge>
-                  {hasCancelRequest && item.status !== 'CANCELLED' && (
-                    <Badge variant="destructive" className="text-[10px] h-5 px-1.5">
-                      Yêu cầu hủy
-                    </Badge>
-                  )}
-                </div>
-              </TableCell>
-              <TableCell className="text-zinc-500 text-sm">
-                {format(new Date(item.createdAt), 'dd/MM/yyyy HH:mm')}
-              </TableCell>
-              <TableCell className="text-right">
-                {item.status !== 'DELIVERED' && item.status !== 'CANCELLED' && !hasCancelRequest && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
-                        <span className="sr-only">Mở menu</span>
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-44">
-                      <DropdownMenuLabel>Cập nhật trạng thái</DropdownMenuLabel>
-                      
-                      {(item.status === 'PENDING' || item.status === 'CONFIRMED') && (
-                        <>
-                          <DropdownMenuItem onSelect={() => updateStatusMutation.mutate({ id: item.id, status: 'SHIPPING' })}>
-                            <Truck className="mr-2 h-4 w-4 text-indigo-600" />
-                            Giao hàng
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem 
-                            className="text-rose-600 focus:text-rose-600 focus:bg-rose-50" 
-                            onSelect={() => updateStatusMutation.mutate({ id: item.id, status: 'CANCELLED' })}
-                          >
-                            <XCircle className="mr-2 h-4 w-4" />
-                            Hủy đơn
-                          </DropdownMenuItem>
-                        </>
-                      )}
-
-                      {item.status === 'SHIPPING' && (
-                        <DropdownMenuItem onSelect={() => updateStatusMutation.mutate({ id: item.id, status: 'DELIVERED' })}>
-                          <PackageCheck className="mr-2 h-4 w-4 text-emerald-600" />
-                          Đã giao
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
+        </TableHeader>
+        <TableBody>
+          {filteredItems.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={6} className="h-24 text-center text-zinc-500">
+                Không tìm thấy đơn hàng nào phù hợp.
               </TableCell>
             </TableRow>
-          );
-        })}
-      </TableBody>
+          ) : (
+            filteredItems.map((item) => {
+              const statusConfig = STATUS_MAP[item.status] || STATUS_MAP.PENDING;
+              const hasCancelRequest = item.note?.includes('[CANCEL_REQUEST]:');
+
+              return (
+                <TableRow
+                  key={item.id}
+                  onDoubleClick={() => setSelectedOrder(item)}
+                  className="cursor-pointer group hover:bg-zinc-50"
+                >
+                  <TableCell className="font-medium text-blue-600 group-hover:underline">
+                    {item.code}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-medium">
+                        {item.customerName && item.customerName !== 'null'
+                          ? item.customerName
+                          : 'Khách vãng lai'}
+                      </span>
+                      {item.customerPhone && item.customerPhone !== 'null' && (
+                        <span className="text-xs text-zinc-500">{item.customerPhone}</span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-medium">
+                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                      item.totalAmount
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col gap-1 items-start">
+                      <Badge variant="outline" className={statusConfig.className}>
+                        {statusConfig.label}
+                      </Badge>
+                      {hasCancelRequest && item.status !== 'CANCELLED' && (
+                        <Badge variant="destructive" className="text-[10px] h-5 px-1.5">
+                          Yêu cầu hủy
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-zinc-500 text-sm">
+                    {format(new Date(item.createdAt), 'dd/MM/yyyy HH:mm')}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {item.status !== 'DELIVERED' &&
+                      item.status !== 'CANCELLED' &&
+                      !hasCancelRequest && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Mở menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-44">
+                            <DropdownMenuLabel>Cập nhật trạng thái</DropdownMenuLabel>
+
+                            {(item.status === 'PENDING' || item.status === 'CONFIRMED') && (
+                              <>
+                                <DropdownMenuItem
+                                  onSelect={() =>
+                                    updateStatusMutation.mutate({ id: item.id, status: 'SHIPPING' })
+                                  }
+                                >
+                                  <Truck className="mr-2 h-4 w-4 text-indigo-600" />
+                                  Giao hàng
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className="text-rose-600 focus:text-rose-600 focus:bg-rose-50"
+                                  onSelect={() =>
+                                    updateStatusMutation.mutate({
+                                      id: item.id,
+                                      status: 'CANCELLED',
+                                    })
+                                  }
+                                >
+                                  <XCircle className="mr-2 h-4 w-4" />
+                                  Hủy đơn
+                                </DropdownMenuItem>
+                              </>
+                            )}
+
+                            {item.status === 'SHIPPING' && (
+                              <DropdownMenuItem
+                                onSelect={() =>
+                                  updateStatusMutation.mutate({ id: item.id, status: 'DELIVERED' })
+                                }
+                              >
+                                <PackageCheck className="mr-2 h-4 w-4 text-emerald-600" />
+                                Đã giao
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
+        </TableBody>
       </Table>
-      <OrderDetailsModal 
-        order={selectedOrder} 
-        isOpen={!!selectedOrder} 
-        onClose={() => setSelectedOrder(null)} 
+      <OrderDetailsModal
+        order={selectedOrder}
+        isOpen={!!selectedOrder}
+        onClose={() => setSelectedOrder(null)}
         onProcessCancel={(orderId, accept) => processCancelMutation.mutate({ id: orderId, accept })}
       />
     </div>

@@ -1,14 +1,21 @@
 import { api, unwrap } from '@/lib/axios';
 import { ApiResp } from '@/types/api';
-import { QueueTicketDto, QueueTicketRequest, QueueStatusUpdateRequest, QueueType } from '@/types/queue';
+import {
+  QueueTicketDto,
+  QueueTicketRequest,
+  QueueStatusUpdateRequest,
+  QueueType,
+} from '@/types/queue';
 
 const QUEUE_URL = '/api/clinic/queue';
 
 export const queueService = {
   getTodayQueue: async (type: QueueType): Promise<QueueTicketDto[]> => {
-    return unwrap(api.get<ApiResp<QueueTicketDto[]>>(QUEUE_URL, {
-      params: { type },
-    }));
+    return unwrap(
+      api.get<ApiResp<QueueTicketDto[]>>(QUEUE_URL, {
+        params: { type },
+      })
+    );
   },
 
   createTicket: async (data: QueueTicketRequest): Promise<QueueTicketDto> => {

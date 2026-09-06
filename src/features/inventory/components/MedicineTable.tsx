@@ -3,11 +3,7 @@
 import { useState } from 'react';
 import { Search, Plus, ToggleLeft, ToggleRight, Edit } from 'lucide-react';
 import type { MedicineResp, MedicineRequest } from '@/types/inventory';
-import {
-  useCreateMedicine,
-  useUpdateMedicine,
-  useToggleMedicine,
-} from '../hooks/use-inventory';
+import { useCreateMedicine, useUpdateMedicine, useToggleMedicine } from '../hooks/use-inventory';
 import { getApiErrorMessage } from '@/lib/axios';
 import { toast } from 'sonner';
 
@@ -130,13 +126,7 @@ export function MedicineTable({ data, isLoading }: MedicineTableProps) {
   );
 }
 
-function MedicineRow({
-  med,
-  onEdit,
-}: {
-  med: MedicineResp;
-  onEdit: () => void;
-}) {
+function MedicineRow({ med, onEdit }: { med: MedicineResp; onEdit: () => void }) {
   const toggleMutation = useToggleMedicine();
   const isLowStock = med.totalStock < med.minStock && med.minStock > 0;
 
@@ -157,20 +147,14 @@ function MedicineRow({
       <td className="px-4 py-3 text-right">
         <span
           className={`font-semibold ${
-            isLowStock
-              ? 'text-red-600 dark:text-red-400'
-              : 'text-zinc-900 dark:text-white'
+            isLowStock ? 'text-red-600 dark:text-red-400' : 'text-zinc-900 dark:text-white'
           }`}
         >
           {med.totalStock}
         </span>
-        {isLowStock && (
-          <span className="ml-1 text-[10px] text-red-500">⚠ thấp</span>
-        )}
+        {isLowStock && <span className="ml-1 text-[10px] text-red-500">⚠ thấp</span>}
       </td>
-      <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-400">
-        {med.minStock}
-      </td>
+      <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-400">{med.minStock}</td>
       <td className="px-4 py-3 text-right text-zinc-600 dark:text-zinc-400">
         {med.importPrice.toLocaleString('vi-VN')}₫
       </td>
@@ -245,7 +229,10 @@ function MedicineForm({
       <h3 className="mb-4 text-base font-semibold text-zinc-900 dark:text-white">
         {editItem ? 'Sửa thuốc/vật tư' : 'Thêm thuốc/vật tư mới'}
       </h3>
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <form
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+      >
         <div>
           <label className="mb-1 block text-xs font-medium text-zinc-600 dark:text-zinc-400">
             Tên <span className="text-red-500">*</span>

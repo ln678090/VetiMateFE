@@ -2,6 +2,7 @@ import {
   CalendarCheck,
   CalendarHeart,
   ClipboardList,
+  FileClock,
   FileText,
   LayoutDashboard,
   ListOrdered,
@@ -12,6 +13,7 @@ import {
   ShoppingCart,
   Stethoscope,
   Tags,
+  Ticket,
   UserRound,
   Users,
   UsersRound,
@@ -112,6 +114,14 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     label: 'Đơn hàng',
     href: '/profile/orders',
     icon: ClipboardList,
+    accessRoles: [ROLE.USER],
+    sidebarRoles: [ROLE.USER],
+  },
+  {
+    key: 'loyalty',
+    label: 'Khuyến mãi & Ưu đãi',
+    href: '/profile/loyalty',
+    icon: Tags,
     accessRoles: [ROLE.USER],
     sidebarRoles: [ROLE.USER],
   },
@@ -228,6 +238,18 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     gradient: 'from-lime-500 to-green-500',
     group: 'Cửa hàng',
   },
+  {
+    key: 'shop-vouchers',
+    label: 'Quản lý Voucher',
+    href: '/staff/shop/vouchers',
+    icon: Ticket,
+    accessRoles: [ROLE.ADMIN, ROLE.MANAGER],
+    sidebarRoles: [ROLE.MANAGER],
+    dashboardRoles: [ROLE.MANAGER],
+    dashboardDescription: 'Quản lý mã giảm giá, voucher cho cửa hàng.',
+    gradient: 'from-fuchsia-500 to-pink-500',
+    group: 'Điều hành',
+  },
 
   // POS tạm thuộc Shop Staff cho đến khi backend có ROLE_CASHIER.
   {
@@ -276,21 +298,31 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     gradient: 'from-violet-500 to-purple-500',
     group: 'Điều hành',
   },
-
-  // ─────────────────────────────────────────────
-  // Admin
-  // ─────────────────────────────────────────────
-
   {
     key: 'staff-management',
     label: 'Tài khoản & phân quyền',
     href: '/management/staff',
     icon: UsersRound,
+    accessRoles: [ROLE.MANAGER],
+    sidebarRoles: [ROLE.MANAGER],
+    dashboardRoles: [ROLE.MANAGER],
+    dashboardDescription: 'Quản lý tài khoản, vai trò và trạng thái truy cập.',
+    gradient: 'from-cyan-500 to-blue-500',
+    group: 'Quản trị hệ thống',
+  }, // ─────────────────────────────────────────────
+  // Admin
+  // ─────────────────────────────────────────────
+
+  {
+    key: 'audit-logs',
+    label: 'Nhật ký hệ thống',
+    href: '/admin/audit-logs',
+    icon: FileClock,
     accessRoles: [ROLE.ADMIN],
     sidebarRoles: [ROLE.ADMIN],
     dashboardRoles: [ROLE.ADMIN],
-    dashboardDescription: 'Quản lý tài khoản, vai trò và trạng thái truy cập.',
-    gradient: 'from-cyan-500 to-blue-500',
+    dashboardDescription: 'Theo dõi các thao tác quan trọng trong toàn hệ thống.',
+    gradient: 'from-slate-600 to-zinc-800',
     group: 'Quản trị hệ thống',
   },
 

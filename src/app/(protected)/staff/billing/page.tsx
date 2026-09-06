@@ -11,7 +11,7 @@ export default function Page() {
           Quản lý hóa đơn dịch vụ khám chữa bệnh, spa và thanh toán
         </p>
       </header>
-      
+
       <BillingBoard />
     </div>
   );

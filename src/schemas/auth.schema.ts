@@ -39,7 +39,7 @@ export const changePasswordSchema = z
     oldPassword: z.string().min(1, 'Mật khẩu cũ không được để trống'),
     newPassword: z
       .string()
-      .min(8, 'Mật khẩu mới phải từ 8 ký tự trở lên')
+      .min(6, 'Mật khẩu mới phải từ 6 ký tự trở lên')
       .regex(
         /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!*()_\-]).{8,}$/,
         'Mật khẩu phải chứa chữ hoa, chữ thường, số và ký tự đặc biệt'

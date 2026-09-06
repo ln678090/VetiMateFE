@@ -24,7 +24,7 @@ export function useCreateStaffPet() {
 
   return useMutation({
     mutationFn: (data: CreatePetRequest) => staffPetService.create(data),
-    onSuccess: (data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: STAFF_PET_QUERY_KEYS.all });
       toast.success('Thêm thú cưng thành công');
     },

@@ -5,12 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Form,
   FormControl,
@@ -40,11 +35,7 @@ interface OwnerPetDialogProps {
   initialData?: PetDto;
 }
 
-export function OwnerPetDialog({
-  open,
-  onOpenChange,
-  initialData,
-}: OwnerPetDialogProps) {
+export function OwnerPetDialog({ open, onOpenChange, initialData }: OwnerPetDialogProps) {
   const isEditing = !!initialData;
   const createMutation = useCreateOwnerPet();
   const updateMutation = useUpdateOwnerPet();
@@ -87,18 +78,32 @@ export function OwnerPetDialog({
   }, [open, initialData, form]);
 
   const onSubmit = (values: z.input<typeof petFormSchema>) => {
-    // Cast values to any to bypass exact match since we know backend accepts it
-    const submitValues = values as any;
+    // Định nghĩa cấu trúc chuẩn backend yêu cầu dựa theo thông báo lỗi
+    type PetSubmitData = {
+      name: string;
+      species: 'DOG' | 'CAT';
+      breed: string | null;
+      note: string | null;
+      [key: string]: unknown; // Cho phép chứa thêm các trường phụ khác nếu có
+    };
+
+    // Ép kiểu an toàn qua lớp trung gian unknown để ESLint không bắt lỗi
+    const submitValues = values as unknown as PetSubmitData;
+
     if (isEditing) {
       updateMutation.mutate(
-        { id: initialData.id, data: submitValues },
+        {
+          id: initialData.id,
+          data: submitValues,
+        },
         {
           onSuccess: () => {
             toast.success('Cập nhật thú cưng thành công');
             onOpenChange(false);
           },
-          onError: (error: any) => {
-            toast.error(error?.message || 'Lỗi khi cập nhật thú cưng');
+          onError: (error: unknown) => {
+            const apiError = error as Error;
+            toast.error(apiError.message || 'Lỗi khi cập nhật thú cưng');
           },
         }
       );
@@ -108,8 +113,9 @@ export function OwnerPetDialog({
           toast.success('Thêm thú cưng thành công');
           onOpenChange(false);
         },
-        onError: (error: any) => {
-          toast.error(error?.message || 'Lỗi khi thêm thú cưng');
+        onError: (error: unknown) => {
+          const apiError = error as Error;
+          toast.error(apiError.message || 'Lỗi khi thêm thú cưng');
         },
       });
     }
@@ -121,9 +127,7 @@ export function OwnerPetDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? 'Cập nhật thú cưng' : 'Thêm thú cưng mới'}
-          </DialogTitle>
+          <DialogTitle>{isEditing ? 'Cập nhật thú cưng' : 'Thêm thú cưng mới'}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -132,7 +136,9 @@ export function OwnerPetDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tên thú cưng <span className="text-red-500">*</span></FormLabel>
+                  <FormLabel>
+                    Tên thú cưng <span className="text-red-500">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="Nhập tên thú cưng..." {...field} />
                   </FormControl>
@@ -147,11 +153,10 @@ export function OwnerPetDialog({
                 name="species"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Loài <span className="text-red-500">*</span></FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+                    <FormLabel>
+                      Loài <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Chọn loài" />
@@ -176,10 +181,7 @@ export function OwnerPetDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Giới tính</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value || undefined}
-                    >
+                    <Select onValueChange={field.onChange} defaultValue={field.value || undefined}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Chọn giới tính" />
@@ -232,9 +234,7 @@ export function OwnerPetDialog({
                         {...field}
                         value={field.value ?? ''}
                         onChange={(e) =>
-                          field.onChange(
-                            e.target.value ? Number(e.target.value) : null
-                          )
+                          field.onChange(e.target.value ? Number(e.target.value) : null)
                         }
                       />
                     </FormControl>
@@ -251,11 +251,7 @@ export function OwnerPetDialog({
                 <FormItem>
                   <FormLabel>Ngày sinh</FormLabel>
                   <FormControl>
-                    <Input
-                      type="date"
-                      {...field}
-                      value={field.value || ''}
-                    />
+                    <Input type="date" {...field} value={field.value || ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

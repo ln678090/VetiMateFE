@@ -19,11 +19,7 @@ export function BatchTable({ data, isLoading }: BatchTableProps) {
   }
 
   if (!data || data.length === 0) {
-    return (
-      <div className="py-8 text-center text-sm text-zinc-500">
-        Chưa có lô hàng nào
-      </div>
-    );
+    return <div className="py-8 text-center text-sm text-zinc-500">Chưa có lô hàng nào</div>;
   }
 
   return (
@@ -85,9 +81,7 @@ export function BatchTable({ data, isLoading }: BatchTableProps) {
                 <td className="px-4 py-3 text-right">
                   <span
                     className={`font-semibold ${
-                      batch.remainingQty <= 0
-                        ? 'text-zinc-400'
-                        : 'text-zinc-900 dark:text-white'
+                      batch.remainingQty <= 0 ? 'text-zinc-400' : 'text-zinc-900 dark:text-white'
                     }`}
                   >
                     {batch.remainingQty}

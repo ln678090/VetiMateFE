@@ -8,16 +8,30 @@ import { getApiErrorMessage } from '@/lib/axios';
 import { toast } from 'sonner';
 
 const TYPE_LABELS: Record<VoucherType, { label: string; color: string }> = {
-  IMPORT: { label: 'Nhập kho', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
-  EXPORT: { label: 'Xuất kho', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
-  TRANSFER: { label: 'Chuyển kho', color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400' },
-  STOCKTAKE: { label: 'Kiểm kê', color: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400' },
+  IMPORT: {
+    label: 'Nhập kho',
+    color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  },
+  EXPORT: {
+    label: 'Xuất kho',
+    color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  },
 };
 
 const STATUS_LABELS: Record<VoucherStatus, { label: string; color: string }> = {
-  DRAFT: { label: 'Nháp', color: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400' },
-  APPROVED: { label: 'Đã duyệt', color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' },
-  CANCELLED: { label: 'Đã hủy', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' },
+  PENDING: {
+    label: 'Chờ duyệt',
+    color:
+      'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-900/20 dark:text-amber-400',
+  },
+  APPROVED: {
+    label: 'Đã duyệt',
+    color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  },
+  CANCELLED: {
+    label: 'Đã hủy',
+    color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  },
 };
 
 interface VoucherTableProps {
@@ -51,16 +65,16 @@ export function VoucherTable({
           <option value="">Tất cả loại</option>
           <option value="IMPORT">Nhập kho</option>
           <option value="EXPORT">Xuất kho</option>
-          <option value="TRANSFER">Chuyển kho</option>
-          <option value="STOCKTAKE">Kiểm kê</option>
         </select>
         <select
           value={statusFilter || ''}
-          onChange={(e) => onStatusChange((e.target.value || undefined) as VoucherStatus | undefined)}
+          onChange={(e) =>
+            onStatusChange((e.target.value || undefined) as VoucherStatus | undefined)
+          }
           className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm outline-none focus:border-rose-300 dark:border-zinc-700 dark:bg-zinc-900"
         >
           <option value="">Tất cả trạng thái</option>
-          <option value="DRAFT">Nháp</option>
+          <option value="PENDING">Chờ duyệt</option>
           <option value="APPROVED">Đã duyệt</option>
           <option value="CANCELLED">Đã hủy</option>
         </select>
@@ -111,9 +125,7 @@ export function VoucherTable({
                       key={v.id}
                       voucher={v}
                       isExpanded={detailId === v.id}
-                      onToggleDetail={() =>
-                        setDetailId(detailId === v.id ? null : v.id)
-                      }
+                      onToggleDetail={() => setDetailId(detailId === v.id ? null : v.id)}
                     />
                   ))}
             </tbody>
@@ -170,12 +182,16 @@ function VoucherRow({
           {voucher.id.slice(0, 8)}...
         </td>
         <td className="px-4 py-3">
-          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${typeInfo.color}`}>
+          <span
+            className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${typeInfo.color}`}
+          >
             {typeInfo.label}
           </span>
         </td>
         <td className="px-4 py-3">
-          <span className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${statusInfo.color}`}>
+          <span
+            className={`inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${statusInfo.color}`}
+          >
             {statusInfo.label}
           </span>
         </td>
@@ -197,7 +213,7 @@ function VoucherRow({
             >
               <Eye className="h-4 w-4" />
             </button>
-            {voucher.status === 'DRAFT' && (
+            {voucher.status === 'PENDING' && (
               <>
                 <button
                   onClick={handleApprove}

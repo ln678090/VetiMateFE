@@ -14,10 +14,7 @@ export function StockAlerts({ nearExpiry, expired, isLoading }: StockAlertsProps
     return (
       <div className="space-y-3">
         {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="h-16 animate-pulse rounded-xl bg-zinc-200 dark:bg-zinc-700"
-          />
+          <div key={i} className="h-16 animate-pulse rounded-xl bg-zinc-200 dark:bg-zinc-700" />
         ))}
       </div>
     );
@@ -59,18 +56,14 @@ export function StockAlerts({ nearExpiry, expired, isLoading }: StockAlertsProps
                     {batch.medicineName || batch.productName}
                   </span>
                   {batch.batchCode && (
-                    <span className="ml-2 text-xs text-zinc-500">
-                      Lô: {batch.batchCode}
-                    </span>
+                    <span className="ml-2 text-xs text-zinc-500">Lô: {batch.batchCode}</span>
                   )}
                 </div>
                 <div className="text-right">
                   <span className="text-xs font-medium text-red-600 dark:text-red-400">
                     HSD: {batch.expiryDate}
                   </span>
-                  <span className="ml-3 text-xs text-zinc-500">
-                    Còn: {batch.remainingQty}
-                  </span>
+                  <span className="ml-3 text-xs text-zinc-500">Còn: {batch.remainingQty}</span>
                 </div>
               </div>
             ))}
@@ -103,18 +96,14 @@ export function StockAlerts({ nearExpiry, expired, isLoading }: StockAlertsProps
                     {batch.medicineName || batch.productName}
                   </span>
                   {batch.batchCode && (
-                    <span className="ml-2 text-xs text-zinc-500">
-                      Lô: {batch.batchCode}
-                    </span>
+                    <span className="ml-2 text-xs text-zinc-500">Lô: {batch.batchCode}</span>
                   )}
                 </div>
                 <div className="text-right">
                   <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
                     HSD: {batch.expiryDate}
                   </span>
-                  <span className="ml-3 text-xs text-zinc-500">
-                    Còn: {batch.remainingQty}
-                  </span>
+                  <span className="ml-3 text-xs text-zinc-500">Còn: {batch.remainingQty}</span>
                 </div>
               </div>
             ))}

@@ -48,5 +48,5 @@ export const catalogApi = {
   deleteBrand: async (id: string) => {
     const res = await api.delete<ApiResp<void>>(`/api/catalog/brands/${id}`);
     return res.data;
-  }
+  },
 };

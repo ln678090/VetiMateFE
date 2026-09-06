@@ -24,14 +24,12 @@ export const supplierApi = {
 
   getById: (id: string) => api.get<ApiResp<SupplierResp>>(`${BASE}/suppliers/${id}`),
 
-  create: (data: SupplierRequest) =>
-    api.post<ApiResp<SupplierResp>>(`${BASE}/suppliers`, data),
+  create: (data: SupplierRequest) => api.post<ApiResp<SupplierResp>>(`${BASE}/suppliers`, data),
 
   update: (id: string, data: SupplierRequest) =>
     api.put<ApiResp<SupplierResp>>(`${BASE}/suppliers/${id}`, data),
 
-  toggleActive: (id: string) =>
-    api.put<ApiResp<void>>(`${BASE}/suppliers/${id}/toggle-active`),
+  toggleActive: (id: string) => api.put<ApiResp<void>>(`${BASE}/suppliers/${id}/toggle-active`),
 };
 
 // ===== Medicines =====
@@ -42,14 +40,12 @@ export const medicineApi = {
 
   getById: (id: string) => api.get<ApiResp<MedicineResp>>(`${BASE}/medicines/${id}`),
 
-  create: (data: MedicineRequest) =>
-    api.post<ApiResp<MedicineResp>>(`${BASE}/medicines`, data),
+  create: (data: MedicineRequest) => api.post<ApiResp<MedicineResp>>(`${BASE}/medicines`, data),
 
   update: (id: string, data: MedicineRequest) =>
     api.put<ApiResp<MedicineResp>>(`${BASE}/medicines/${id}`, data),
 
-  toggleActive: (id: string) =>
-    api.put<ApiResp<void>>(`${BASE}/medicines/${id}/toggle-active`),
+  toggleActive: (id: string) => api.put<ApiResp<void>>(`${BASE}/medicines/${id}/toggle-active`),
 
   getLowStock: () => api.get<ApiResp<MedicineResp[]>>(`${BASE}/medicines/low-stock`),
 };
@@ -65,11 +61,9 @@ export const voucherApi = {
   create: (data: CreateVoucherRequest) =>
     api.post<ApiResp<StockVoucherResp>>(`${BASE}/vouchers`, data),
 
-  approve: (id: string) =>
-    api.put<ApiResp<StockVoucherResp>>(`${BASE}/vouchers/${id}/approve`),
+  approve: (id: string) => api.put<ApiResp<StockVoucherResp>>(`${BASE}/vouchers/${id}/approve`),
 
-  cancel: (id: string) =>
-    api.put<ApiResp<StockVoucherResp>>(`${BASE}/vouchers/${id}/cancel`),
+  cancel: (id: string) => api.put<ApiResp<StockVoucherResp>>(`${BASE}/vouchers/${id}/cancel`),
 };
 
 // ===== Batches =====

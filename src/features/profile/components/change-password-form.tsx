@@ -40,9 +40,11 @@ export function ChangePasswordForm() {
       toast.success('Đổi mật khẩu thành công!');
       form.reset();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      // Sửa thành unknown
+      const apiError = error as { response?: { data?: { message?: string } }; message?: string };
       const message =
-        error?.response?.data?.message || error?.message || 'Có lỗi xảy ra khi đổi mật khẩu';
+        apiError.response?.data?.message || apiError.message || 'Có lỗi xảy ra khi đổi mật khẩu';
       toast.error(message);
     },
   });
@@ -63,7 +65,7 @@ export function ChangePasswordForm() {
               <FormControl>
                 <div className="relative">
                   <Input
-                    type={showOldPassword ? "text" : "password"}
+                    type={showOldPassword ? 'text' : 'password'}
                     placeholder="Nhập mật khẩu hiện tại"
                     {...field}
                     className="rounded-xl pr-10"
@@ -93,7 +95,7 @@ export function ChangePasswordForm() {
               <FormControl>
                 <div className="relative">
                   <Input
-                    type={showNewPassword ? "text" : "password"}
+                    type={showNewPassword ? 'text' : 'password'}
                     placeholder="Nhập mật khẩu mới"
                     {...field}
                     className="rounded-xl pr-10"
@@ -123,7 +125,7 @@ export function ChangePasswordForm() {
               <FormControl>
                 <div className="relative">
                   <Input
-                    type={showConfirmPassword ? "text" : "password"}
+                    type={showConfirmPassword ? 'text' : 'password'}
                     placeholder="Nhập lại mật khẩu mới"
                     {...field}
                     className="rounded-xl pr-10"
@@ -135,7 +137,11 @@ export function ChangePasswordForm() {
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-muted-foreground"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
-                    {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                    {showConfirmPassword ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
                   </Button>
                 </div>
               </FormControl>

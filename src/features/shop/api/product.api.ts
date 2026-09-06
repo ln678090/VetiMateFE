@@ -25,7 +25,7 @@ export const productApi = {
     const res = await api.get<ApiResp<ProductListResp>>(`/api/products${query}`);
     return res.data;
   },
-  
+
   createProduct: async (data: ProductReq) => {
     const res = await api.post<ApiResp<Product>>('/api/products', data);
     return res.data;

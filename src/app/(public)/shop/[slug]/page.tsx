@@ -75,7 +75,13 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-12">
         {/* Gallery - mock 5 ảnh (BE chỉ trả 1 thì duplicate để demo) */}
         <ProductGallery
-          images={[product.imageUrl, product.imageUrl, product.imageUrl, product.imageUrl, product.imageUrl]}
+          images={[
+            product.imageUrl,
+            product.imageUrl,
+            product.imageUrl,
+            product.imageUrl,
+            product.imageUrl,
+          ]}
           alt={product.name}
         />
 

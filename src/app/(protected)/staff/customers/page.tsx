@@ -86,9 +86,15 @@ export default function CustomerManagementPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <Card key={i}>
-              <CardHeader className="pb-3"><Skeleton className="h-5 w-3/4" /></CardHeader>
-              <CardContent className="pb-3"><Skeleton className="h-4 w-1/2" /></CardContent>
-              <CardFooter><Skeleton className="h-6 w-full" /></CardFooter>
+              <CardHeader className="pb-3">
+                <Skeleton className="h-5 w-3/4" />
+              </CardHeader>
+              <CardContent className="pb-3">
+                <Skeleton className="h-4 w-1/2" />
+              </CardContent>
+              <CardFooter>
+                <Skeleton className="h-6 w-full" />
+              </CardFooter>
             </Card>
           ))}
         </div>
