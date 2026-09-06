@@ -1,6 +1,5 @@
 # 🐾 Veterinary PetCare Shop — Frontend
 
-<!-- updated -->
 
 > Next.js 16.2.6 · TypeScript · TailwindCSS · shadcn/ui · Framer Motion · Zustand · TanStack Query
 
