@@ -16,6 +16,7 @@ import {
   useReplacePrescriptions,
   useSaveExamination,
 } from '@/features/examination/hooks/use-examination';
+import { useServiceIndications } from '@/features/examination/hooks/use-service-indications';
 import { api } from '@/lib/axios';
 import type {
   MedicalRecordResponse,
@@ -95,19 +96,13 @@ function ExaminationForm({ initialRecord }: ExaminationFormProps) {
   const router = useRouter();
 
   const [symptoms, setSymptoms] = useState(initialRecord.symptoms ?? '');
-
   const [diagnosis, setDiagnosis] = useState(initialRecord.diagnosis ?? '');
-
   const [treatmentPlan, setTreatmentPlan] = useState(initialRecord.treatmentPlan ?? '');
-
   const [weightKg, setWeightKg] = useState<number | null>(initialRecord.weightKg);
-
   const [healthStatus, setHealthStatus] = useState<PetHealthStatus>(
     initialRecord.healthStatus ?? 'MONITORING'
   );
-
   const [doctorNote, setDoctorNote] = useState(initialRecord.doctorNote ?? '');
-
   const [prescriptions, setPrescriptions] = useState<PrescriptionDraft[]>(
     initialRecord.prescriptions.map((item) => ({
       key: item.id,
@@ -121,9 +116,10 @@ function ExaminationForm({ initialRecord }: ExaminationFormProps) {
 
   const medicinesQuery = useMedicines();
 
+  const indicationsQuery = useServiceIndications(initialRecord.id, Boolean(initialRecord.id));
+
   const servicesQuery = useQuery({
     queryKey: ['clinic-services', 'active', 'indications'],
-
     queryFn: async (): Promise<ClinicServiceOption[]> => {
       const response = await api.get<ApiResponse<SpringPage<ClinicServiceOption>>>(
         '/api/clinic/services',
@@ -139,20 +135,20 @@ function ExaminationForm({ initialRecord }: ExaminationFormProps) {
 
       return response.data.data.content;
     },
-
     staleTime: 5 * 60 * 1000,
   });
 
   const saveMutation = useSaveExamination();
-
   const replaceMutation = useReplacePrescriptions();
-
   const completeMutation = useCompleteExamination();
 
   const isReadOnly = initialRecord.status === 'COMPLETED';
 
   const isSubmitting =
     saveMutation.isPending || replaceMutation.isPending || completeMutation.isPending;
+
+  const hasPendingIndications =
+    indicationsQuery.data?.some((indication) => indication.status === 'PENDING') ?? false;
 
   function buildSaveRequest(): SaveExaminationRequest {
     return {
@@ -217,8 +213,23 @@ function ExaminationForm({ initialRecord }: ExaminationFormProps) {
   async function handleComplete(): Promise<void> {
     if (isReadOnly) return;
 
+    if (indicationsQuery.isLoading) {
+      toast.error('Đang kiểm tra trạng thái chỉ định.');
+      return;
+    }
+
+    if (indicationsQuery.isError) {
+      toast.error('Không thể kiểm tra chỉ định. Vui lòng tải lại trang.');
+      return;
+    }
+
+    if (hasPendingIndications) {
+      toast.error('Còn chỉ định chưa có kết quả. Hãy hoàn tất hoặc hủy chỉ định trước.');
+      return;
+    }
+
     if (!diagnosis.trim()) {
-      toast.error('Phải nhập chẩn đoán trước khi hoàn tất.');
+      toast.error('Phải nhập chẩn đoán cuối cùng trước khi hoàn tất.');
       return;
     }
 
@@ -281,7 +292,6 @@ function ExaminationForm({ initialRecord }: ExaminationFormProps) {
       <header>
         <div className="flex items-center gap-2">
           <Stethoscope className="size-7 text-rose-600" />
-
           <h1 className="text-3xl font-bold">Hồ sơ khám bệnh</h1>
         </div>
 
@@ -330,7 +340,6 @@ function ExaminationForm({ initialRecord }: ExaminationFormProps) {
             disabled={isReadOnly}
             onChange={(event) => {
               const value = event.target.value;
-
               setWeightKg(value ? Number(value) : null);
             }}
             className="h-10 w-full rounded-md border bg-background px-3 text-sm disabled:opacity-60"
@@ -556,6 +565,13 @@ function ExaminationForm({ initialRecord }: ExaminationFormProps) {
         </div>
       </section>
 
+      {!isReadOnly && hasPendingIndications && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          Bệnh án đang chờ kết quả chỉ định. Hãy nhập kết quả hoặc hủy tất cả chỉ định trước khi
+          hoàn tất khám.
+        </div>
+      )}
+
       {!isReadOnly && (
         <footer className="flex flex-wrap justify-end gap-3">
           <button
@@ -570,12 +586,18 @@ function ExaminationForm({ initialRecord }: ExaminationFormProps) {
 
           <button
             type="button"
-            disabled={isSubmitting}
+            disabled={
+              isSubmitting ||
+              indicationsQuery.isLoading ||
+              indicationsQuery.isError ||
+              hasPendingIndications
+            }
             onClick={() => void handleComplete()}
-            className="inline-flex h-10 items-center gap-2 rounded-md bg-emerald-600 px-4 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+            className="inline-flex h-10 items-center gap-2 rounded-md bg-emerald-600 px-4 text-sm font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting && <LoaderCircle className="size-4 animate-spin" />}
-            Hoàn tất khám
+
+            {hasPendingIndications ? 'Đang chờ kết quả chỉ định' : 'Hoàn tất khám'}
           </button>
         </footer>
       )}
@@ -592,7 +614,6 @@ export default function DoctorExaminationPage() {
 
   const recordQuery = useQuery<MedicalRecordResponse, Error>({
     queryKey: EXAMINATION_QUERY_KEYS.medicalRecord(appointmentId ?? 'missing'),
-
     queryFn: () => {
       if (!appointmentId) {
         throw new Error('Thiếu mã lịch hẹn.');
@@ -600,7 +621,6 @@ export default function DoctorExaminationPage() {
 
       return examinationApi.openExamination(appointmentId);
     },
-
     enabled: Boolean(appointmentId),
     staleTime: Number.POSITIVE_INFINITY,
     gcTime: 10 * 60 * 1000,
