@@ -16,6 +16,14 @@ const TYPE_LABELS: Record<VoucherType, { label: string; color: string }> = {
     label: 'Xuất kho',
     color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
   },
+  TRANSFER: {
+    label: 'Chuyển kho',
+    color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+  },
+  STOCKTAKE: {
+    label: 'Kiểm kê',
+    color: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-400',
+  },
 };
 
 const STATUS_LABELS: Record<VoucherStatus, { label: string; color: string }> = {

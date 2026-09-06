@@ -12,6 +12,7 @@ import type {
   SupplierResp,
   VoucherStatus,
   VoucherType,
+  WarehouseLocation,
 } from '@/types/inventory';
 
 const BASE = '/api/inventory';
@@ -69,19 +70,30 @@ export const voucherApi = {
 // ===== Batches =====
 
 export const batchApi = {
+  getByWarehouse: (warehouse: WarehouseLocation = 'STORAGE') =>
+    api.get<ApiResp<StockBatchResp[]>>(`${BASE}/batches`, { params: { warehouse } }),
+
   getByMedicine: (medicineId: string) =>
     api.get<ApiResp<StockBatchResp[]>>(`${BASE}/batches/medicine/${medicineId}`),
 
   getByProduct: (productId: string) =>
     api.get<ApiResp<StockBatchResp[]>>(`${BASE}/batches/product/${productId}`),
+
+  exportExpiredToDoctor: (batchId: string) =>
+    api.post<ApiResp<StockVoucherResp>>(`${BASE}/batches/${batchId}/export-to-doctor`),
+
+  exportAllExpiredToDoctor: () =>
+    api.post<ApiResp<StockVoucherResp>>(`${BASE}/batches/export-all-expired-to-doctor`),
 };
 
 // ===== Alerts =====
 
 export const alertApi = {
-  getNearExpiry: () => api.get<ApiResp<StockBatchResp[]>>(`${BASE}/alerts/near-expiry`),
+  getNearExpiry: (warehouse: WarehouseLocation = 'STORAGE') =>
+    api.get<ApiResp<StockBatchResp[]>>(`${BASE}/alerts/near-expiry`, { params: { warehouse } }),
 
-  getExpired: () => api.get<ApiResp<StockBatchResp[]>>(`${BASE}/alerts/expired`),
+  getExpired: (warehouse: WarehouseLocation = 'STORAGE') =>
+    api.get<ApiResp<StockBatchResp[]>>(`${BASE}/alerts/expired`, { params: { warehouse } }),
 };
 
 // ===== Dashboard =====
