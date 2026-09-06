@@ -1,5 +1,5 @@
 // Types khớp DTO backend (com.graduation.project.clinic.dto)
-// updated
+
 export interface ClinicServiceDto {
   id: string;
   name: string;
@@ -126,4 +126,3 @@ export interface ManagementAppointmentParams {
 export interface UpdateAppointmentStatusRequest {
   status: AppointmentStatus;
 }
-// fix

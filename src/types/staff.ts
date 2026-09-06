@@ -5,7 +5,6 @@ export type StaffRoleType =
   | 'ACCOUNTANT'
   | 'WAREHOUSE'
   | 'SHOP_STAFF'; // updated
-
 export interface StaffResponse {
   id: string;
   userId: string;
@@ -67,4 +66,3 @@ export interface SpringPage<T> {
   last: boolean;
   empty: boolean;
 }
-// fix
