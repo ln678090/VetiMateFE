@@ -1,7 +1,12 @@
 export type LandingSceneId =
-  'hero' | 'problem' | 'clinic' | 'shop' | 'passport' | 'proof' | 'finale';
+  | 'hero'
+  | 'problem'
+  | 'clinic'
+  | 'shop'
+  | 'passport'
+  | 'proof'
+  | 'finale';
 
-// updated
 export type LandingSceneAccent = 'rose' | 'pink' | 'amber';
 
 export interface LandingScene {
@@ -106,4 +111,3 @@ export function getSceneById(sceneId: LandingSceneId): (typeof LANDING_SCENES)[n
 export function getSceneScrollHeight(sceneId: LandingSceneId): string {
   return `${getSceneById(sceneId).scrollVh}vh`;
 }
-// fix
