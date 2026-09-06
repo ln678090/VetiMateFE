@@ -98,7 +98,12 @@ export interface UpdatePetRequest {
 }
 
 export type AppointmentStatus =
-  'SCHEDULED' | 'CONFIRMED' | 'DONE' | 'CANCELLED' | 'NO_SHOW' | 'ARRIVED';
+  | 'SCHEDULED'
+  | 'CONFIRMED'
+  | 'DONE'
+  | 'CANCELLED'
+  | 'NO_SHOW'
+  | 'ARRIVED';
 
 export interface SpringPage<T> {
   content: T[];
