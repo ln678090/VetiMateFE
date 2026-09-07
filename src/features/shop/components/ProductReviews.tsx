@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { Star, ThumbsUp } from 'lucide-react';
+import { Star } from 'lucide-react';
 
 import { useQuery } from '@tanstack/react-query';
 import { shopService } from '@/services/shop.service';
@@ -169,15 +169,6 @@ export function ProductReviews({ slug, rating, totalReviews }: ProductReviewsPro
                   <p className="mt-1 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
                     {review.content}
                   </p>
-                  <Separator className="my-3" />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 gap-1.5 px-2 text-xs text-zinc-500 hover:text-rose-600 dark:text-zinc-500 dark:hover:text-rose-400"
-                  >
-                    <ThumbsUp className="h-3 w-3" strokeWidth={2.2} />
-                    Hữu ích ({review.helpful})
-                  </Button>
                 </div>
               </div>
             </motion.article>

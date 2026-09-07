@@ -38,7 +38,9 @@ export function ProductBatchesModal({ product, isOpen, onClose }: ProductBatches
     ? batchesData.data.data
     : Array.isArray(batchesData?.data)
       ? batchesData.data
-      : [];
+      : Array.isArray(batchesData)
+        ? batchesData
+        : [];
 
   const batches = rawBatches.filter((b: any) => b.remainingQty > 0);
 

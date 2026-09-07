@@ -80,6 +80,16 @@ export default function LoyaltyPage() {
   const filteredVouchers =
     availableVouchers?.filter((v) => {
       if (v.endDate && new Date(v.endDate) < now) return false; // Tự động ẩn nếu đã hết hạn theo thời gian thực (client-side)
+
+      // Ẩn mã giảm giá nếu khách đã đổi và chưa sử dụng (còn hiệu lực)
+      const hasActiveVoucher = myVouchers?.some(
+        (uv) =>
+          uv.voucher.id === v.id &&
+          !uv.isUsed &&
+          (!uv.voucher.endDate || new Date(uv.voucher.endDate) >= now)
+      );
+      if (hasActiveVoucher) return false;
+
       return true;
     }) || [];
 

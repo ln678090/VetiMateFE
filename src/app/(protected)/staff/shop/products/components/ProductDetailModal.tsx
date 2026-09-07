@@ -23,17 +23,26 @@ interface ProductDetailModalProps {
 }
 
 export function ProductDetailModal({ product, isOpen, onClose }: ProductDetailModalProps) {
-  const { data: batchesData, isLoading } = useQuery({
+  const {
+    data: batchesData,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ['product-batches', product?.id],
     queryFn: () => batchApi.getByProduct(product!.id),
     enabled: !!product?.id && isOpen,
   });
 
-  const batches = Array.isArray(batchesData?.data?.data)
+  const rawBatches = Array.isArray(batchesData?.data?.data)
     ? batchesData.data.data
     : Array.isArray(batchesData?.data)
       ? batchesData.data
-      : [];
+      : Array.isArray(batchesData)
+        ? batchesData
+        : [];
+
+  const batches = rawBatches.filter((b: any) => b.remainingQty > 0);
 
   if (!product) return null;
 
@@ -108,7 +117,11 @@ export function ProductDetailModal({ product, isOpen, onClose }: ProductDetailMo
 
         <div className="mt-8">
           <h3 className="font-semibold text-lg mb-4">Các lô hàng hiện có</h3>
-          {isLoading ? (
+          {isError ? (
+            <div className="flex h-24 items-center justify-center text-sm text-red-500 border border-dashed rounded-md">
+              Có lỗi xảy ra khi tải lô hàng: {String(error)}
+            </div>
+          ) : isLoading ? (
             <div className="space-y-4">
               {[1, 2].map((i) => (
                 <Skeleton key={i} className="h-10 w-full" />
@@ -139,10 +152,10 @@ export function ProductDetailModal({ product, isOpen, onClose }: ProductDetailMo
 
                     return (
                       <TableRow key={batch.id}>
-                        <TableCell className="font-medium whitespace-nowrap">
-                          {batch.batchCode}
+                        <TableCell className="font-medium text-zinc-900 dark:text-white">
+                          {batch.batchCode || '---'}
                         </TableCell>
-                        <TableCell className="whitespace-nowrap">
+                        <TableCell className="text-zinc-600 dark:text-zinc-400">
                           {batch.supplierName || '---'}
                         </TableCell>
                         <TableCell className="text-right font-medium text-emerald-600 whitespace-nowrap">

@@ -233,7 +233,7 @@ export function OrderCard({ order, onCancelOrder, onReviewOrder }: OrderCardProp
           )}
           {order.status === 'DELIVERED' && (
             <>
-              {onReviewOrder && (
+              {onReviewOrder && !order.isReviewed && (
                 <Button
                   variant="outline"
                   onClick={() => onReviewOrder(order.id)}
