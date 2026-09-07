@@ -17,11 +17,14 @@ export const registerSchema = z
       .max(50, 'Username tối đa 50 ký tự')
       .regex(/^[a-zA-Z0-9_]+$/, 'Username chỉ chứa chữ, số và dấu gạch dưới'),
     email: z.string().min(1, 'Email không được để trống').email('Email không hợp lệ'),
-
     phone: z
       .string()
       .trim()
       .regex(/^(?:\+84|0)(?:3|5|7|8|9)\d{8}$/, 'Số điện thoại Việt Nam không hợp lệ'),
+
+    // 🟢 BỔ SUNG: Kiểm tra dữ liệu cho trường địa chỉ
+    address: z.string().min(1, 'Địa chỉ không được để trống').max(500, 'Địa chỉ tối đa 500 ký tự'),
+
     password: z
       .string()
       .min(6, 'Mật khẩu phải từ 6 ký tự trở lên')
@@ -32,6 +35,7 @@ export const registerSchema = z
     message: 'Mật khẩu nhập lại không khớp',
     path: ['confirmPassword'],
   });
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 

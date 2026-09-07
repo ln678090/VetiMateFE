@@ -1,7 +1,7 @@
 'use client';
 import { RequiredLabel } from '@/components/ui/required-label';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowRight, AtSign, Lock, Mail, Phone, User } from 'lucide-react';
+import { ArrowRight, AtSign, Lock, Mail, MapPin, Phone, User } from 'lucide-react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 
@@ -27,6 +27,7 @@ export function RegisterForm() {
       phone: '',
       password: '',
       confirmPassword: '',
+      address: '',
     },
     mode: 'onBlur',
   });
@@ -151,6 +152,32 @@ export function RegisterForm() {
                     </div>
                   </FormControl>
 
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </StaggerItem>
+          <StaggerItem>
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <RequiredLabel required>Địa chỉ</RequiredLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <MapPin
+                        className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400"
+                        strokeWidth={2}
+                      />
+                      <Input
+                        {...field}
+                        placeholder="Số 123, Đường ABC, Quận XYZ"
+                        className="h-11 pl-10"
+                        disabled={isRegistering}
+                      />
+                    </div>
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
