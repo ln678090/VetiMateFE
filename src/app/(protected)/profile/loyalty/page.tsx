@@ -21,8 +21,14 @@ import { useState, useEffect } from 'react';
 
 // Helper function removed as tier feature is dropped
 
+/**
+ * Trang hiển thị thông tin Điểm thưởng (Loyalty Points) và Ưu đãi (Vouchers) của khách hàng.
+ * Gồm 3 chức năng chính:
+ * 1. Đổi thưởng: Hiển thị điểm hiện tại và danh sách các Voucher có thể đổi. Nếu đủ điểm, user có thể nhấn đổi.
+ * 2. Voucher của tôi: Danh sách các Voucher đã đổi (loại bỏ voucher đã dùng và hết hạn).
+ * 3. Lịch sử: Liệt kê các giao dịch cộng/trừ điểm.
+ */
 export default function LoyaltyPage() {
-  const queryClient = useQueryClient();
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
@@ -50,6 +56,9 @@ export default function LoyaltyPage() {
     queryFn: getMyTransactions,
   });
 
+  const queryClient = useQueryClient();
+
+  // Mutation xử lý việc gọi API đổi voucher và trừ điểm
   const redeemMutation = useMutation({
     mutationFn: redeemVoucher,
     onSuccess: () => {
@@ -61,6 +70,7 @@ export default function LoyaltyPage() {
     },
   });
 
+  // Hàm xử lý khi user nhấn nút Đổi ngay
   const handleRedeem = (voucherId: string) => {
     if (confirm('Bạn có chắc chắn muốn đổi điểm lấy voucher này?')) {
       redeemMutation.mutate(voucherId);
@@ -70,6 +80,16 @@ export default function LoyaltyPage() {
   const filteredVouchers =
     availableVouchers?.filter((v) => {
       if (v.endDate && new Date(v.endDate) < now) return false; // Tự động ẩn nếu đã hết hạn theo thời gian thực (client-side)
+
+      // Ẩn mã giảm giá nếu khách đã đổi và chưa sử dụng (còn hiệu lực)
+      const hasActiveVoucher = myVouchers?.some(
+        (uv) =>
+          uv.voucher.id === v.id &&
+          !uv.isUsed &&
+          (!uv.voucher.endDate || new Date(uv.voucher.endDate) >= now)
+      );
+      if (hasActiveVoucher) return false;
+
       return true;
     }) || [];
 
@@ -237,9 +257,10 @@ export default function LoyaltyPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {myVouchers
                     ?.filter((uv) => {
-                      // Ẩn voucher đã hết hạn (trừ voucher đã dùng - giữ lại để xem lịch sử)
-                      if (!uv.isUsed && uv.voucher.endDate && new Date(uv.voucher.endDate) < now)
-                        return false;
+                      // Ẩn voucher đã sử dụng theo yêu cầu
+                      if (uv.isUsed) return false;
+                      // Ẩn voucher đã hết hạn
+                      if (uv.voucher.endDate && new Date(uv.voucher.endDate) < now) return false;
                       return true;
                     })
                     .map((uv) => (

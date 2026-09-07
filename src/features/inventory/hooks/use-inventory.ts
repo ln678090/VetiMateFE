@@ -186,21 +186,66 @@ export const useBatchesByMedicine = (medicineId: string) =>
     enabled: !!medicineId,
   });
 
-// ===== Alerts =====
-export const useNearExpiryAlerts = () =>
+export const useBatchesByWarehouse = (
+  warehouse: import('@/types/inventory').WarehouseLocation = 'STORAGE'
+) =>
   useQuery({
-    queryKey: ['alerts', 'near-expiry'],
+    queryKey: ['batches', 'warehouse', warehouse],
     queryFn: async () => {
-      const res = await alertApi.getNearExpiry();
+      const res = await batchApi.getByWarehouse(warehouse);
       return res.data.data;
     },
   });
 
-export const useExpiredAlerts = () =>
+export const useExportExpiredToDoctor = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (batchId: string) => batchApi.exportExpiredToDoctor(batchId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['alerts'] });
+      qc.invalidateQueries({ queryKey: ['batches'] });
+      qc.invalidateQueries({ queryKey: ['inventory-dashboard'] });
+      qc.invalidateQueries({ queryKey: [VOUCHER_KEY] });
+      toast.success('Đã xuất lô hết date lên kho bác sĩ');
+    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err)),
+  });
+};
+
+export const useExportAllExpiredToDoctor = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => batchApi.exportAllExpiredToDoctor(),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['alerts'] });
+      qc.invalidateQueries({ queryKey: ['batches'] });
+      qc.invalidateQueries({ queryKey: ['inventory-dashboard'] });
+      qc.invalidateQueries({ queryKey: [VOUCHER_KEY] });
+      toast.success('Đã xuất toàn bộ lô hết date lên kho bác sĩ');
+    },
+    onError: (err: unknown) => toast.error(getApiErrorMessage(err)),
+  });
+};
+
+// ===== Alerts =====
+export const useNearExpiryAlerts = (
+  warehouse: import('@/types/inventory').WarehouseLocation = 'STORAGE'
+) =>
   useQuery({
-    queryKey: ['alerts', 'expired'],
+    queryKey: ['alerts', 'near-expiry', warehouse],
     queryFn: async () => {
-      const res = await alertApi.getExpired();
+      const res = await alertApi.getNearExpiry(warehouse);
+      return res.data.data;
+    },
+  });
+
+export const useExpiredAlerts = (
+  warehouse: import('@/types/inventory').WarehouseLocation = 'STORAGE'
+) =>
+  useQuery({
+    queryKey: ['alerts', 'expired', warehouse],
+    queryFn: async () => {
+      const res = await alertApi.getExpired(warehouse);
       return res.data.data;
     },
   });

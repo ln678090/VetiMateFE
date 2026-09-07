@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, Calendar, Clock, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -42,7 +42,7 @@ export function BookingForm({ customerId }: BookingFormProps) {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     reset,
     setValue,
     formState: { errors },
@@ -59,7 +59,8 @@ export function BookingForm({ customerId }: BookingFormProps) {
 
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedSlot, setSelectedSlot] = useState('');
-  const selectedServiceId = watch('serviceId');
+
+  const selectedServiceId = useWatch({ control, name: 'serviceId' });
 
   const selectedService = services?.find((service) => service.id === selectedServiceId);
 

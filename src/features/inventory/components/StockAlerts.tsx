@@ -1,7 +1,8 @@
 'use client';
 
-import { AlertTriangle, Clock, ShieldAlert } from 'lucide-react';
+import { AlertTriangle, Clock, ShieldAlert, Send } from 'lucide-react';
 import type { StockBatchResp } from '@/types/inventory';
+import { useExportExpiredToDoctor, useExportAllExpiredToDoctor } from '../hooks/use-inventory';
 
 interface StockAlertsProps {
   nearExpiry: StockBatchResp[];
@@ -10,6 +11,8 @@ interface StockAlertsProps {
 }
 
 export function StockAlerts({ nearExpiry, expired, isLoading }: StockAlertsProps) {
+  const exportMutation = useExportExpiredToDoctor();
+  const exportAllMutation = useExportAllExpiredToDoctor();
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -39,11 +42,22 @@ export function StockAlerts({ nearExpiry, expired, isLoading }: StockAlertsProps
       {/* Expired */}
       {expired.length > 0 && (
         <div className="rounded-2xl border border-red-200/70 bg-red-50/50 p-4 dark:border-red-800/40 dark:bg-red-900/10">
-          <div className="mb-3 flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-red-500" />
-            <h3 className="text-sm font-semibold text-red-700 dark:text-red-400">
-              Lô đã hết hạn ({expired.length})
-            </h3>
+          <div className="mb-3 flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-red-500" />
+              <h3 className="text-sm font-semibold text-red-700 dark:text-red-400">
+                Lô đã hết hạn ({expired.length})
+              </h3>
+            </div>
+            <button
+              type="button"
+              disabled={exportAllMutation.isPending}
+              onClick={() => exportAllMutation.mutate()}
+              className="px-3 py-1 text-xs font-semibold rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors shadow-sm flex items-center gap-1.5"
+            >
+              <Send className="h-3.5 w-3.5" />
+              {exportAllMutation.isPending ? 'Đang xuất...' : 'Xuất tất cả lên kho bác sĩ'}
+            </button>
           </div>
           <div className="space-y-2">
             {expired.slice(0, 5).map((batch) => (
@@ -59,11 +73,21 @@ export function StockAlerts({ nearExpiry, expired, isLoading }: StockAlertsProps
                     <span className="ml-2 text-xs text-zinc-500">Lô: {batch.batchCode}</span>
                   )}
                 </div>
-                <div className="text-right">
-                  <span className="text-xs font-medium text-red-600 dark:text-red-400">
-                    HSD: {batch.expiryDate}
-                  </span>
-                  <span className="ml-3 text-xs text-zinc-500">Còn: {batch.remainingQty}</span>
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <span className="text-xs font-medium text-red-600 dark:text-red-400">
+                      HSD: {batch.expiryDate}
+                    </span>
+                    <span className="ml-3 text-xs text-zinc-500">Còn: {batch.remainingQty}</span>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={exportMutation.isPending}
+                    onClick={() => exportMutation.mutate(batch.id)}
+                    className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition-colors shadow-sm"
+                  >
+                    Xuất lên kho bác sĩ
+                  </button>
                 </div>
               </div>
             ))}

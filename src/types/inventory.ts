@@ -39,10 +39,14 @@ export interface MedicineRequest {
   sellPrice: number;
 }
 
+// ===== Warehouse =====
+export type WarehouseLocation = 'STORAGE' | 'DOCTOR';
+
 // ===== Stock Batch =====
 export interface StockBatchResp {
   id: string;
   batchCode: string;
+  warehouse?: WarehouseLocation;
   quantity: number;
   remainingQty: number;
   importPrice: number;
@@ -59,7 +63,7 @@ export interface StockBatchResp {
 }
 
 // ===== Voucher =====
-export type VoucherType = 'IMPORT' | 'EXPORT' | 'STOCKTAKE';
+export type VoucherType = 'IMPORT' | 'EXPORT' | 'TRANSFER' | 'STOCKTAKE';
 export type VoucherStatus = 'DRAFT' | 'APPROVED' | 'CANCELLED';
 
 export interface VoucherItem {
@@ -79,6 +83,8 @@ export interface StockVoucherResp {
   id: string;
   type: VoucherType;
   status: VoucherStatus;
+  sourceWarehouse?: WarehouseLocation;
+  destinationWarehouse?: WarehouseLocation;
   createdBy?: string;
   approvedBy?: string;
   approvedAt?: string;
@@ -103,6 +109,8 @@ export interface VoucherItemRequest {
 
 export interface CreateVoucherRequest {
   type: VoucherType;
+  sourceWarehouse?: WarehouseLocation;
+  destinationWarehouse?: WarehouseLocation;
   note?: string;
   items: VoucherItemRequest[];
 }
@@ -123,6 +131,7 @@ export interface InventoryDashboardResp {
   nearExpiryCount: number;
   expiredCount: number;
   totalStockValue: number;
+  pendingVouchers?: number;
 }
 
 export interface WarehouseStockResp {

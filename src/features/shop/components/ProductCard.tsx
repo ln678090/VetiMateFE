@@ -20,7 +20,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, index = 0 }: ProductCardProps) {
-  const hasDiscount = product.originalPrice && product.originalPrice > product.price;
+  const hasDiscount = product.originalPrice != null && product.originalPrice > product.price;
   const discountPct = hasDiscount
     ? Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100)
     : 0;

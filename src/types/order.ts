@@ -22,6 +22,7 @@ export interface Order {
   finalAmount: number;
   createdAt: string;
   updatedAt?: string;
+  isReviewed?: boolean;
   paymentMethod?: string;
   shippingAddress?: string;
   note?: string;

@@ -160,19 +160,21 @@ export function RegisterForm() {
           <StaggerItem>
             <FormField
               control={form.control}
-              name="address"
+              name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <RequiredLabel required>Địa chỉ</RequiredLabel>
+                  <RequiredLabel required>Số điện thoại</RequiredLabel>
                   <FormControl>
                     <div className="relative">
-                      <MapPin
+                      <Phone
                         className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-400"
                         strokeWidth={2}
                       />
                       <Input
                         {...field}
-                        placeholder="Số 123, Đường ABC, Quận XYZ"
+                        type="tel"
+                        autoComplete="tel"
+                        placeholder="0987654321"
                         className="h-11 pl-10"
                         disabled={isRegistering}
                       />
@@ -183,6 +185,7 @@ export function RegisterForm() {
               )}
             />
           </StaggerItem>
+
           <StaggerItem>
             <FormField
               control={form.control}
