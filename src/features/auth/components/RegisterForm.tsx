@@ -1,7 +1,7 @@
 'use client';
 import { RequiredLabel } from '@/components/ui/required-label';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowRight, AtSign, Lock, Mail, Phone, User } from 'lucide-react';
+import { ArrowRight, AtSign, Lock, Mail, MapPin, Phone, User } from 'lucide-react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 
@@ -27,6 +27,7 @@ export function RegisterForm() {
       phone: '',
       password: '',
       confirmPassword: '',
+      address: '',
     },
     mode: 'onBlur',
   });
