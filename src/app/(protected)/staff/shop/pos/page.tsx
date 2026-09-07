@@ -235,9 +235,19 @@ function ensurePrintStyles() {
 }
 
 export default function POSPage() {
+  /**
+   * Component chính hiển thị trang Bán hàng tại quầy (POS - Point of Sale).
+   * Cung cấp các tính năng:
+   * - Tìm kiếm và thêm sản phẩm vào giỏ hàng.
+   * - Tính tổng tiền hóa đơn.
+   * - Xử lý thanh toán nhanh và trừ tồn kho ngay lập tức.
+   * - Xem lịch sử hóa đơn POS và in hóa đơn (in nhiệt).
+   */
   const [cart, setCart] = useState<CartItem[]>([]);
   const [search, setSearch] = useState('');
   const [note, setNote] = useState('');
+
+  // Lưu thông tin hóa đơn vừa thanh toán thành công để hiển thị modal in hóa đơn
   const [lastOrder, setLastOrder] = useState<OrderResponse | null>(null);
   const [lastNote, setLastNote] = useState('');
   // History state
@@ -299,6 +309,7 @@ export default function POSPage() {
   // Print function
   const handlePrint = useCallback(
     (orderToPrint?: OrderResponse, noteToPrint?: string) => {
+      // Hàm in hóa đơn: Xây dựng HTML tạm thời và kích hoạt in trình duyệt
       const order = orderToPrint || lastOrder;
       if (!order) {
         toast.error('Không có hóa đơn để in!');
@@ -397,23 +408,35 @@ export default function POSPage() {
     [handlePrint]
   );
 
+  // Xử lý thêm sản phẩm vào giỏ hàng
+  // Kiểm tra tồn kho trước khi cập nhật trạng thái giỏ hàng
   const addToCart = (product: Product) => {
+    // 1. Kiểm tra tồn kho cơ bản: Nếu sản phẩm đã hết hàng trong DB (stockQuantity <= 0) thì báo lỗi ngay
     if (product.stockQuantity <= 0) {
       toast.error('Sản phẩm đã hết hàng!');
       return;
     }
 
+    // 2. Cập nhật state giỏ hàng (cart)
     setCart((prev) => {
+      // 2.1. Tìm xem sản phẩm này đã có trong giỏ hàng hiện tại chưa
       const existing = prev.find((item) => item.product.id === product.id);
+
+      // 2.2. Nếu đã có trong giỏ hàng
       if (existing) {
+        // 2.3. Kiểm tra xem số lượng định tăng thêm có vượt quá số lượng tồn kho còn lại không
         if (existing.quantity >= product.stockQuantity) {
           toast.error('Số lượng vượt quá tồn kho!');
-          return prev;
+          return prev; // Giữ nguyên giỏ hàng, không tăng thêm
         }
+
+        // 2.4. Nếu hợp lệ, tăng số lượng (quantity) của sản phẩm đó lên 1, các sản phẩm khác giữ nguyên
         return prev.map((item) =>
           item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
+
+      // 2.5. Nếu chưa có trong giỏ hàng, thêm mới sản phẩm vào mảng với số lượng ban đầu là 1
       return [...prev, { product, quantity: 1 }];
     });
   };

@@ -116,41 +116,45 @@ export function OrderDetailsModal({
 
         <div className="overflow-y-auto max-h-[70vh]">
           <div className="p-6 space-y-6">
-            {cancelReason && order.status !== 'CANCELLED' && (
+            {cancelReason && (
               <div className="bg-rose-50 border border-rose-200 rounded-lg p-4 mb-4">
                 <div className="flex items-start gap-3">
                   <AlertCircle className="h-5 w-5 text-rose-600 mt-0.5" />
                   <div className="flex-1">
                     <h4 className="text-sm font-bold text-rose-900">
-                      Khách hàng yêu cầu hủy đơn này
+                      {order.status === 'CANCELLED'
+                        ? 'Đơn hàng đã bị hủy'
+                        : 'Khách hàng yêu cầu hủy đơn này'}
                     </h4>
                     <p className="text-sm text-rose-700 mt-1">
                       <span className="font-semibold">Lý do:</span> {cancelReason}
                     </p>
-                    <div className="flex items-center gap-3 mt-4">
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        className="h-8"
-                        onClick={() => {
-                          if (onProcessCancel) onProcessCancel(order.id, true);
-                          onClose();
-                        }}
-                      >
-                        <Check className="w-4 h-4 mr-1" /> Đồng ý hủy
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 border-rose-200 text-rose-700 hover:bg-rose-100 hover:text-rose-800"
-                        onClick={() => {
-                          if (onProcessCancel) onProcessCancel(order.id, false);
-                          onClose();
-                        }}
-                      >
-                        <X className="w-4 h-4 mr-1" /> Từ chối
-                      </Button>
-                    </div>
+                    {order.status !== 'CANCELLED' && (
+                      <div className="flex items-center gap-3 mt-4">
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="h-8"
+                          onClick={() => {
+                            if (onProcessCancel) onProcessCancel(order.id, true);
+                            onClose();
+                          }}
+                        >
+                          <Check className="w-4 h-4 mr-1" /> Đồng ý hủy
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 border-rose-200 text-rose-700 hover:bg-rose-100 hover:text-rose-800"
+                          onClick={() => {
+                            if (onProcessCancel) onProcessCancel(order.id, false);
+                            onClose();
+                          }}
+                        >
+                          <X className="w-4 h-4 mr-1" /> Từ chối
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

@@ -68,7 +68,7 @@ export function CustomerOrderDetailsModal({
 
   const STEPS = [
     { id: 'PENDING', label: 'Chờ xác nhận' },
-    { id: 'CONFIRMED', label: 'Đang xử lý' },
+    { id: 'CONFIRMED', label: 'Đã xác nhận' },
     { id: 'SHIPPING', label: 'Đang giao' },
     { id: 'DELIVERED', label: 'Đã giao' },
   ];

@@ -19,7 +19,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Order, OrderStatus } from '@/types/order';
+import { Order, OrderStatus, OrderItem } from '@/types/order';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -235,9 +235,12 @@ export function OrderTable({ items, isLoading }: OrderTableProps) {
                 const hasCancelRequest = item.note?.includes('[CANCEL_REQUEST]:');
 
                 // Kiểm tra xem đơn hàng có chứa sản phẩm lỗi (hết hàng hoặc ngừng bán)
-                const hasIssue = item.items.some(
-                  (i) => i.stockQuantity < i.quantity || i.isActive === false
-                );
+                // Tính toán có sản phẩm nào trong đơn hàng bị lỗi hay không (Ví dụ: tồn kho < số lượng khách đặt, hoặc sản phẩm đã ngừng bán).
+                // Nếu true, đơn hàng này sẽ có thêm lựa chọn "Hủy đơn" để nhân viên không giao sản phẩm thiếu.
+                const checkOrderIssues = (items: OrderItem[]) => {
+                  return items.some((i) => i.stockQuantity < i.quantity || i.isActive === false);
+                };
+                const hasIssue = checkOrderIssues(item.items);
 
                 return (
                   <TableRow
@@ -283,6 +286,7 @@ export function OrderTable({ items, isLoading }: OrderTableProps) {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end items-center gap-2">
+                        {/* Nút Hủy đơn nhanh chỉ hiển thị nếu đơn có vấn đề về sản phẩm (hasIssue) và khách chưa yêu cầu hủy */}
                         {hasIssue &&
                           item.status !== 'DELIVERED' &&
                           item.status !== 'CANCELLED' &&
@@ -300,6 +304,7 @@ export function OrderTable({ items, isLoading }: OrderTableProps) {
                             </Button>
                           )}
 
+                        {/* Menu cập nhật trạng thái đơn hàng (Dropdown) */}
                         {item.status !== 'DELIVERED' &&
                           item.status !== 'CANCELLED' &&
                           !hasCancelRequest && (
@@ -313,6 +318,7 @@ export function OrderTable({ items, isLoading }: OrderTableProps) {
                               <DropdownMenuContent align="end" className="w-44">
                                 <DropdownMenuLabel>Cập nhật trạng thái</DropdownMenuLabel>
 
+                                {/* Nút Xác nhận đơn: Vô hiệu hóa (disabled) nếu đơn có lỗi (hết hàng, ngừng bán) */}
                                 {item.status === 'PENDING' && (
                                   <>
                                     <DropdownMenuItem
@@ -322,6 +328,7 @@ export function OrderTable({ items, isLoading }: OrderTableProps) {
                                           status: 'CONFIRMED',
                                         })
                                       }
+                                      disabled={hasIssue}
                                     >
                                       <CheckCircle2 className="mr-2 h-4 w-4 text-blue-600" />
                                       Xác nhận đơn
@@ -329,6 +336,7 @@ export function OrderTable({ items, isLoading }: OrderTableProps) {
                                     <DropdownMenuSeparator />
                                   </>
                                 )}
+                                {/* Nút Giao hàng: Chuyển đơn sang trạng thái Đang giao (SHIPPING) */}
                                 {item.status === 'CONFIRMED' && (
                                   <>
                                     <DropdownMenuItem
@@ -345,18 +353,20 @@ export function OrderTable({ items, isLoading }: OrderTableProps) {
                                     <DropdownMenuSeparator />
                                   </>
                                 )}
-                                {(item.status === 'PENDING' || item.status === 'CONFIRMED') && (
-                                  <DropdownMenuItem
-                                    className="text-rose-600 focus:text-rose-600 focus:bg-rose-50"
-                                    onSelect={(e) => {
-                                      e.preventDefault();
-                                      setOrderToCancel(item);
-                                    }}
-                                  >
-                                    <XCircle className="mr-2 h-4 w-4" />
-                                    Hủy đơn
-                                  </DropdownMenuItem>
-                                )}
+                                {/* Nút Hủy đơn trong Menu: Chỉ xuất hiện nếu đơn hàng có vấn đề (hasIssue = true) */}
+                                {(item.status === 'PENDING' || item.status === 'CONFIRMED') &&
+                                  hasIssue && (
+                                    <DropdownMenuItem
+                                      className="text-rose-600 focus:text-rose-600 focus:bg-rose-50"
+                                      onSelect={(e) => {
+                                        e.preventDefault();
+                                        setOrderToCancel(item);
+                                      }}
+                                    >
+                                      <XCircle className="mr-2 h-4 w-4" />
+                                      Hủy đơn
+                                    </DropdownMenuItem>
+                                  )}
 
                                 {item.status === 'SHIPPING' && (
                                   <DropdownMenuItem

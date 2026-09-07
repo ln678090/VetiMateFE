@@ -18,17 +18,26 @@ import {
 } from '@/components/ui/select';
 
 export default function VouchersPage() {
+  /**
+   * Component chính hiển thị trang Quản lý Voucher (dành cho Admin/Shop Staff).
+   * Cung cấp các tính năng:
+   * - Hiển thị danh sách Voucher kèm theo bộ lọc (Loại giảm giá, Trạng thái).
+   * - Tạo mới / Chỉnh sửa / Xóa Voucher.
+   */
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedVoucher, setSelectedVoucher] = useState<Voucher | undefined>();
 
+  // Fetch danh sách vouchers từ API
   const { data: vouchers, isLoading } = useQuery({
     queryKey: ['management', 'vouchers'],
     queryFn: getAllVouchers,
   });
 
+  // State lưu trữ giá trị của bộ lọc
   const [typeFilter, setTypeFilter] = useState('ALL');
   const [statusFilter, setStatusFilter] = useState('ALL');
 
+  // Lọc danh sách vouchers dựa trên typeFilter và statusFilter
   const filteredVouchers = (vouchers || []).filter((v) => {
     if (typeFilter !== 'ALL' && v.discountType !== typeFilter) {
       return false;
@@ -45,17 +54,21 @@ export default function VouchersPage() {
     return true;
   });
 
+  // Mở modal để chỉnh sửa voucher đã chọn
   const handleEdit = (voucher: Voucher) => {
     setSelectedVoucher(voucher);
     setIsModalOpen(true);
   };
 
+  // Mở modal với trạng thái trống để tạo voucher mới
   const handleCreate = () => {
     setSelectedVoucher(undefined);
     setIsModalOpen(true);
   };
 
   const queryClient = useQueryClient();
+
+  // Mutation xử lý xóa voucher và cập nhật lại danh sách sau khi thành công
   const deleteMutation = useMutation({
     mutationFn: deleteVoucher,
     onSuccess: () => {
