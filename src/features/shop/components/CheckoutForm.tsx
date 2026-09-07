@@ -138,8 +138,10 @@ export function CheckoutForm() {
       });
 
       // Clear cart and redirect
-      clearCart();
-      router.push('/profile/orders');
+      router.push('/checkout/success');
+      setTimeout(() => {
+        clearCart();
+      }, 500);
     } catch (error: unknown) {
       const apiError = error as { response?: { data?: { message?: string } } };
       toast.error('Đặt hàng thất bại', {

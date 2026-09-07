@@ -27,6 +27,7 @@ export function useOrderNotification() {
   }, [isShopStaff, accessToken]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchPendingCount();
 
     // Poll every 15 seconds since websocket is removed
