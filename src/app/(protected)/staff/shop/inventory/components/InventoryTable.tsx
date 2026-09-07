@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -9,6 +10,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Product } from '@/features/shop/types/product.types';
+import { ProductBatchesModal } from './ProductBatchesModal';
 
 interface InventoryTableProps {
   products: Product[];
@@ -16,6 +18,8 @@ interface InventoryTableProps {
 }
 
 export function InventoryTable({ products, isLoading }: InventoryTableProps) {
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
   if (isLoading) {
     return (
       <div className="p-4 space-y-4">
@@ -52,7 +56,11 @@ export function InventoryTable({ products, isLoading }: InventoryTableProps) {
             const isLowStock = p.stockQuantity > 0 && p.stockQuantity <= 5; // Ngưỡng sắp hết hàng là 5
 
             return (
-              <TableRow key={p.id}>
+              <TableRow
+                key={p.id}
+                className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                onClick={() => setSelectedProduct(p)}
+              >
                 <TableCell className="font-medium">{p.name}</TableCell>
                 <TableCell>{p.categoryName}</TableCell>
                 <TableCell>{p.brandName}</TableCell>
@@ -79,6 +87,12 @@ export function InventoryTable({ products, isLoading }: InventoryTableProps) {
           })}
         </TableBody>
       </Table>
+
+      <ProductBatchesModal
+        product={selectedProduct}
+        isOpen={!!selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+      />
     </div>
   );
 }

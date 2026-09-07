@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Store, Truck } from 'lucide-react';
 import Image from 'next/image';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -27,7 +27,7 @@ import { CancelOrderRequestModal } from './CancelOrderRequestModal';
 
 const STATUS_MAP: Record<OrderStatus, { label: string; colorClass: string }> = {
   PENDING: { label: 'CHỜ XÁC NHẬN', colorClass: 'text-amber-500' },
-  CONFIRMED: { label: 'ĐANG XỬ LÝ', colorClass: 'text-blue-500' },
+  CONFIRMED: { label: 'ĐÃ XÁC NHẬN', colorClass: 'text-blue-500' },
   SHIPPING: { label: 'ĐANG GIAO', colorClass: 'text-indigo-500' },
   DELIVERED: { label: 'ĐÃ GIAO', colorClass: 'text-emerald-500' },
   CANCELLED: { label: 'ĐÃ HỦY', colorClass: 'text-rose-500' },
@@ -41,12 +41,21 @@ interface OrderCardProps {
 
 export function OrderCard({ order, onCancelOrder, onReviewOrder }: OrderCardProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const addItem = useCartStore((s) => s.addItem);
   const statusInfo = STATUS_MAP[order.status];
-  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
+
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [isItemsExpanded, setIsItemsExpanded] = useState(false);
   const hasCancelRequest = order.note?.includes('[CANCEL_REQUEST]:');
+
+  useEffect(() => {
+    if (searchParams.get('orderId') === order.id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsDetailsOpen(true);
+    }
+  }, [searchParams, order.id]);
 
   const handleBuyAgain = () => {
     // Add all items from this order to the cart
@@ -223,12 +232,23 @@ export function OrderCard({ order, onCancelOrder, onReviewOrder }: OrderCardProp
             </Button>
           )}
           {order.status === 'DELIVERED' && (
-            <Button
-              onClick={handleBuyAgain}
-              className="h-10 rounded-xl bg-rose-500 font-bold text-white shadow-md shadow-rose-500/20 hover:bg-rose-600"
-            >
-              Mua Lại
-            </Button>
+            <>
+              {onReviewOrder && (
+                <Button
+                  variant="outline"
+                  onClick={() => onReviewOrder(order.id)}
+                  className="h-10 rounded-xl border-zinc-200 font-semibold text-zinc-700 hover:bg-zinc-100 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900"
+                >
+                  Đánh giá
+                </Button>
+              )}
+              <Button
+                onClick={handleBuyAgain}
+                className="h-10 rounded-xl bg-rose-500 font-bold text-white shadow-md shadow-rose-500/20 hover:bg-rose-600"
+              >
+                Mua Lại
+              </Button>
+            </>
           )}
         </div>
       </div>

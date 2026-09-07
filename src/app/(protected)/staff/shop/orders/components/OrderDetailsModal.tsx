@@ -34,7 +34,7 @@ interface OrderDetailsModalProps {
 
 const STATUS_MAP = {
   PENDING: { label: 'Chờ xác nhận', className: 'bg-amber-50 text-amber-700 border-amber-200' },
-  CONFIRMED: { label: 'Đang xử lý', className: 'bg-blue-50 text-blue-700 border-blue-200' },
+  CONFIRMED: { label: 'Đã xác nhận', className: 'bg-blue-50 text-blue-700 border-blue-200' },
   SHIPPING: { label: 'Đang giao', className: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
   DELIVERED: { label: 'Đã giao', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   CANCELLED: { label: 'Đã hủy', className: 'bg-rose-50 text-rose-700 border-rose-200' },
@@ -51,14 +51,15 @@ export function OrderDetailsModal({
   if (!order) return null;
 
   const statusConfig = STATUS_MAP[order.status] || STATUS_MAP.PENDING;
-  let parsedNote = order.note && order.note !== 'null' ? order.note : '';
+  const originalNote = order.note && order.note !== 'null' ? order.note : '';
+  let parsedNote = originalNote;
   let parsedAddress =
     order.shippingAddress && order.shippingAddress !== 'null' ? order.shippingAddress : '';
   let parsedPhone =
     order.customerPhone && order.customerPhone !== 'null' ? order.customerPhone : '';
 
-  if (parsedNote.includes('Shipping Address:')) {
-    const parts = parsedNote.split('|');
+  if (originalNote.includes('Shipping Address:')) {
+    const parts = originalNote.split('|');
     parts.forEach((part) => {
       const p = part.trim();
       if (p.startsWith('Shipping Address:')) {
@@ -71,10 +72,13 @@ export function OrderDetailsModal({
     });
   }
 
-  const cancelReasonMatch = parsedNote.match(/\[CANCEL_REQUEST\]: (.*)$/);
-  const cancelReason = cancelReasonMatch ? cancelReasonMatch[1] : '';
+  const cancelReasonMatch = originalNote.match(/\[CANCEL_REQUEST\]:\s*(.*)/);
+  const cancelReason = cancelReasonMatch ? cancelReasonMatch[1].trim() : '';
   if (cancelReasonMatch) {
-    parsedNote = parsedNote.replace(/\| \[CANCEL_REQUEST\]:.*$/, '').trim();
+    if (parsedNote === originalNote) {
+      parsedNote = parsedNote.replace(/\|\s*\[CANCEL_REQUEST\]:\s*.*$/, '').trim();
+      if (parsedNote === '[CANCEL_REQUEST]: ' + cancelReason) parsedNote = '';
+    }
   }
 
   const customerName =
@@ -254,6 +258,12 @@ export function OrderDetailsModal({
                   <span>Tạm tính</span>
                   <span>{formatCurrency(order.totalAmount)}</span>
                 </div>
+                {order.discountAmount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Giảm giá</span>
+                    <span>-{formatCurrency(order.discountAmount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-zinc-600">
                   <span>Phí vận chuyển</span>
                   <span>{formatCurrency(order.shippingFee)}</span>

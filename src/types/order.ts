@@ -7,6 +7,8 @@ export interface OrderItem {
   productImage: string;
   price: number;
   quantity: number;
+  stockQuantity: number;
+  isActive: boolean;
 }
 
 export interface Order {
@@ -16,6 +18,7 @@ export interface Order {
   items: OrderItem[];
   totalAmount: number;
   shippingFee: number;
+  discountAmount: number;
   finalAmount: number;
   createdAt: string;
   updatedAt?: string;

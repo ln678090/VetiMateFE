@@ -59,7 +59,6 @@ export function BookingForm({ customerId }: BookingFormProps) {
 
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedSlot, setSelectedSlot] = useState('');
-
   const selectedServiceId = watch('serviceId');
 
   const selectedService = services?.find((service) => service.id === selectedServiceId);

@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useReducedMotion, useScroll, useTransform } from 'framer-motion';
 
 import {
@@ -68,7 +68,14 @@ function SceneFrame({ heightVh, children }: SceneFrameProps) {
 
 export function LandingFlow() {
   const flowRef = useRef<HTMLElement>(null);
-  const reducedMotion = useReducedMotion() ?? false;
+  const prefersReduced = useReducedMotion();
+
+  // Start with false to match SSR, then sync after hydration
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setReducedMotion(!!prefersReduced);
+  }, [prefersReduced]);
 
   const { scrollYProgress } = useScroll({
     target: flowRef,

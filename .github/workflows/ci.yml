@@ -2,9 +2,9 @@ name: VetiMate FE CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, Dung]
   pull_request:
-    branches: [main]
+    branches: [main, Dung]
 
 jobs:
   check-and-build:

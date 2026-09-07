@@ -38,8 +38,8 @@ export function CustomerOrderDetailsModal({
 
   // Extract cancel request info
   const hasCancelRequest = order.note?.includes('[CANCEL_REQUEST]:');
-  const cancelReasonMatch = order.note?.match(/\[CANCEL_REQUEST\]: (.*)$/);
-  const cancelReason = cancelReasonMatch ? cancelReasonMatch[1] : '';
+  const cancelReasonMatch = order.note?.match(/\[CANCEL_REQUEST\]:\s*(.*)/);
+  const cancelReason = cancelReasonMatch ? cancelReasonMatch[1].trim() : '';
 
   // Extract shipping and note parts
   let noteText = '';
@@ -47,7 +47,8 @@ export function CustomerOrderDetailsModal({
   let phoneText = '';
 
   if (order.note && !order.note.startsWith('Shipping Address:')) {
-    noteText = order.note.replace(/\| \[CANCEL_REQUEST\]:.*$/, '').trim();
+    noteText = order.note.replace(/\|\s*\[CANCEL_REQUEST\]:\s*.*$/, '').trim();
+    if (noteText === '[CANCEL_REQUEST]: ' + cancelReason) noteText = '';
   } else if (order.note) {
     const parts = order.note.split(' | ');
     parts.forEach((p) => {
@@ -56,7 +57,8 @@ export function CustomerOrderDetailsModal({
       if (p.startsWith('Phone:')) phoneText = p.replace('Phone:', '').trim();
       if (p.startsWith('Note:')) noteText = p.replace('Note:', '').trim();
     });
-    noteText = noteText.replace(/\| \[CANCEL_REQUEST\]:.*$/, '').trim();
+    noteText = noteText.replace(/\|\s*\[CANCEL_REQUEST\]:\s*.*$/, '').trim();
+    if (noteText === '[CANCEL_REQUEST]: ' + cancelReason) noteText = '';
   }
 
   // Hide null or empty strings
@@ -336,13 +338,30 @@ export function CustomerOrderDetailsModal({
                 )}
 
                 <div className="bg-zinc-50 p-4 border-t border-zinc-100 dark:bg-zinc-900/50 dark:border-zinc-800/50">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-zinc-600 dark:text-zinc-400">
-                      Tổng thanh toán:
-                    </span>
-                    <span className="text-lg font-black text-rose-600 dark:text-rose-400">
-                      {formatVND(order.finalAmount)}
-                    </span>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between text-zinc-500 text-sm">
+                      <span>Tạm tính:</span>
+                      <span>{formatVND(order.totalAmount)}</span>
+                    </div>
+                    {order.discountAmount > 0 && (
+                      <div className="flex items-center justify-between text-green-600 text-sm">
+                        <span>Giảm giá:</span>
+                        <span>-{formatVND(order.discountAmount)}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between text-zinc-500 text-sm">
+                      <span>Phí vận chuyển:</span>
+                      <span>{formatVND(order.shippingFee)}</span>
+                    </div>
+                    <Separator className="my-1" />
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-zinc-600 dark:text-zinc-400">
+                        Tổng thanh toán:
+                      </span>
+                      <span className="text-lg font-black text-rose-600 dark:text-rose-400">
+                        {formatVND(order.finalAmount)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

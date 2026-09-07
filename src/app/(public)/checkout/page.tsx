@@ -8,14 +8,16 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { CheckoutForm } from '@/features/shop/components/CheckoutForm';
 import { useMounted } from '@/hooks/use-mounted';
+import { useRequireAuth } from '@/hooks/use-require-auth';
 import { useCartStore } from '@/stores/cart.store';
 
 export default function CheckoutPage() {
   const mounted = useMounted();
   const router = useRouter();
   const cartItems = useCartStore((s) => s.items);
+  const { isChecking } = useRequireAuth();
 
-  if (!mounted) {
+  if (!mounted || isChecking) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-rose-500 border-t-transparent" />

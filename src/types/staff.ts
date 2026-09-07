@@ -4,8 +4,7 @@ export type StaffRoleType =
   | 'MANAGER'
   | 'ACCOUNTANT'
   | 'WAREHOUSE'
-  | 'SHOP_STAFF';
-
+  | 'SHOP_STAFF'; // updated
 export interface StaffResponse {
   id: string;
   userId: string;
