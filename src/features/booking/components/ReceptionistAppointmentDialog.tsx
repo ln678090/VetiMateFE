@@ -91,9 +91,8 @@ export function ReceptionistAppointmentDialog({
   }, [open]);
 
   useEffect(() => {
+    // 1. Chỉ return sớm nếu THIẾU dữ liệu để gọi API, KHÔNG gọi setState ở đây nữa
     if (!open || !serviceId || !date) {
-      setSlots([]);
-      setStartTime('');
       return;
     }
 
@@ -130,7 +129,6 @@ export function ReceptionistAppointmentDialog({
       cancelled = true;
     };
   }, [date, open, serviceId]);
-
   function resetForm() {
     setKeyword('');
     setPetId('');
