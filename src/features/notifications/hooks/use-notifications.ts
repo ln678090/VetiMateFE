@@ -28,8 +28,8 @@ export function useUnreadNotificationCount() {
   return useQuery({
     queryKey: NOTIFICATION_QUERY_KEYS.unreadCount(),
     queryFn: getUnreadNotificationCount,
-    staleTime: 10_000,
-    refetchInterval: 10_000,
+    staleTime: 4_000,
+    refetchInterval: 4_000,
     refetchIntervalInBackground: false,
     refetchOnWindowFocus: false,
   });

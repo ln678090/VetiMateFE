@@ -3,8 +3,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Search, Plus } from 'lucide-react';
+import { Search, Plus, ArrowLeft } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import Link from 'next/link';
 import { useState } from 'react';
 import { supplierApi } from '@/features/inventory/api/inventory.api';
 import { SupplierTable } from './components/SupplierTable';
@@ -28,13 +29,21 @@ export default function SuppliersPage() {
   return (
     <div className="space-y-6">
       <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-900 md:text-3xl dark:text-white">
-            Nhà cung cấp
-          </h1>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Quản lý thông tin nhà cung cấp hàng hóa cho cửa hàng
-          </p>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/inventory"
+            className="rounded-lg p-1.5 text-zinc-500 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-zinc-900 md:text-3xl dark:text-white">
+              Nhà cung cấp
+            </h1>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              Quản lý thông tin nhà cung cấp hàng hóa cho cửa hàng
+            </p>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2">

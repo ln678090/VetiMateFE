@@ -8,6 +8,7 @@ import type {
   VoucherItemRequest,
   CreateVoucherRequest,
   MedicineResp,
+  WarehouseLocation,
 } from '@/types/inventory';
 import { useCreateVoucher, useMedicines, useSuppliers } from '../hooks/use-inventory';
 import { getApiErrorMessage } from '@/lib/axios';
@@ -40,15 +41,16 @@ export function VoucherForm({
 
   const products = productsData?.items || [];
 
-  const user = useAuthStore((state) => state.user);
   const accessToken = useAuthStore((state) => state.accessToken);
   const authorities = getAuthoritiesFromToken(accessToken);
   const isShopStaff = authorities.includes('ROLE_SHOP_STAFF');
   const isWarehouse = authorities.includes('ROLE_WAREHOUSE');
 
-  const defaultCategory = isShopStaff ? 'product' : 'medicine';
+  const defaultCategory: ItemCategory = isShopStaff && !isWarehouse ? 'product' : 'medicine';
 
   const [type, setType] = useState<VoucherType>('IMPORT');
+  const [sourceWarehouse] = useState<WarehouseLocation>('STORAGE');
+  const [destinationWarehouse, setDestinationWarehouse] = useState<WarehouseLocation | ''>('');
   const [note, setNote] = useState('');
   const [items, setItems] = useState<VoucherItemRequest[]>([{ quantity: 1, unitPrice: 0 }]);
   const [itemCategories, setItemCategories] = useState<ItemCategory[]>([defaultCategory]);
@@ -59,8 +61,8 @@ export function VoucherForm({
   };
 
   const removeItem = (idx: number) => {
-    setItems(items.filter((_: any, i: number) => i !== idx));
-    setItemCategories(itemCategories.filter((_: any, i: number) => i !== idx));
+    setItems(items.filter((_, i) => i !== idx));
+    setItemCategories(itemCategories.filter((_, i) => i !== idx));
   };
 
   const updateItem = (idx: number, field: keyof VoucherItemRequest, value: unknown) => {
@@ -93,6 +95,8 @@ export function VoucherForm({
 
     const req: CreateVoucherRequest = {
       type,
+      sourceWarehouse: sourceWarehouse || undefined,
+      destinationWarehouse: (destinationWarehouse as WarehouseLocation) || undefined,
       note: note || undefined,
       items: items.map((item) => ({
         ...item,
@@ -100,8 +104,10 @@ export function VoucherForm({
         productId: item.productId || undefined,
       })),
     };
+
     try {
       await createMutation.mutateAsync(req);
+      toast.success('Tạo phiếu kho thành công');
       if (onSuccess) onSuccess();
       else router.push('/inventory/vouchers');
     } catch (err) {
@@ -116,17 +122,27 @@ export function VoucherForm({
     );
   };
 
+  const handleCancel = () => {
+    if (onCancel) onCancel();
+    else router.push('/inventory/vouchers');
+  };
+
   return (
     <form onSubmit={handleSubmit} className="p-6 max-w-4xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-m3-on-surface">Tạo Phiếu Kho</h2>
+        <h2 className="text-2xl font-bold text-m3-on-surface">
+          {type === 'IMPORT'
+            ? 'Nhập kho mới'
+            : type === 'EXPORT'
+              ? 'Xuất kho'
+              : type === 'TRANSFER'
+                ? 'Chuyển kho nội bộ'
+                : 'Phiếu kiểm kê'}
+        </h2>
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => {
-              if (onCancel) onCancel();
-              else router.push('/inventory/vouchers');
-            }}
+            onClick={handleCancel}
             className="px-4 py-2 border border-m3-outline rounded-lg text-m3-on-surface hover:bg-m3-surface-variant flex items-center gap-2"
           >
             <X className="w-4 h-4" />
@@ -138,35 +154,74 @@ export function VoucherForm({
             className="px-4 py-2 bg-m3-primary text-m3-on-primary rounded-lg hover:bg-m3-primary/90 flex items-center gap-2 disabled:opacity-50"
           >
             <Save className="w-4 h-4" />
-            {createMutation.isPending ? 'Đang lưu...' : 'Lưu'}
+            {createMutation.isPending ? 'Đang lưu...' : 'Lưu Phiếu'}
           </button>
         </div>
       </div>
 
       <div className="bg-m3-surface-container rounded-xl p-6 space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-m3-on-surface mb-1">
               Loại phiếu *
             </label>
             <select
               value={type}
-              onChange={(e) => setType(e.target.value as VoucherType)}
+              onChange={(e) => {
+                const newType = e.target.value as VoucherType;
+                setType(newType);
+                if (newType === 'EXPORT' || newType === 'TRANSFER') {
+                  setDestinationWarehouse('DOCTOR');
+                } else {
+                  setDestinationWarehouse('');
+                }
+              }}
               className="w-full px-4 py-2 rounded-lg border border-m3-outline bg-m3-surface text-m3-on-surface"
             >
-              <option value="IMPORT">Nhập kho</option>
+              <option value="IMPORT">Nhập kho (vào Kho bảo quản)</option>
               <option value="EXPORT">Xuất kho</option>
+              <option value="TRANSFER">Chuyển kho nội bộ</option>
+              <option value="STOCKTAKE">Kiểm kê</option>
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-m3-on-surface mb-1">Ghi chú</label>
-            <input
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg border border-m3-outline bg-m3-surface text-m3-on-surface"
-              placeholder="Nhập ghi chú..."
-            />
-          </div>
+
+          {type === 'EXPORT' || type === 'TRANSFER' ? (
+            <div>
+              <label className="block text-sm font-medium text-m3-on-surface mb-1">
+                Kho nhận / Đích đến
+              </label>
+              <select
+                value={destinationWarehouse}
+                onChange={(e) => setDestinationWarehouse(e.target.value as WarehouseLocation | '')}
+                className="w-full px-4 py-2 rounded-lg border border-m3-outline bg-m3-surface text-m3-on-surface font-medium"
+              >
+                <option value="DOCTOR">Kho bác sĩ (Tủ thuốc phòng khám)</option>
+                <option value="">Xuất tiêu hao / Hủy / Khác</option>
+              </select>
+            </div>
+          ) : (
+            <div>
+              <label className="block text-sm font-medium text-m3-on-surface mb-1">Ghi chú</label>
+              <input
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-m3-outline bg-m3-surface text-m3-on-surface"
+                placeholder="Nhập ghi chú chung..."
+              />
+            </div>
+          )}
+
+          {(type === 'EXPORT' || type === 'TRANSFER') && (
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-m3-on-surface mb-1">Ghi chú</label>
+              <input
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                className="w-full px-4 py-2 rounded-lg border border-m3-outline bg-m3-surface text-m3-on-surface"
+                placeholder="Nhập ghi chú chung..."
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -301,8 +356,8 @@ export function VoucherForm({
                 </label>
                 <input
                   type="number"
-                  min="1"
-                  step="1"
+                  min="0.01"
+                  step="0.01"
                   required
                   value={item.quantity === 0 ? '' : item.quantity}
                   onChange={(e) =>

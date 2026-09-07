@@ -17,7 +17,6 @@ export const registerSchema = z
       .max(50, 'Username tối đa 50 ký tự')
       .regex(/^[a-zA-Z0-9_]+$/, 'Username chỉ chứa chữ, số và dấu gạch dưới'),
     email: z.string().min(1, 'Email không được để trống').email('Email không hợp lệ'),
-
     phone: z
       .string()
       .trim()

@@ -404,6 +404,35 @@ export const APP_NAVIGATION_ITEMS: readonly AppNavigationItem[] = [
     gradient: 'from-emerald-500 to-teal-500',
     group: 'Khám bệnh',
   },
+
+  // Kho hàng (Kho bảo quản - Thủ kho)
+  {
+    key: 'inventory',
+    label: 'Kho bảo quản',
+    href: '/inventory',
+    icon: Warehouse,
+    accessRoles: [ROLE.ADMIN, ROLE.MANAGER, ROLE.WAREHOUSE],
+    sidebarRoles: [ROLE.ADMIN, ROLE.MANAGER, ROLE.WAREHOUSE],
+    dashboardRoles: [ROLE.ADMIN, ROLE.MANAGER, ROLE.WAREHOUSE],
+    dashboardDescription: 'Quản lý kho bảo quản, vật tư và nhập xuất kho.',
+    gradient: 'from-fuchsia-500 to-pink-600',
+    group: 'Kho',
+  },
+
+  // Kho của bác sĩ (Tủ thuốc phòng khám)
+  {
+    key: 'doctor-inventory',
+    label: 'Kho bác sĩ',
+    href: '/doctor/inventory',
+    icon: Warehouse,
+    accessRoles: [ROLE.ADMIN, ROLE.DOCTOR],
+    sidebarRoles: [ROLE.DOCTOR],
+    dashboardRoles: [ROLE.DOCTOR],
+    dashboardDescription: 'Tủ thuốc và vật tư y tế tại phòng khám.',
+    gradient: 'from-teal-500 to-cyan-500',
+    group: 'Khám bệnh',
+  },
+
   {
     key: 'examination-history',
     label: 'Lịch sử khám',

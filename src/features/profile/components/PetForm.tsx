@@ -53,12 +53,13 @@ export function PetForm({
     if (pet) {
       form.reset({
         name: pet.name,
-        species: pet.species,
-        breed: pet.breed ?? '',
-        gender: pet.gender ?? '',
-        birthDate: pet.birthDate ?? '',
-        weightKg: pet.weightKg === null ? '' : String(pet.weightKg),
-      });
+        species: pet.species as 'DOG' | 'CAT',
+        breed: pet.breed ?? null,
+        gender: (pet.gender as 'MALE' | 'FEMALE' | 'UNKNOWN') ?? 'UNKNOWN',
+        birthDate: pet.birthDate ?? null,
+        weightKg: pet.weightKg ?? null,
+        note: (pet as any).note ?? null,
+      } as any);
     } else if (initialValues) {
       form.reset(initialValues);
     }
