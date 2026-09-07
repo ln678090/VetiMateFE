@@ -1,3 +1,5 @@
+import { useStaff } from '@/features/staff/hooks/use-staff';
+import type { Metadata } from 'next';
 export type PetType = 'dog' | 'cat' | 'both';
 
 /**
@@ -72,3 +74,8 @@ export interface ProductCardCompat extends Product {
   brand: string; // alias cho brandName
   category: string; // alias cho categorySlug
 }
+
+export const metadata: Metadata = {
+  title: 'Đăng ký',
+  description: 'Tạo tài khoản PetCare Vet Shop',
+};

@@ -13,9 +13,17 @@ import type {
   VoucherStatus,
   VoucherType,
   WarehouseLocation,
+  WarehouseStockResp,
 } from '@/types/inventory';
 
 const BASE = '/api/inventory';
+
+// ===== Warehouse Stock =====
+
+export const warehouseStockApi = {
+  getProductsStock: (params?: { page?: number; size?: number }) =>
+    api.get<ApiResp<PageResp<WarehouseStockResp>>>(`${BASE}/products-stock`, { params }),
+};
 
 // ===== Suppliers =====
 

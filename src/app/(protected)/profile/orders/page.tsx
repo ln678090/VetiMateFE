@@ -23,6 +23,7 @@ import { ReviewOrderModal } from '@/features/shop/components/ReviewOrderModal';
 const TABS: { value: OrderStatus | 'ALL'; label: string }[] = [
   { value: 'ALL', label: 'Tất cả' },
   { value: 'PENDING', label: 'Chờ xác nhận' },
+  { value: 'CONFIRMED', label: 'Đã xác nhận' },
   { value: 'SHIPPING', label: 'Đang giao' },
   { value: 'DELIVERED', label: 'Đã giao' },
   { value: 'CANCELLED', label: 'Đã hủy' },

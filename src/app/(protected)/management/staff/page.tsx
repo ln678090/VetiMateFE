@@ -106,6 +106,7 @@ export default function StaffManagementPage() {
   const staffItems = page?.content ?? [];
   const eligibleUsers = eligibleUsersQuery.data?.content ?? [];
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const selectedUserId = form.watch('userId');
 
   const submitting = createMutation.isPending || updateMutation.isPending;

@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { OrderStatistics } from './OrderStatistics';
 import {
   ShoppingBag,
   Eye,
@@ -43,6 +44,8 @@ import { orderService } from '@/services/order.service';
 import { format } from 'date-fns';
 import { OrderDetailsModal } from './OrderDetailsModal';
 
+import { StaffCancelModal } from './StaffCancelModal';
+
 interface OrderTableProps {
   items: Order[];
   isLoading: boolean;
@@ -50,7 +53,7 @@ interface OrderTableProps {
 
 const STATUS_MAP: Record<OrderStatus, { label: string; className: string }> = {
   PENDING: { label: 'Chờ xác nhận', className: 'bg-amber-50 text-amber-700 border-amber-200' },
-  CONFIRMED: { label: 'Đang xử lý', className: 'bg-blue-50 text-blue-700 border-blue-200' },
+  CONFIRMED: { label: 'Đã xác nhận', className: 'bg-blue-50 text-blue-700 border-blue-200' },
   SHIPPING: { label: 'Đang giao', className: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
   DELIVERED: { label: 'Đã giao', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   CANCELLED: { label: 'Đã hủy', className: 'bg-rose-50 text-rose-700 border-rose-200' },
@@ -63,6 +66,7 @@ export function OrderTable({ items, isLoading }: OrderTableProps) {
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'ALL'>('ALL');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [orderToCancel, setOrderToCancel] = useState<Order | null>(null);
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
@@ -97,14 +101,21 @@ export function OrderTable({ items, isLoading }: OrderTableProps) {
   }, [items, searchQuery, statusFilter, startDate, endDate]);
 
   const updateStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: string }) =>
-      orderService.updateOrderStatus({ id, status }),
+    mutationFn: ({
+      id,
+      status,
+      cancelReason,
+    }: {
+      id: string;
+      status: string;
+      cancelReason?: string;
+    }) => orderService.updateOrderStatus({ id, status, cancelReason }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shop-orders'] });
       toast.success('Cập nhật trạng thái thành công');
+      setOrderToCancel(null);
     },
     onError: (error: unknown) => {
-      // Thay đổi sang unknown
       console.error(error);
       const apiError = error as { response?: { data?: { message?: string } } };
       toast.error(apiError.response?.data?.message || 'Có lỗi xảy ra khi cập nhật trạng thái');
@@ -150,181 +161,248 @@ export function OrderTable({ items, isLoading }: OrderTableProps) {
   }
 
   return (
-    <div className="flex flex-col">
-      <div className="flex flex-wrap items-center gap-4 p-4 border-b bg-zinc-50/50">
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
-          <Input
-            placeholder="Tìm mã đơn, tên KH, SĐT..."
-            className="pl-9 bg-white"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+    <div className="flex flex-col space-y-4 p-4">
+      <OrderStatistics orders={filteredItems} />
 
-        <div className="flex items-center gap-2">
-          <Input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="w-[130px] bg-white text-sm"
-            title="Từ ngày"
-          />
-          <span className="text-zinc-400">-</span>
-          <Input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="w-[130px] bg-white text-sm"
-            title="Đến ngày"
-          />
-        </div>
+      <div className="flex flex-col bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm overflow-hidden">
+        <div className="flex flex-wrap items-center gap-4 p-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
+          <div className="relative flex-1 min-w-[200px] max-w-sm">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
+            <Input
+              placeholder="Tìm mã đơn, tên KH, SĐT..."
+              className="pl-9 bg-white"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
 
-        <Select
-          value={statusFilter}
-          onValueChange={(val) => setStatusFilter(val as OrderStatus | 'ALL')}
-        >
-          <SelectTrigger className="w-[160px] bg-white">
-            <SelectValue placeholder="Trạng thái" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
-            <SelectItem value="PENDING">Chờ xác nhận</SelectItem>
-            <SelectItem value="SHIPPING">Đang giao</SelectItem>
-            <SelectItem value="DELIVERED">Đã giao</SelectItem>
-            <SelectItem value="CANCELLED">Đã hủy</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Mã đơn hàng</TableHead>
-            <TableHead>Khách hàng</TableHead>
-            <TableHead>Tổng tiền</TableHead>
-            <TableHead>Trạng thái</TableHead>
-            <TableHead>Thời gian tạo</TableHead>
-            <TableHead className="text-right">Thao tác</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredItems.length === 0 ? (
+          <div className="flex items-center gap-2">
+            <Input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-[130px] bg-white text-sm"
+              title="Từ ngày"
+            />
+            <span className="text-zinc-400">-</span>
+            <Input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-[130px] bg-white text-sm"
+              title="Đến ngày"
+            />
+          </div>
+
+          <Select
+            value={statusFilter}
+            onValueChange={(val) => setStatusFilter(val as OrderStatus | 'ALL')}
+          >
+            <SelectTrigger className="w-[160px] bg-white">
+              <SelectValue placeholder="Trạng thái" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
+              <SelectItem value="PENDING">Chờ xác nhận</SelectItem>
+              <SelectItem value="CONFIRMED">Đã xác nhận</SelectItem>
+              <SelectItem value="SHIPPING">Đang giao</SelectItem>
+              <SelectItem value="DELIVERED">Đã giao</SelectItem>
+              <SelectItem value="CANCELLED">Đã hủy</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={6} className="h-24 text-center text-zinc-500">
-                Không tìm thấy đơn hàng nào phù hợp.
-              </TableCell>
+              <TableHead>Mã đơn hàng</TableHead>
+              <TableHead>Khách hàng</TableHead>
+              <TableHead>Tổng tiền</TableHead>
+              <TableHead>Trạng thái</TableHead>
+              <TableHead>Thời gian tạo</TableHead>
+              <TableHead className="text-right">Thao tác</TableHead>
             </TableRow>
-          ) : (
-            filteredItems.map((item) => {
-              const statusConfig = STATUS_MAP[item.status] || STATUS_MAP.PENDING;
-              const hasCancelRequest = item.note?.includes('[CANCEL_REQUEST]:');
+          </TableHeader>
+          <TableBody>
+            {filteredItems.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="h-24 text-center text-zinc-500">
+                  Không tìm thấy đơn hàng nào phù hợp.
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredItems.map((item) => {
+                const statusConfig = STATUS_MAP[item.status] || STATUS_MAP.PENDING;
+                const hasCancelRequest = item.note?.includes('[CANCEL_REQUEST]:');
 
-              return (
-                <TableRow
-                  key={item.id}
-                  onDoubleClick={() => setSelectedOrder(item)}
-                  className="cursor-pointer group hover:bg-zinc-50"
-                >
-                  <TableCell className="font-medium text-blue-600 group-hover:underline">
-                    {item.code}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium">
-                        {item.customerName && item.customerName !== 'null'
-                          ? item.customerName
-                          : 'Khách vãng lai'}
-                      </span>
-                      {item.customerPhone && item.customerPhone !== 'null' && (
-                        <span className="text-xs text-zinc-500">{item.customerPhone}</span>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
-                      item.totalAmount
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1 items-start">
-                      <Badge variant="outline" className={statusConfig.className}>
-                        {statusConfig.label}
-                      </Badge>
-                      {hasCancelRequest && item.status !== 'CANCELLED' && (
-                        <Badge variant="destructive" className="text-[10px] h-5 px-1.5">
-                          Yêu cầu hủy
+                // Kiểm tra xem đơn hàng có chứa sản phẩm lỗi (hết hàng hoặc ngừng bán)
+                const hasIssue = item.items.some(
+                  (i) => i.stockQuantity < i.quantity || i.isActive === false
+                );
+
+                return (
+                  <TableRow
+                    key={item.id}
+                    onDoubleClick={() => setSelectedOrder(item)}
+                    className="cursor-pointer group hover:bg-zinc-50"
+                  >
+                    <TableCell className="font-medium text-blue-600 group-hover:underline">
+                      {item.code}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium">
+                          {item.customerName && item.customerName !== 'null'
+                            ? item.customerName
+                            : 'Khách vãng lai'}
+                        </span>
+                        {item.customerPhone && item.customerPhone !== 'null' && (
+                          <span className="text-xs text-zinc-500">{item.customerPhone}</span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-medium">
+                      {new Intl.NumberFormat('vi-VN', {
+                        style: 'currency',
+                        currency: 'VND',
+                      }).format(item.finalAmount)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1 items-start">
+                        <Badge variant="outline" className={statusConfig.className}>
+                          {statusConfig.label}
                         </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-zinc-500 text-sm">
-                    {format(new Date(item.createdAt), 'dd/MM/yyyy HH:mm')}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {item.status !== 'DELIVERED' &&
-                      item.status !== 'CANCELLED' &&
-                      !hasCancelRequest && (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Mở menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
+                        {hasCancelRequest && item.status !== 'CANCELLED' && (
+                          <Badge variant="destructive" className="text-[10px] h-5 px-1.5">
+                            Yêu cầu hủy
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-zinc-500 text-sm">
+                      {format(new Date(item.createdAt), 'dd/MM/yyyy HH:mm')}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end items-center gap-2">
+                        {hasIssue &&
+                          item.status !== 'DELIVERED' &&
+                          item.status !== 'CANCELLED' &&
+                          !hasCancelRequest && (
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="h-8 text-[11px]"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOrderToCancel(item);
+                              }}
+                            >
+                              Hủy đơn (Lỗi SP)
                             </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-44">
-                            <DropdownMenuLabel>Cập nhật trạng thái</DropdownMenuLabel>
+                          )}
 
-                            {(item.status === 'PENDING' || item.status === 'CONFIRMED') && (
-                              <>
-                                <DropdownMenuItem
-                                  onSelect={() =>
-                                    updateStatusMutation.mutate({ id: item.id, status: 'SHIPPING' })
-                                  }
-                                >
-                                  <Truck className="mr-2 h-4 w-4 text-indigo-600" />
-                                  Giao hàng
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  className="text-rose-600 focus:text-rose-600 focus:bg-rose-50"
-                                  onSelect={() =>
-                                    updateStatusMutation.mutate({
-                                      id: item.id,
-                                      status: 'CANCELLED',
-                                    })
-                                  }
-                                >
-                                  <XCircle className="mr-2 h-4 w-4" />
-                                  Hủy đơn
-                                </DropdownMenuItem>
-                              </>
-                            )}
+                        {item.status !== 'DELIVERED' &&
+                          item.status !== 'CANCELLED' &&
+                          !hasCancelRequest && (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <span className="sr-only">Mở menu</span>
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-44">
+                                <DropdownMenuLabel>Cập nhật trạng thái</DropdownMenuLabel>
 
-                            {item.status === 'SHIPPING' && (
-                              <DropdownMenuItem
-                                onSelect={() =>
-                                  updateStatusMutation.mutate({ id: item.id, status: 'DELIVERED' })
-                                }
-                              >
-                                <PackageCheck className="mr-2 h-4 w-4 text-emerald-600" />
-                                Đã giao
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
-                  </TableCell>
-                </TableRow>
-              );
-            })
-          )}
-        </TableBody>
-      </Table>
+                                {item.status === 'PENDING' && (
+                                  <>
+                                    <DropdownMenuItem
+                                      onSelect={() =>
+                                        updateStatusMutation.mutate({
+                                          id: item.id,
+                                          status: 'CONFIRMED',
+                                        })
+                                      }
+                                    >
+                                      <CheckCircle2 className="mr-2 h-4 w-4 text-blue-600" />
+                                      Xác nhận đơn
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                  </>
+                                )}
+                                {item.status === 'CONFIRMED' && (
+                                  <>
+                                    <DropdownMenuItem
+                                      onSelect={() =>
+                                        updateStatusMutation.mutate({
+                                          id: item.id,
+                                          status: 'SHIPPING',
+                                        })
+                                      }
+                                    >
+                                      <Truck className="mr-2 h-4 w-4 text-indigo-600" />
+                                      Giao hàng
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                  </>
+                                )}
+                                {(item.status === 'PENDING' || item.status === 'CONFIRMED') && (
+                                  <DropdownMenuItem
+                                    className="text-rose-600 focus:text-rose-600 focus:bg-rose-50"
+                                    onSelect={(e) => {
+                                      e.preventDefault();
+                                      setOrderToCancel(item);
+                                    }}
+                                  >
+                                    <XCircle className="mr-2 h-4 w-4" />
+                                    Hủy đơn
+                                  </DropdownMenuItem>
+                                )}
+
+                                {item.status === 'SHIPPING' && (
+                                  <DropdownMenuItem
+                                    onSelect={() =>
+                                      updateStatusMutation.mutate({
+                                        id: item.id,
+                                        status: 'DELIVERED',
+                                      })
+                                    }
+                                  >
+                                    <PackageCheck className="mr-2 h-4 w-4 text-emerald-600" />
+                                    Đã giao
+                                  </DropdownMenuItem>
+                                )}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </div>
       <OrderDetailsModal
         order={selectedOrder}
         isOpen={!!selectedOrder}
         onClose={() => setSelectedOrder(null)}
         onProcessCancel={(orderId, accept) => processCancelMutation.mutate({ id: orderId, accept })}
+      />
+
+      <StaffCancelModal
+        isOpen={!!orderToCancel}
+        onClose={() => setOrderToCancel(null)}
+        isPending={updateStatusMutation.isPending}
+        onConfirm={(reason) => {
+          if (orderToCancel) {
+            updateStatusMutation.mutate({
+              id: orderToCancel.id,
+              status: 'CANCELLED',
+              cancelReason: reason,
+            });
+          }
+        }}
       />
     </div>
   );

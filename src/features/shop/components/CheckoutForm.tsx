@@ -83,6 +83,7 @@ export function CheckoutForm() {
 
   const { provinces, loading: loadingProvinces } = useProvinces();
 
+  // eslint-disable-next-line react-hooks/incompatible-library
   const selectedCityName = form.watch('city');
   const selectedProvince = provinces.find((p) => p.name === selectedCityName);
   const provinceId = selectedProvince?.id || '';

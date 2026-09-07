@@ -1,35 +1,43 @@
 'use client';
-// src/features/booking/components/BookingForm.tsx
-interface ApiErrorResponse {
-  message?: string;
-}
-import axios from 'axios';
-import { useState, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+
 import { zodResolver } from '@hookform/resolvers/zod';
-import { bookingSchema, type BookingFormValues } from '@/schemas/booking.schema';
-import {
-  useActiveServices,
-  useMyPets,
-  useCreateAppointment,
-  useCreatePet,
-  useAvailableSlots,
-} from '../hooks/use-clinic';
-import { PET_SPECIES_OPTIONS, type PetSpecies } from '@/types/clinic';
-import { formatVND } from '@/lib/utils';
+import { AlertCircle, Calendar, Clock, Plus } from 'lucide-react';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
+import { useForm } from 'react-hook-form';
+
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Clock, Calendar, AlertCircle } from 'lucide-react';
+import { formatVND } from '@/lib/utils';
+import { bookingSchema, type BookingFormValues } from '@/schemas/booking.schema';
 
-interface Props {
+import {
+  useActiveServices,
+  useAvailableSlots,
+  useCreateAppointment,
+  useMyPets,
+} from '../hooks/use-clinic';
+
+interface BookingFormProps {
   customerId: string;
 }
 
-export function BookingForm({ customerId }: Props) {
+const CREATE_PET_HREF = '/profile/pets/new?returnTo=%2Fbooking';
+
+function getLocalDateValue(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+export function BookingForm({ customerId }: BookingFormProps) {
   const { data: services, isLoading: loadingServices } = useActiveServices();
+
   const { data: pets, isLoading: loadingPets } = useMyPets(customerId);
-  const { mutate, isPending } = useCreateAppointment(customerId);
-  const { mutate: createPetMutate, isPending: creatingPet } = useCreatePet(customerId);
+
+  const { mutate: createAppointment, isPending } = useCreateAppointment(customerId);
 
   const {
     register,
@@ -41,110 +49,72 @@ export function BookingForm({ customerId }: Props) {
   } = useForm<BookingFormValues>({
     resolver: zodResolver(bookingSchema),
     mode: 'onBlur',
+    defaultValues: {
+      petId: '',
+      serviceId: '',
+      startAt: '',
+      note: '',
+    },
   });
 
+  const [selectedDate, setSelectedDate] = useState('');
+  const [selectedSlot, setSelectedSlot] = useState('');
   const selectedServiceId = watch('serviceId');
-  const selectedService = services?.find((s) => s.id === selectedServiceId);
 
-  // ===== State cho Date + Slot picker =====
-  const [selectedDate, setSelectedDate] = useState<string>('');
-  const [selectedSlot, setSelectedSlot] = useState<string>(''); // "08:00"
+  const selectedService = services?.find((service) => service.id === selectedServiceId);
 
-  // ===== Fetch available slots khi có service + date =====
   const {
     data: slots,
     isLoading: loadingSlots,
     isError: slotsError,
   } = useAvailableSlots(selectedServiceId, selectedDate);
 
-  // Chỉ hiển thị slots available = true
-  const availableSlots = useMemo(() => slots?.filter((s) => s.available) ?? [], [slots]);
+  const availableSlots = useMemo(() => slots?.filter((slot) => slot.available) ?? [], [slots]);
 
-  // ===== Chỉ chó & mèo, group theo giống loài =====
-  const dogs = pets?.filter((p) => p.species === 'DOG') ?? [];
-  const cats = pets?.filter((p) => p.species === 'CAT') ?? [];
+  const dogs = useMemo(() => pets?.filter((pet) => pet.species === 'DOG') ?? [], [pets]);
+
+  const cats = useMemo(() => pets?.filter((pet) => pet.species === 'CAT') ?? [], [pets]);
+
   const hasBookablePet = dogs.length > 0 || cats.length > 0;
+  const today = getLocalDateValue(new Date());
 
-  // ===== State form "Thêm thú cưng" (inline) =====
-  const [showAddPet, setShowAddPet] = useState(false);
-  const [petName, setPetName] = useState('');
-  const [petSpecies, setPetSpecies] = useState<PetSpecies>('DOG');
-  const [petBreed, setPetBreed] = useState('');
-
-  // ===== Min date = hôm nay =====
-  const today = new Date().toISOString().split('T')[0];
-
-  // ===== Khi chọn slot -> build startAt =====
-
-  const handleSlotSelect = (startTime: string) => {
-    setSelectedSlot(startTime);
-    if (selectedDate && startTime) {
-      // Build ISO string với timezone local
-      // Format: "2026-07-21T16:00" (không có :00 cuối - datetime-local format)
-      const startAt = `${selectedDate}T${startTime}`;
-      setValue('startAt', startAt, { shouldValidate: true });
+  function handleSlotSelect(startTime: string): void {
+    if (!selectedDate) {
+      return;
     }
-  };
 
-  // ===== Khi đổi ngày -> reset slot đã chọn =====
-  const handleDateChange = (date: string) => {
+    setSelectedSlot(startTime);
+
+    setValue('startAt', `${selectedDate}T${startTime}`, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    });
+  }
+
+  function handleDateChange(date: string): void {
     setSelectedDate(date);
     setSelectedSlot('');
-    setValue('startAt', '', { shouldValidate: false });
-  };
 
-  const handleAddPet = () => {
-    const trimmedName = petName.trim();
-    if (!trimmedName) {
-      alert('Vui lòng nhập tên thú cưng');
+    setValue('startAt', '', {
+      shouldDirty: true,
+      shouldValidate: false,
+    });
+  }
+
+  function onSubmit(values: BookingFormValues): void {
+    const startAt = new Date(values.startAt);
+
+    if (Number.isNaN(startAt.getTime())) {
       return;
     }
-    if (!customerId) {
-      alert('Chưa xác định được hồ sơ khách hàng. Bạn cần đăng nhập để thêm thú cưng.');
-      return;
-    }
 
-    createPetMutate(
-      {
-        customerId,
-        name: trimmedName,
-        species: petSpecies,
-        breed: petBreed.trim() || null,
-      },
-      {
-        onSuccess: () => {
-          setPetName('');
-          setPetBreed('');
-          setPetSpecies('DOG');
-          setShowAddPet(false);
-        },
-        onError: (error: unknown) => {
-          if (axios.isAxiosError<ApiErrorResponse>(error)) {
-            const status = error.response?.status;
-            const message = error.response?.data?.message ?? error.message ?? 'Không rõ lỗi';
-            if (status === 401) {
-              alert('Bạn cần đăng nhập để thêm thú cưng.');
-              return;
-            }
-
-            alert(message);
-            return;
-          }
-
-          const message = error instanceof Error ? error.message : 'Không rõ lỗi';
-          alert(message);
-        },
-      }
-    );
-  };
-
-  const onSubmit = (values: BookingFormValues) => {
-    mutate(
+    createAppointment(
       {
         petId: values.petId,
         serviceId: values.serviceId,
-        startAt: new Date(values.startAt).toISOString(),
-        note: values.note,
+        startAt: startAt.toISOString(),
+        note: values.note?.trim() || undefined,
       },
       {
         onSuccess: () => {
@@ -154,11 +124,12 @@ export function BookingForm({ customerId }: Props) {
         },
       }
     );
-  };
+  }
 
   if (loadingServices || loadingPets) {
     return (
       <div className="space-y-4">
+        <Skeleton className="h-10 w-full" />
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-24 w-full" />
@@ -171,157 +142,139 @@ export function BookingForm({ customerId }: Props) {
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-5 rounded-2xl border border-white/60 bg-white/80 p-6 backdrop-blur-xl"
     >
-      {/* ===== Thú cưng - chỉ chó & mèo, group theo giống ===== */}
+      {/* Thú cưng */}
       <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <label htmlFor="booking-pet" className="text-sm font-medium">
             Thú cưng <span className="text-rose-500">*</span>
           </label>
-          <button
-            type="button"
-            onClick={() => setShowAddPet((v) => !v)}
-            className="text-sm font-medium text-rose-600 hover:underline"
+
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="h-auto px-2 py-1 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
           >
-            {showAddPet ? 'Đóng' : '+ Thêm thú cưng'}
-          </button>
+            <Link href={CREATE_PET_HREF}>
+              <Plus className="mr-1 h-4 w-4" />
+              Thêm thú cưng
+            </Link>
+          </Button>
         </div>
 
         <select
+          id="booking-pet"
           {...register('petId')}
-          className="w-full rounded-lg border px-3 py-2"
-          defaultValue=""
           disabled={!hasBookablePet}
+          aria-invalid={Boolean(errors.petId)}
+          className="w-full rounded-lg border px-3 py-2 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-500"
         >
           <option value="" disabled>
             -- Chọn thú cưng --
           </option>
+
           {dogs.length > 0 && (
             <optgroup label="Chó">
-              {dogs.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                  {p.breed ? ` — ${p.breed}` : ''}
+              {dogs.map((pet) => (
+                <option key={pet.id} value={pet.id}>
+                  {pet.name}
+                  {pet.breed ? ` — ${pet.breed}` : ''}
                 </option>
               ))}
             </optgroup>
           )}
+
           {cats.length > 0 && (
             <optgroup label="Mèo">
-              {cats.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                  {p.breed ? ` — ${p.breed}` : ''}
+              {cats.map((pet) => (
+                <option key={pet.id} value={pet.id}>
+                  {pet.name}
+                  {pet.breed ? ` — ${pet.breed}` : ''}
                 </option>
               ))}
             </optgroup>
           )}
         </select>
 
-        {!hasBookablePet && !showAddPet && (
-          <p className="text-sm text-amber-600">
-            Bạn chưa có chó hoặc mèo nào. Hãy bấm Thêm thú cưng.
-          </p>
-        )}
-        {errors.petId && <p className="text-sm text-rose-500">{errors.petId.message}</p>}
+        {!hasBookablePet && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
 
-        {/* Inline form thêm thú cưng */}
-        {showAddPet && (
-          <div className="mt-2 space-y-3 rounded-lg border border-rose-200 bg-rose-50/50 p-3">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div className="space-y-1">
-                <label className="text-xs font-medium">
-                  Tên <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  value={petName}
-                  onChange={(e) => setPetName(e.target.value)}
-                  maxLength={100}
-                  className="w-full rounded-lg border px-3 py-2"
-                  placeholder="VD: Milo"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-medium">
-                  Loài <span className="text-rose-500">*</span>
-                </label>
-                <select
-                  value={petSpecies}
-                  onChange={(e) => setPetSpecies(e.target.value as PetSpecies)}
-                  className="w-full rounded-lg border px-3 py-2"
-                >
-                  {PET_SPECIES_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-medium">Giống</label>
-                <input
-                  value={petBreed}
-                  onChange={(e) => setPetBreed(e.target.value)}
-                  maxLength={100}
-                  className="w-full rounded-lg border px-3 py-2"
-                  placeholder="VD: Corgi, Anh lông ngắn..."
-                />
-              </div>
+              <p className="text-sm text-amber-700">Bạn chưa có chó hoặc mèo để đặt lịch.</p>
             </div>
+
             <Button
-              type="button"
-              onClick={handleAddPet}
-              disabled={creatingPet || !petName.trim()}
-              className="bg-rose-500 text-white"
+              asChild
+              size="sm"
+              className="mt-3 bg-gradient-to-r from-rose-500 to-amber-500 text-white"
             >
-              {creatingPet ? 'Đang lưu...' : 'Lưu thú cưng'}
+              <Link href={CREATE_PET_HREF}>
+                <Plus className="mr-2 h-4 w-4" />
+                Thêm thú cưng mới
+              </Link>
             </Button>
           </div>
         )}
+
+        {errors.petId && <p className="text-sm text-rose-500">{errors.petId.message}</p>}
       </div>
 
-      {/* ===== Dịch vụ ===== */}
+      {/* Dịch vụ */}
       <div className="space-y-1.5">
-        <label className="text-sm font-medium">
+        <label htmlFor="booking-service" className="text-sm font-medium">
           Dịch vụ <span className="text-rose-500">*</span>
         </label>
+
         <select
+          id="booking-service"
           {...register('serviceId')}
+          aria-invalid={Boolean(errors.serviceId)}
           className="w-full rounded-lg border px-3 py-2"
-          defaultValue=""
         >
           <option value="" disabled>
             -- Chọn dịch vụ --
           </option>
-          {services?.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name} — {formatVND(s.price)} ({s.durationMin} phút)
+
+          {services?.map((service) => (
+            <option key={service.id} value={service.id}>
+              {service.name} — {formatVND(service.price)} ({service.durationMin} phút)
             </option>
           ))}
         </select>
+
         {selectedService && (
-          <p className="text-xs text-gray-500">Thời lượng: {selectedService.durationMin} phút</p>
+          <p className="text-xs text-zinc-500">
+            Thời lượng dự kiến: {selectedService.durationMin} phút
+          </p>
         )}
+
         {errors.serviceId && <p className="text-sm text-rose-500">{errors.serviceId.message}</p>}
       </div>
 
-      {/* ===== Chọn ngày ===== */}
+      {/* Ngày khám */}
       <div className="space-y-1.5">
-        <label className="flex items-center gap-1.5 text-sm font-medium">
+        <label htmlFor="booking-date" className="flex items-center gap-1.5 text-sm font-medium">
           <Calendar className="h-4 w-4" />
           Ngày khám <span className="text-rose-500">*</span>
         </label>
+
         <input
+          id="booking-date"
           type="date"
           value={selectedDate}
-          onChange={(e) => handleDateChange(e.target.value)}
           min={today}
-          className="w-full rounded-lg border px-3 py-2"
           disabled={!selectedServiceId}
+          onChange={(event) => handleDateChange(event.target.value)}
+          className="w-full rounded-lg border px-3 py-2 disabled:cursor-not-allowed disabled:bg-zinc-100"
         />
-        {!selectedServiceId && <p className="text-xs text-gray-400">Vui lòng chọn dịch vụ trước</p>}
+
+        {!selectedServiceId && (
+          <p className="text-xs text-zinc-400">Vui lòng chọn dịch vụ trước.</p>
+        )}
       </div>
 
-      {/* ===== Slot Picker ===== */}
+      {/* Khung giờ */}
       {selectedServiceId && selectedDate && (
         <div className="space-y-2">
           <label className="flex items-center gap-1.5 text-sm font-medium">
@@ -331,48 +284,54 @@ export function BookingForm({ customerId }: Props) {
 
           {loadingSlots && (
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
+              {Array.from({ length: 8 }, (_, index) => (
+                <Skeleton key={index} className="h-10 w-full" />
               ))}
             </div>
           )}
 
           {slotsError && (
-            <div className="flex items-center gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-600">
-              <AlertCircle className="h-4 w-4" />
+            <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+              <AlertCircle className="h-4 w-4 shrink-0" />
               Không thể tải khung giờ. Vui lòng thử lại.
             </div>
           )}
 
           {!loadingSlots && !slotsError && availableSlots.length === 0 && (
-            <div className="flex items-center gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-600">
-              <AlertCircle className="h-4 w-4" />
+            <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+              <AlertCircle className="h-4 w-4 shrink-0" />
               Không còn khung giờ trống trong ngày này. Vui lòng chọn ngày khác.
             </div>
           )}
 
           {!loadingSlots && !slotsError && availableSlots.length > 0 && (
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
-              {availableSlots.map((slot) => (
-                <button
-                  key={slot.startTime}
-                  type="button"
-                  onClick={() => handleSlotSelect(slot.startTime)}
-                  className={`rounded-lg border px-3 py-2 text-sm font-medium transition-all ${
-                    selectedSlot === slot.startTime
-                      ? 'border-rose-500 bg-rose-500 text-white shadow-md'
-                      : 'border-gray-200 bg-white hover:border-rose-300 hover:bg-rose-50'
-                  }`}
-                >
-                  {slot.startTime}
-                </button>
-              ))}
+              {availableSlots.map((slot) => {
+                const isSelected = selectedSlot === slot.startTime;
+
+                return (
+                  <button
+                    key={slot.startTime}
+                    type="button"
+                    aria-pressed={isSelected}
+                    onClick={() => handleSlotSelect(slot.startTime)}
+                    className={`rounded-lg border px-3 py-2 text-sm font-medium transition ${
+                      isSelected
+                        ? 'border-rose-500 bg-rose-500 text-white shadow-md'
+                        : 'border-zinc-200 bg-white text-zinc-700 hover:border-rose-300 hover:bg-rose-50'
+                    }`}
+                  >
+                    {slot.startTime}
+                  </button>
+                );
+              })}
             </div>
           )}
 
           {selectedSlot && selectedService && (
-            <p className="text-xs text-gray-500">
-              Đã chọn: {selectedSlot} - {slots?.find((s) => s.startTime === selectedSlot)?.endTime}(
+            <p className="text-xs text-zinc-500">
+              Đã chọn: {selectedSlot} –{' '}
+              {slots?.find((slot) => slot.startTime === selectedSlot)?.endTime} (
               {selectedService.durationMin} phút)
             </p>
           )}
@@ -381,22 +340,26 @@ export function BookingForm({ customerId }: Props) {
         </div>
       )}
 
-      {/* Hidden field cho react-hook-form */}
       <input type="hidden" {...register('startAt')} />
 
-      {/* ===== Ghi chú ===== */}
+      {/* Ghi chú */}
       <div className="space-y-1.5">
-        <label className="text-sm font-medium">Ghi chú</label>
+        <label htmlFor="booking-note" className="text-sm font-medium">
+          Ghi chú
+        </label>
+
         <textarea
+          id="booking-note"
           {...register('note')}
           rows={3}
-          className="w-full rounded-lg border px-3 py-2"
+          maxLength={1000}
+          className="w-full resize-y rounded-lg border px-3 py-2"
           placeholder="Triệu chứng, yêu cầu đặc biệt..."
         />
+
         {errors.note && <p className="text-sm text-rose-500">{errors.note.message}</p>}
       </div>
 
-      {/* ===== Submit Button ===== */}
       <Button
         type="submit"
         disabled={isPending || !hasBookablePet || !selectedSlot}

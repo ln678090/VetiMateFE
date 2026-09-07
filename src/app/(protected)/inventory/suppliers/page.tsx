@@ -1,36 +1,77 @@
 'use client';
 
-import { ArrowLeft, Users } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Search, Plus, ArrowLeft } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import Link from 'next/link';
-import { SupplierTable } from '@/features/inventory/components/SupplierTable';
-import { useSuppliers } from '@/features/inventory/hooks/use-inventory';
+import { useState } from 'react';
+import { supplierApi } from '@/features/inventory/api/inventory.api';
+import { SupplierTable } from './components/SupplierTable';
+import { SupplierFormModal } from './components/SupplierFormModal';
 
 export default function SuppliersPage() {
-  const { data, isLoading } = useSuppliers(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const { data: suppliersData, isLoading } = useQuery({
+    queryKey: ['suppliers'],
+    queryFn: () => supplierApi.getAll(true),
+  });
+
+  const suppliers = suppliersData?.data?.data || [];
+
+  const filteredSuppliers = suppliers.filter((s: any) =>
+    s.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <Link
-          href="/inventory"
-          className="rounded-lg p-1.5 text-zinc-500 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-400 text-white shadow-md">
-          <Users className="h-5 w-5" strokeWidth={2} />
-        </span>
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
-            Nhà cung cấp
-          </h1>
-          <p className="text-sm text-zinc-500">
-            Quản lý danh sách nhà cung cấp thuốc, vật tư, sản phẩm
-          </p>
+      <header className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/inventory"
+            className="rounded-lg p-1.5 text-zinc-500 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-zinc-900 md:text-3xl dark:text-white">
+              Nhà cung cấp
+            </h1>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+              Quản lý thông tin nhà cung cấp hàng hóa cho cửa hàng
+            </p>
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2">
+            <Plus className="w-4 h-4" /> Thêm nhà cung cấp
+          </Button>
+        </div>
+      </header>
+
+      <div className="flex items-center w-full max-w-sm space-x-2">
+        <div className="relative w-full">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
+          <Input
+            type="search"
+            placeholder="Tìm kiếm nhà cung cấp..."
+            className="w-full pl-8"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         </div>
       </div>
 
-      <SupplierTable data={data} isLoading={isLoading} />
+      <Card>
+        <CardContent className="p-0">
+          <SupplierTable suppliers={filteredSuppliers} isLoading={isLoading} />
+        </CardContent>
+      </Card>
+
+      <SupplierFormModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 }

@@ -64,7 +64,7 @@ export interface StockBatchResp {
 
 // ===== Voucher =====
 export type VoucherType = 'IMPORT' | 'EXPORT' | 'TRANSFER' | 'STOCKTAKE';
-export type VoucherStatus = 'PENDING' | 'APPROVED' | 'CANCELLED';
+export type VoucherStatus = 'DRAFT' | 'APPROVED' | 'CANCELLED';
 
 export interface VoucherItem {
   id?: string;
@@ -73,6 +73,7 @@ export interface VoucherItem {
   productId?: string;
   productName?: string;
   batchCode?: string;
+  expiryDate?: string;
   quantity: number;
   unitPrice: number;
   note?: string;
@@ -116,10 +117,10 @@ export interface CreateVoucherRequest {
 
 // ===== Pagination =====
 export interface PageResp<T> {
-  items: T[];
-  totalItems: number;
+  content: T[];
+  totalElements: number;
   totalPages: number;
-  currentPage: number;
+  number: number;
 }
 
 // ===== Dashboard =====
@@ -131,4 +132,12 @@ export interface InventoryDashboardResp {
   expiredCount: number;
   totalStockValue: number;
   pendingVouchers?: number;
+}
+
+export interface WarehouseStockResp {
+  id: string;
+  name: string;
+  categoryName: string;
+  brandName: string;
+  stockQuantity: number;
 }

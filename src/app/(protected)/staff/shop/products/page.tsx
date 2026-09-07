@@ -15,9 +15,13 @@ export default function ProductsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-  const { data: productsData, isLoading } = useQuery({
-    queryKey: ['products'],
-    queryFn: () => productApi.getProducts('newest'),
+  const {
+    data: productsData,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['products', 'newest'],
+    queryFn: () => productApi.getProducts({ sort: 'newest' }),
   });
 
   const handleEdit = (product: Product) => {

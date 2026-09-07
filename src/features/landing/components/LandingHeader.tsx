@@ -12,9 +12,9 @@ import { useCartStore } from '@/stores/cart.store';
 
 const NAV_LINKS = [
   { label: 'Cửa hàng', href: '/shop' },
-  { label: 'Dịch vụ', href: '#services' },
-  { label: 'Về chúng tôi', href: '#about' },
-  { label: 'Liên hệ', href: '#contact' },
+  { label: 'Dịch vụ', href: '/booking' },
+  { label: 'Về chúng tôi', href: '/about' },
+  { label: 'Liên hệ', href: '/contact' },
 ];
 
 export function LandingHeader() {

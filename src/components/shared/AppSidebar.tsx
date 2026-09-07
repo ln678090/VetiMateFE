@@ -77,7 +77,8 @@ export function AppSidebar() {
     setMobileOpen(false);
   }
 
-  function toggleDesktopSidebar(): void {
+  function toggleDesktopSidebar() {
+    if (window.innerWidth < 1024) return;
     setCollapsed((current) => !current);
   }
 
@@ -104,9 +105,11 @@ export function AppSidebar() {
               ].join(' '),
         ].join(' ')}
       >
-        <Icon className="size-5 shrink-0" strokeWidth={2} />
+        <div className="relative">
+          <Icon className="size-5 shrink-0" strokeWidth={2} />
+        </div>
 
-        {!collapsed && <span className="truncate text-sm font-medium">{item.label}</span>}
+        {!collapsed && <span className="flex-1 truncate text-sm font-medium">{item.label}</span>}
       </Link>
     );
   }
